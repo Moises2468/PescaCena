@@ -85,11 +85,7 @@
     .btn-opcion.correct { background-color: var(--success); border-color: var(--success); color: white; }
     .btn-opcion.wrong { background-color: var(--error-text); border-color: var(--error-text); color: white; }
 
-    #ruleta-box {
-      background: #f1f3f4; padding: 20px; border-radius: 10px; font-size: 22px; 
-      font-weight: bold; margin: 15px 0; border: 3px solid #dadce0;
-      transition: background-color 0.3s;
-    }
+    #ruleta-box { background: #f1f3f4; padding: 20px; border-radius: 10px; font-size: 22px; font-weight: bold; margin: 15px 0; border: 3px solid #dadce0; transition: background-color 0.3s; }
 
     @keyframes ticker { 0% { transform: translate(100%, 0); } 100% { transform: translate(-100%, 0); } }
   </style>
@@ -255,11 +251,11 @@
   </div>
 
   <script>
-    //______________________________________________________________________________________________________________________________________
+    // PEGA AQUÍ TU URL DE GOOGLE APPS SCRIPT
     const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbz6gekk_QVYq03WYSZsOYabzPD8OYGHfToGHLv6Q-V8Up-ug8sokYVn3uy7EEMv723X/exec"; 
 
     let palabraSecretaDelDia = "";
-    let claveGlobal = "";
+    let claveGlobal = ""; 
     let cargandoInicial = false; 
     let misPuntosActuales = 0; 
     let trivialActual = { pregunta: "", a: "", b: "", c: "", d: "", respuesta: "" };
@@ -274,16 +270,24 @@
       const claveInput = document.getElementById('clave').value.trim();
       const btnEntrar = document.getElementById('btn-entrar');
       
-      if(!nombreInput || !departamentoInput || !claveInput) { alert("Introduce tu nombre y selecciona tu departamento."); return; }
-      btnEntrar.disabled = true; btnEntrar.innerText = "VERIFICANDO...";
-      localStorage.setItem('jugador_nombre', nombreInput); localStorage.setItem('jugador_dep', departamentoInput);
+      if(!nombreInput || !departamentoInput || !claveInput) { 
+        alert("Introduce tu nombre, selecciona tu área y pon la clave."); 
+        return; 
+      }
+      
+      btnEntrar.disabled = true; 
+      btnEntrar.innerText = "VERIFICANDO...";
+      
       cargarMarcadores(function(exito) {
         if (exito) {
+          // COMPROBACIÓN DE CLAVE ANTES DE GUARDAR DATOS
           if (claveGlobal && claveGlobal !== "" && claveInput.toLowerCase() !== claveGlobal.toLowerCase()) {
             alert("❌ La clave de acceso es incorrecta. Pídesela al organizador.");
             btnEntrar.disabled = false; btnEntrar.innerText = "ACCEDER";
-            return;
+            return; 
           }
+          
+          // Solo si la clave es correcta se guardan los datos
           localStorage.setItem('jugador_nombre', nombreInput); 
           localStorage.setItem('jugador_dep', departamentoInput);
           mostrarLobby();
@@ -342,12 +346,14 @@
           document.getElementById('pts-mant').innerText = pMant + " pts"; document.getElementById('barra-mant').style.width = (pMant / maxPts * 100) + "%";
           document.getElementById('pts-ofic').innerText = pOfic + " pts"; document.getElementById('barra-ofic').style.width = (pOfic / maxPts * 100) + "%";
 
-          if (datos.puntosTotalesJugadores) {
-             misPuntosActuales = datos.puntosTotalesJugadores[localStorage.getItem('jugador_nombre')] || 0;
+          let nombreGuardado = localStorage.getItem('jugador_nombre');
+          if (datos.puntosTotalesJugadores && nombreGuardado) {
+             misPuntosActuales = datos.puntosTotalesJugadores[nombreGuardado] || 0;
              document.getElementById('mis-puntos-num').innerText = misPuntosActuales;
              if(misPuntosActuales < 0) document.getElementById('mis-puntos-num').style.color = "var(--error-text)";
              else document.getElementById('mis-puntos-num').style.color = "var(--text)";
           }
+
           actualizarInterfazRuleta();
 
           const tablaBody = document.getElementById('tabla-agentes-body');
@@ -355,6 +361,7 @@
               tablaBody.innerHTML = "<tr><th>Pos</th><th>Usuario</th><th>Área</th><th>Pts</th></tr>";
               datos.agentes.forEach((agente, index) => { tablaBody.innerHTML += `<tr><td>${index + 1}º</td><td>${agente.nombre}</td><td>${agente.departamento}</td><td>${agente.puntos}</td></tr>`; });
           }
+
           const contenedorLogros = document.getElementById('lista-logros');
           if (contenedorLogros) {
               if (datos.logros && datos.logros.length > 0) {
@@ -376,6 +383,7 @@
 
           if (datos.palabra) palabraSecretaDelDia = datos.palabra;
           if (datos.claveAcceso) claveGlobal = datos.claveAcceso;
+          
           if(callback) callback(true);
         }).catch(error => { 
           if (loadingText) loadingText.style.display = 'none'; cargandoInicial = false; if(callback) callback(false);
@@ -391,46 +399,28 @@
         setTimeout(cargarMarcadores, 500); 
       }).catch(err => console.error("Error en POST:", err));
     }
+
     function subirFotoDrive() {
       const fileInput = document.getElementById('input-foto');
       const file = fileInput.files[0];
-      
-      if (!file) {
-        alert("Por favor, selecciona una foto primero.");
-        return;
-      }
-
+      if (!file) { alert("Por favor, selecciona una foto primero."); return; }
       document.getElementById('mensaje-foto').style.display = 'block';
       document.getElementById('btn-subir-foto').disabled = true;
 
       const reader = new FileReader();
       reader.onload = function(e) {
         const base64Data = e.target.result.split(',')[1];
-        
         const nombreJugador = localStorage.getItem('jugador_nombre');
         const nombreArchivo = nombreJugador + "_" + new Date().getTime() + "_" + file.name;
+        const datos = { nombre: nombreJugador, departamento: localStorage.getItem('jugador_dep'), accion: "Subir Foto", puntos: 0, palabra: "Envió una foto", archivoBase64: base64Data, mimeType: file.type, nombreArchivo: nombreArchivo };
 
-        const datos = {
-          nombre: nombreJugador,
-          departamento: localStorage.getItem('jugador_dep'),
-          accion: "Subir Foto",
-          puntos: 0,
-          palabra: "Envió una foto",
-          archivoBase64: base64Data,
-          mimeType: file.type,
-          nombreArchivo: nombreArchivo
-        };
-
-        fetch(URL_GOOGLE, {
-          method: 'POST',
-          body: JSON.stringify(datos)
-        })
+        fetch(URL_GOOGLE, { method: 'POST', body: JSON.stringify(datos) })
         .then(res => res.json())
         .then(data => {
           alert(data.mensaje);
           document.getElementById('mensaje-foto').style.display = 'none';
           document.getElementById('btn-subir-foto').disabled = false;
-          fileInput.value = "";
+          fileInput.value = ""; 
         })
         .catch(err => {
           console.error("Error al subir foto:", err);
@@ -439,14 +429,13 @@
           document.getElementById('btn-subir-foto').disabled = false;
         });
       };
-      
       reader.readAsDataURL(file);
     }
+
     function obtenerCosteGiroActual() {
         let hoy = new Date().toDateString();
         let ultimoDia = localStorage.getItem('ruleta_dia');
         let tiradasHoy = 0;
-        
         if (ultimoDia === hoy) tiradasHoy = parseInt(localStorage.getItem('ruleta_tiradas')) || 0;
         else localStorage.setItem('ruleta_dia', hoy);
         
@@ -466,7 +455,6 @@
             btn.disabled = false;
         } else {
             txtCoste.innerHTML = `Coste próximo giro: <span style="color:var(--error-text)">${coste} pts</span>`;
-            
             if (misPuntosActuales < coste) {
                 txtCoste.innerHTML += `<br><span style="color:var(--error-text); font-size:11px;">⚠️ SALDO INSUFICIENTE PARA JUGAR</span>`;
                 btn.disabled = true;
@@ -478,14 +466,12 @@
 
     function girarRuleta() {
         let tiradasHoy = parseInt(localStorage.getItem('ruleta_tiradas')) || 0;
-        
         if (tiradasHoy >= 5) {
             alert("¡Has alcanzado el límite máximo de 5 tiradas diarias! Vuelve mañana para probar suerte de nuevo.");
             return;
         }
 
         let costeNumerico = obtenerCosteGiroActual();
-
         if (misPuntosActuales < costeNumerico) {
             alert(`No puedes girar la ruleta. El giro cuesta ${costeNumerico} pts y tú tienes ${misPuntosActuales} pts.`);
             actualizarInterfazRuleta();
@@ -514,7 +500,6 @@
             
             if (giros > 15) {
                 clearInterval(intervalo);
-                
                 let rand = Math.random();
                 let acumulado = 0;
                 let premioFinal = premios[premios.length - 1];
@@ -540,7 +525,6 @@
                 setTimeout(() => {
                     alert(`El giro te costó ${costeNumerico} pts y sacaste ${premioFinal.texto}.\nTu balance neto es de: ${puntosNetos} pts.`);
                     box.style.backgroundColor = "#f1f3f4";
-                    
                     actualizarInterfazRuleta();
                     cargarMarcadores(); 
                 }, 800);
@@ -583,9 +567,7 @@
     if (tablero) {
         for (let i = 0; i < 6; i++) {
           let fila = document.createElement('div'); fila.className = 'fila';
-          for (let j = 0; j < 5; j++) {
-            let casilla = document.createElement('div'); casilla.className = 'casilla'; casilla.id = `casilla-${i}-${j}`; fila.appendChild(casilla);
-          }
+          for (let j = 0; j < 5; j++) { let casilla = document.createElement('div'); casilla.className = 'casilla'; casilla.id = `casilla-${i}-${j}`; fila.appendChild(casilla); }
           tablero.appendChild(fila);
         }
     }

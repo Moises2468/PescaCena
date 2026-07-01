@@ -264,40 +264,42 @@
       if(localStorage.getItem('jugador_nombre') && localStorage.getItem('jugador_dep')) mostrarLobby(); 
     }
 
-    function entrar() {
-      const nombreInput = document.getElementById('nombre').value.trim();
-      const departamentoInput = document.getElementById('departamento').value;
-      const claveInput = document.getElementById('clave').value.trim();
-      const btnEntrar = document.getElementById('btn-entrar');
-      
-      if(!nombreInput || !departamentoInput || !claveInput) { 
-        alert("Introduce tu nombre, selecciona tu área y pon la clave."); 
-        return; 
-      }
-      
-      btnEntrar.disabled = true; 
-      btnEntrar.innerText = "VERIFICANDO...";
-      
-      cargarMarcadores(function(exito) {
-        if (exito) {
-          // COMPROBACIÓN DE CLAVE ANTES DE GUARDAR DATOS
-          if (claveGlobal && claveGlobal !== "" && claveInput.toLowerCase() !== claveGlobal.toLowerCase()) {
-            alert("❌ La clave de acceso es incorrecta. Pídesela al organizador.");
-            btnEntrar.disabled = false; btnEntrar.innerText = "ACCEDER";
-            return; 
-          }
-          
-          // Solo si la clave es correcta se guardan los datos
-          localStorage.setItem('jugador_nombre', nombreInput); 
-          localStorage.setItem('jugador_dep', departamentoInput);
-          mostrarLobby();
-        } else {
-          btnEntrar.disabled = false; btnEntrar.innerText = "ACCEDER";
-          alert("No se pudo conectar con el servidor.");
-        }
-      });
+    async function entrar() {
+  const nombreInput = document.getElementById('nombre').value.trim();
+  const claveInput = document.getElementById('clave').value.trim();
+  const btnEntrar = document.getElementById('btn-entrar');
+  
+  if(!nombreInput || !document.getElementById('departamento').value || !claveInput) { 
+    alert("Completa todos los campos."); return; 
+  }
+  
+  btnEntrar.disabled = true;
+  btnEntrar.innerText = "CONECTANDO...";
+
+  try {
+    // Forzamos la descarga de datos sin caché
+    const respuesta = await fetch(URL_GOOGLE + "?_tsc=" + new Date().getTime());
+    const datos = await respuesta.json();
+
+    if (datos.claveAcceso && claveInput.toLowerCase() !== datos.claveAcceso.toLowerCase()) {
+      alert("❌ Clave incorrecta.");
+      btnEntrar.disabled = false;
+      btnEntrar.innerText = "ACCEDER";
+      return;
     }
 
+    // Si llegamos aquí, la clave es buena o no había clave
+    localStorage.setItem('jugador_nombre', nombreInput);
+    localStorage.setItem('jugador_dep', document.getElementById('departamento').value);
+    mostrarLobby();
+
+  } catch (error) {
+    console.error("Fallo:", error);
+    btnEntrar.disabled = false;
+    btnEntrar.innerText = "ACCEDER";
+    alert("El servidor está ocupado. Inténtalo una vez más, si persiste, el problema es la red.");
+  }
+}
     function mostrarLobby() {
       document.getElementById('pantalla-registro').classList.remove('active');
       document.getElementById('pantalla-lobby').classList.add('active');

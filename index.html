@@ -210,7 +210,7 @@
         <option value="Oficinas">Oficinas</option>
 
       </select>
-
+      <input type="password" id="clave-acceso" placeholder="Introduce la contraseña" required>
       <button id="btn-entrar" onclick="entrar()">ACCEDER</button>
 
     </div>
@@ -501,39 +501,44 @@
 
     }
 
-
     function entrar() {
-
       const nombreInput = document.getElementById('nombre').value.trim();
-
       const departamentoInput = document.getElementById('departamento').value;
-
+      const claveInput = document.getElementById('clave-acceso').value.trim(); // Nueva lectura
       const btnEntrar = document.getElementById('btn-entrar');
+      
+      // La clave que tú decidas:
+      const CLAVE_EVENTO = "PESCANOVA2026"; 
 
-      if(!nombreInput || !departamentoInput) { alert("Introduce tu nombre y selecciona tu área."); return; }
+      if(!nombreInput || !departamentoInput || !claveInput) { 
+        alert("Introduce nombre, área y contraseña."); 
+        return; 
+      }
 
-      btnEntrar.disabled = true; btnEntrar.innerText = "VERIFICANDO...";
-
-      localStorage.setItem('jugador_nombre', nombreInput); localStorage.setItem('jugador_dep', departamentoInput);
-
+      // Validación de clave antes de intentar conectar
+      if(claveInput.toUpperCase() !== CLAVE_EVENTO) {
+        alert("❌ Clave incorrecta.");
+        return;
+      }
+      
+      btnEntrar.disabled = true; 
+      btnEntrar.innerText = "VERIFICANDO...";
+      
+      localStorage.setItem('jugador_nombre', nombreInput); 
+      localStorage.setItem('jugador_dep', departamentoInput);
+      
       cargarMarcadores(function(exito) {
-
-        if (exito) mostrarLobby();
-
-        else {
-
-          localStorage.removeItem('jugador_nombre'); localStorage.removeItem('jugador_dep');
-
-          btnEntrar.disabled = false; btnEntrar.innerText = "ACCEDER";
-
+        if (exito) {
+          mostrarLobby();
+        } else {
+          localStorage.removeItem('jugador_nombre'); 
+          localStorage.removeItem('jugador_dep');
+          btnEntrar.disabled = false; 
+          btnEntrar.innerText = "ACCEDER";
           alert("No se pudo conectar con el servidor.");
-
         }
-
       });
-
     }
-
 
     function mostrarLobby() {
 

@@ -255,8 +255,8 @@
   </div>
 
   <script>
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbzRf4CxFzeb9ayKD1uTb673YcamBbpgf4CNwtFgW7Oh6_uOGbPNokxKllhI1GJGGmbcqA/exec"; 
+    // URL DE TU GOOGLE APPS SCRIPT
+    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbwqQkcI6Pnah3xXoCNmux5nu9ECDIN7hjjgDFm2VGUaXxHyZUjtfNuUyjd2xHAGIVbH3A/exec"; 
 
     // VARIABLES GLOBALES (Imprescindibles para que funcione Trivial y Wordle)
     let palabraSecretaDelDia = "";
@@ -347,6 +347,18 @@
         .then(response => response.json())
         .then(datos => {
           if (loadingText) loadingText.style.display = 'none'; cargandoInicial = false;
+          
+          // ============================================
+          // AQUI VA EL CÓDIGO DEL TICKER (NOTICIA)
+          // ============================================
+          if (datos.noticiaGlobal) {
+            const container = document.getElementById('ticker-container');
+            const text = document.getElementById('ticker-text');
+            text.innerText = datos.noticiaGlobal;
+            container.style.display = 'block'; 
+          }
+          // ============================================
+
           if (datos.error) { 
               if(callback) callback(false); 
               return; 
@@ -386,6 +398,15 @@
               } else {
                   contenedorLogros.innerHTML = `<div style="color:var(--text-muted); padding: 20px; font-size:13px;">No hay logros destacados esta semana.</div>`;
               }
+          }
+
+          const contenedorMuro = document.getElementById('lista-muro');
+          const muroContainer = document.getElementById('muro-container');
+          if (contenedorMuro && datos.muro && datos.muro.length > 0) {
+              contenedorMuro.innerHTML = datos.muro.map(tramposo => `<div style="margin-bottom:5px;">🚨 ${tramposo}</div>`).join('');
+              muroContainer.style.display = 'block'; // Mostramos la caja roja si hay alguien
+          } else if (muroContainer) {
+              muroContainer.style.display = 'none'; // Ocultamos la caja si el Muro está vacío
           }
 
           if (datos.trivialPregunta) {

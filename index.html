@@ -1,617 +1,1208 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
+
   <meta charset="UTF-8">
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Proyecto Enero - Pescanova</title>
+
   <style>
+
     :root {
+
       --primary: #003366; --accent: #ffcc00; --bg: #f8f9fa; --surface: #ffffff; 
+
       --text: #202124; --text-muted: #5f6368; --error-bg: #fce8e6;
+
       --error-text: #d93025; --success: #538d4e;
+
     }
+
 
     body { margin: 0; font-family: 'Segoe UI', Roboto, Arial, sans-serif; background-color: var(--bg); color: var(--text); text-align: center; padding-bottom: 80px; }
+
     .screen { display: none; padding: 20px; min-height: 100vh; box-sizing: border-box; }
+
     .active { display: flex; flex-direction: column; justify-content: flex-start; align-items: center; }
+
     .seccion-lobby { display: none; width: 100%; flex-direction: column; align-items: center; animation: fadeIn 0.3s; }
+
     .seccion-lobby.active-sec { display: flex; }
+
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+
     .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--surface); box-shadow: 0 -2px 10px rgba(0,0,0,0.08); display: flex; justify-content: space-around; padding: 10px 0; padding-bottom: env(safe-area-inset-bottom, 10px); z-index: 1000; }
+
     .nav-item { display: flex; flex-direction: column; align-items: center; color: #9aa0a6; cursor: pointer; font-size: 11px; font-weight: 600; width: 20%; transition: color 0.2s; }
+
     .nav-icon { font-size: 24px; margin-bottom: 4px; filter: grayscale(100%); opacity: 0.6; transition: all 0.2s; }
+
     .nav-item.active-nav { color: var(--primary); }
+
     .nav-item.active-nav .nav-icon { filter: grayscale(0%); opacity: 1; transform: scale(1.1); }
 
+
     input, select, button { width: 100%; max-width: 320px; padding: 15px; margin: 10px 0; border-radius: 8px; border: 1px solid #dadce0; font-size: 16px; box-sizing: border-box; }
+
     button { background-color: var(--primary); color: white; font-weight: 600; cursor: pointer; text-transform: uppercase; border: none; border-radius: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s; }
+
     button:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+
     button:active { transform: scale(0.98); background-color: #002244; }
+
     button:disabled { background-color: #dadce0 !important; color: #9aa0a6 !important; cursor: not-allowed; box-shadow: none; }
+
     
+
     h1 { color: var(--primary); font-size: 2.3em; margin-top: 40px; margin-bottom: 5px; font-weight: 700; }
+
     h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 15px; }
+
     .subtitulo { color: var(--text-muted); margin-bottom: 30px; font-weight: 500; font-size: 15px; }
+
     .logo-corporativo { width: 180px; height: auto; margin-top: 20px; margin-bottom: 10px; }
+
     .contador { font-size: 3.5em; font-family: monospace; font-weight: bold; margin: 0 0 15px 0; color: var(--primary); letter-spacing: 2px; }
 
+
     .info-jugador { background-color: var(--surface); padding: 12px 20px; border-radius: 25px; font-size: 0.9em; width: 90%; max-width: 320px; border: 1px solid #e8eaed; box-shadow: 0 1px 3px rgba(0,0,0,0.05); color: var(--text-muted); }
+
     .info-jugador strong { color: var(--primary); }
+
     .card-container { background-color: var(--surface); border-radius: 12px; padding: 20px; margin-top: 15px; width: 90%; max-width: 320px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); border: 1px solid #e8eaed; box-sizing: border-box; }
 
+
     .tabs { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 8px; }
+
     .tab-btn { background-color: #f1f3f4; color: var(--text-muted); padding: 10px; border-radius: 20px; font-size: 13px; margin: 0; width: 33%; box-shadow: none; text-transform: none; }
+
     .tab-btn.active-tab { background-color: var(--accent); color: var(--text); font-weight: bold; }
 
+
     .equipo-row { display: flex; align-items: center; margin-bottom: 12px; text-align: left; }
+
     .equipo-nombre { width: 35%; font-size: 11px; font-weight: bold; color: var(--text-muted); text-transform: uppercase;}
+
     .barra-bg { width: 65%; background-color: #f1f3f4; border-radius: 10px; overflow: hidden; height: 22px; position: relative; }
+
     .barra-fill { height: 100%; position: absolute; left: 0; top: 0; border-radius: 10px; transition: width 1s ease-in-out; width: 0%; }
+
     .puntos-text { position: absolute; right: 8px; top: 3px; font-size: 12px; font-weight: bold; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+
     .bg-prod { background-color: #e63946; } .bg-mant { background-color: #457b9d; } .bg-ofic { background-color: #2a9d8f; } 
 
+
     .tabla-top { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+
     .tabla-top th, .tabla-top td { padding: 8px 5px; border-bottom: 1px solid #f1f3f4; }
+
     .tabla-top th { color: var(--text-muted); text-transform: uppercase; font-size: 11px; }
+
     .tabla-top tr:first-child td { color: var(--primary); font-weight: bold; }
 
+
     .logro-item { margin-bottom: 12px; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px; text-align: left;}
+
     .logro-titulo { color: var(--primary); font-size: 14px; font-weight: bold;}
+
     .logro-desc { color: var(--text-muted); font-size: 13px;}
 
+
     .btn-codigo { background-color: #457b9d; color: white; margin-top: 15px; }
+
     .btn-juego { background-color: var(--primary); color: white; margin-top: 15px; padding: 15px;}
+
     .btn-trivial-start { background-color: #2a9d8f; }
+
     .btn-ruleta-start { background-color: #e63946; }
+
     
+
     #loading-text { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; display: none; }
 
+
     .wordle-header { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 320px; margin-bottom: 20px; }
+
     .btn-volver { background-color: #f1f3f4; color: var(--text); width: auto; padding: 10px 15px; margin: 0; font-size: 12px; box-shadow: none; font-weight: bold; }
+
     .tablero { display: grid; grid-template-rows: repeat(6, 1fr); grid-gap: 5px; margin-bottom: 20px; }
+
     .fila { display: grid; grid-template-columns: repeat(5, 1fr); grid-gap: 5px; }
+
     .casilla { width: 50px; height: 50px; border: 2px solid #dadce0; border-radius: 4px; font-size: 30px; font-weight: bold; text-transform: uppercase; display: flex; justify-content: center; align-items: center; color: var(--text); background: white; transition: background-color 0.3s, border-color 0.3s;}
+
     .teclado { display: flex; flex-direction: column; gap: 5px; width: 100%; max-width: 350px; margin-top: 10px; }
+
     .fila-teclas { display: flex; justify-content: center; gap: 5px; }
+
     .tecla { background-color: #d3d6da; color: var(--text); border: none; border-radius: 4px; padding: 15px 10px; font-weight: bold; cursor: pointer; flex: 1; font-size: 14px; margin: 0; box-shadow: none; text-transform: none;}
+
     .tecla-grande { flex: 1.5; font-size: 12px; background-color: #878a8c; color: white;}
+
     .verde { background-color: var(--success) !important; border-color: var(--success) !important; color: white !important;}
+
     .amarillo { background-color: #b59f3b !important; border-color: #b59f3b !important; color: white !important;}
+
     .gris { background-color: #787c7e !important; border-color: #787c7e !important; color: white !important;}
 
+
     .btn-opcion { background-color: var(--surface); color: var(--primary); border: 2px solid var(--primary); margin: 8px 0; text-transform: none; font-size: 15px; padding: 15px; font-weight: 500;}
+
     .btn-opcion:disabled { cursor: not-allowed; opacity: 0.8; }
+
     .btn-opcion.correct { background-color: var(--success); border-color: var(--success); color: white; }
+
     .btn-opcion.wrong { background-color: var(--error-text); border-color: var(--error-text); color: white; }
 
-    #ruleta-box { background: #f1f3f4; padding: 20px; border-radius: 10px; font-size: 22px; font-weight: bold; margin: 15px 0; border: 3px solid #dadce0; transition: background-color 0.3s; }
+
+    #ruleta-box {
+
+      background: #f1f3f4; padding: 20px; border-radius: 10px; font-size: 22px; 
+
+      font-weight: bold; margin: 15px 0; border: 3px solid #dadce0;
+
+      transition: background-color 0.3s;
+
+    }
+
 
     @keyframes ticker { 0% { transform: translate(100%, 0); } 100% { transform: translate(-100%, 0); } }
+
   </style>
+
 </head>
+
 <body>
 
+
   <div id="ticker-container" style="display: none; background: #ffffff; color: var(--primary); border-bottom: 2px solid var(--accent); width: 100%; overflow: hidden; padding: 10px 0; font-weight: bold; font-size: 14px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+
     <div id="ticker-text" style="white-space: nowrap; display: inline-block; padding-left: 100%; animation: ticker 25s linear infinite;"></div>
+
   </div>
+
 
   <div id="pantalla-registro" class="screen active">
+
     <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;">
+
       <img src="logo.png" class="logo-corporativo" alt="PROYECTO ENERO">
+
       <h1>PROYECTO ENERO</h1>
+
       <p class="subtitulo">Indica tus datos</p>
+
       <input type="text" id="nombre" placeholder="Nombre/Apodo" required>
+
       <select id="departamento">
+
         <option value="" disabled selected>Selecciona tu departamento...</option>
+
         <option value="Producción">Producción</option>
+
         <option value="Mantenimiento">Mantenimiento</option>
+
         <option value="Oficinas">Oficinas</option>
+
       </select>
-      <input type="text" id="clave" placeholder="Clave de acceso al evento" required style="text-align: center; font-weight: bold;">
+
       <button id="btn-entrar" onclick="entrar()">ACCEDER</button>
+
     </div>
+
   </div>
+
 
   <div id="pantalla-lobby" class="screen">
+
     <img src="logo.png" class="logo-corporativo" alt="PROYECTO ENERO" style="width: 120px; margin-top: 5px;">
+
     
+
     <div id="sec-inicio" class="seccion-lobby active-sec">
+
       <p style="margin:20px 0 0 0; color:var(--text-muted); font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Tiempo para el evento:</p>
+
       <div class="contador">168:00:00</div>
+
       <div class="info-jugador">Usuario: <strong id="nombre-usuario"></strong><br>Área: <strong id="dep-usuario"></strong></div>
+
       
+
       <div class="card-container" style="text-align: left;">
+
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">👋 ¡Bienvenido!</h3>
+
         <p style="font-size: 14px; color:var(--text-muted); margin-bottom: 0;">Navega por el menú inferior para jugar, consultar tus puntos y los de tu equipo, o canjear códigos QR.</p>
+
       </div>
+
     </div>
+
 
     <div id="sec-ranking" class="seccion-lobby">
+
       <h2>Estadísticas</h2>
+
       <div class="card-container" style="margin-top: 0;">
+
         <div class="tabs">
+
           <button class="tab-btn active-tab" id="btn-equipos" onclick="cambiarFiltroRanking('equipos')">🏆 Equipos</button>
+
           <button class="tab-btn" id="btn-agentes" onclick="cambiarFiltroRanking('agentes')">📊 Top 5</button>
+
           <button class="tab-btn" id="btn-logros" onclick="cambiarFiltroRanking('logros')">🏅 Logros</button>
+
         </div>
+
         <div id="loading-text">Sincronizando información...</div>
+
         
+
         <div id="vista-equipos">
+
           <div class="equipo-row"><div class="equipo-nombre">Producción</div><div class="barra-bg"><div id="barra-prod" class="barra-fill bg-prod"></div><span id="pts-prod" class="puntos-text">0 pts</span></div></div>
+
           <div class="equipo-row"><div class="equipo-nombre">Mantenim.</div><div class="barra-bg"><div id="barra-mant" class="barra-fill bg-mant"></div><span id="pts-mant" class="puntos-text">0 pts</span></div></div>
+
           <div class="equipo-row"><div class="equipo-nombre">Oficinas</div><div class="barra-bg"><div id="barra-ofic" class="barra-fill bg-ofic"></div><span id="pts-ofic" class="puntos-text">0 pts</span></div></div>
+
         </div>
+
         
+
         <div id="vista-agentes" style="display: none;">
+
           <table class="tabla-top" id="tabla-agentes-body"><tr><th>Pos</th><th>Usuario</th><th>Área</th><th>Pts</th></tr></table>
+
         </div>
+
   
+
         <div id="vista-logros" style="display: none;">
+
           <div id="lista-logros" style="font-size: 13px; color: var(--text);">
+
               <div style="color:var(--text-muted); padding: 20px;">Cargando logros...</div>
+
           </div>
+
         </div>
+
       </div>
+
 
       <div id="muro-container" style="display: none; margin: 15px auto; width: 90%; max-width: 320px; background: var(--error-bg); border: 1px solid #fad2cf; padding: 12px; border-radius: 12px; cursor: pointer;" onclick="toggleMuro()">
+
         <div style="display: flex; justify-content: space-between; align-items: center; color: var(--error-text); font-size: 12px; font-weight: bold;">
+
           <span>⚠️ MENCIONES ESPECIALES</span>
+
           <span id="muro-icono">+</span>
+
         </div>
+
         <div id="muro-contenido" style="display: none; color: var(--error-text); font-size: 13px; margin-top: 10px; border-top: 1px solid #fad2cf; padding-top: 10px; text-align: center;">
+
           <div id="lista-muro"></div>
+
         </div>
+
       </div>
+
     </div>
+
 
     <div id="sec-juegos" class="seccion-lobby">
+
       <h2>Retos Activos</h2>
+
       
+
       <div class="card-container" style="margin-top: 0;">
+
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🎡 Ruleta de la Suerte</h3>
+
         <p style="font-size: 13px; color:var(--text-muted);">El primer tiro del día es GRATIS. Los siguientes cuestan puntos de tu marcador personal. ¡Prohibido bajar de 0 puntos!</p>
+
         <div id="ruleta-box">❓❓❓</div>
+
         <p id="coste-ruleta-txt" style="font-size: 13px; font-weight: bold; color: var(--text); margin-bottom:5px;">Cargando...</p>
+
         <p id="mis-puntos-txt" style="font-size: 11px; color: var(--text-muted); margin-top:0;">Tus puntos actuales: <span id="mis-puntos-num">0</span></p>
+
         <button class="btn-juego btn-ruleta-start" id="btn-ruleta" onclick="girarRuleta()">GIRAR RULETA</button>
+
       </div>
 
+
       <div class="card-container">
+
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🧠 Trivial Diario</h3>
+
         <p style="font-size: 13px; color:var(--text-muted);">Responde a la pregunta corporativa del día al primer intento y llévate 50 puntos.</p>
+
         <button class="btn-juego btn-trivial-start" onclick="abrirTrivial()">JUGAR TRIVIAL</button>
+
       </div>
 
+
       <div class="card-container">
+
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🎮 Pesca-Wordle</h3>
+
         <p style="font-size: 13px; color:var(--text-muted);">Descifra la palabra oculta del día en menos de 6 intentos. Suma 100 puntos directos.</p>
+
         <button class="btn-juego" onclick="abrirWordle()">JUGAR WORDLE</button>
+
       </div>
+
     </div>
+
 
     <div id="sec-codigos" class="seccion-lobby">
+
       <h2>Validar Código</h2>
+
       <div class="card-container">
+
         <p style="margin-top:0; font-size: 14px; font-weight: bold; color: var(--primary);">Introduce el código localizado:</p>
+
         <p style="font-size: 12px; color:var(--text-muted); margin-bottom: 15px;">Si has encontrado un código QR, escríbelo aquí para sumar los puntos.</p>
+
         <input type="text" id="palabra-secreta" placeholder="EJ: A1B2C3" style="text-transform: uppercase; text-align: center; font-weight: bold; letter-spacing: 2px;">
+
         <button class="btn-codigo" onclick="enviarPuntosAJuego('Código Localizado', 0, document.getElementById('palabra-secreta').value)">CANJEAR PUNTOS</button>
+
       </div>
+
     </div>
+
 
     <div id="sec-fotos" class="seccion-lobby">
+
       <h2>Galería</h2>
+
       <div class="card-container">
+
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">📸 Sube tus momentos</h3>
+
         <p style="font-size: 13px; color:var(--text-muted);">Comparte tus fotos para enseñarlas en el evento. Selecciona una imagen de tu móvil:</p>
+
         
+
         <input type="file" id="input-foto" accept="image/*" style="padding: 10px; font-size: 13px;">
+
         <button id="btn-subir-foto" style="background-color: #2a9d8f; margin-top: 15px;" onclick="subirFotoDrive()">ENVIAR FOTO</button>
+
         <p id="mensaje-foto" style="font-size: 12px; color: var(--primary); display: none; font-weight: bold;">Subiendo imagen... ¡no cierres la página!</p>
+
       </div>
+
     </div>
+
 
     <nav class="bottom-nav">
+
       <div class="nav-item active-nav" onclick="cambiarSeccionLobby('inicio', this)"><span class="nav-icon">🏠</span><span>Inicio</span></div>
+
       <div class="nav-item" onclick="cambiarSeccionLobby('ranking', this)"><span class="nav-icon">📊</span><span>Ranking</span></div>
+
       <div class="nav-item" onclick="cambiarSeccionLobby('juegos', this)"><span class="nav-icon">🎮</span><span>Juegos</span></div>
+
       <div class="nav-item" onclick="cambiarSeccionLobby('codigos', this)"><span class="nav-icon">🎯</span><span>Códigos</span></div>
+
       <div class="nav-item" onclick="cambiarSeccionLobby('fotos', this)"><span class="nav-icon">📸</span><span>Fotos</span></div>
+
     </nav>
+
   </div>
+
 
   <div id="pantalla-wordle" class="screen">
+
     <div class="wordle-header">
+
       <button class="btn-volver" onclick="cerrarWordle()">⬅️ VOLVER</button>
+
       <h2 style="margin:0; color:var(--primary);">PESCA-WORDLE</h2>
+
       <div style="width: 70px;"></div> 
+
     </div>
+
     <div class="tablero" id="tablero"></div>
+
     <div class="teclado">
+
       <div class="fila-teclas"><button class="tecla" onclick="presionarTecla('Q')">Q</button><button class="tecla" onclick="presionarTecla('W')">W</button><button class="tecla" onclick="presionarTecla('E')">E</button><button class="tecla" onclick="presionarTecla('R')">R</button><button class="tecla" onclick="presionarTecla('T')">T</button><button class="tecla" onclick="presionarTecla('Y')">Y</button><button class="tecla" onclick="presionarTecla('U')">U</button><button class="tecla" onclick="presionarTecla('I')">I</button><button class="tecla" onclick="presionarTecla('O')">O</button><button class="tecla" onclick="presionarTecla('P')">P</button></div>
+
       <div class="fila-teclas"><button class="tecla" onclick="presionarTecla('A')">A</button><button class="tecla" onclick="presionarTecla('S')">S</button><button class="tecla" onclick="presionarTecla('D')">D</button><button class="tecla" onclick="presionarTecla('F')">F</button><button class="tecla" onclick="presionarTecla('G')">G</button><button class="tecla" onclick="presionarTecla('H')">H</button><button class="tecla" onclick="presionarTecla('J')">J</button><button class="tecla" onclick="presionarTecla('K')">K</button><button class="tecla" onclick="presionarTecla('L')">L</button><button class="tecla" onclick="presionarTecla('Ñ')">Ñ</button></div>
+
       <div class="fila-teclas"><button class="tecla tecla-grande" onclick="revisarPalabra()">ENVIAR</button><button class="tecla" onclick="presionarTecla('Z')">Z</button><button class="tecla" onclick="presionarTecla('X')">X</button><button class="tecla" onclick="presionarTecla('C')">C</button><button class="tecla" onclick="presionarTecla('V')">V</button><button class="tecla" onclick="presionarTecla('B')">B</button><button class="tecla" onclick="presionarTecla('N')">N</button><button class="tecla" onclick="presionarTecla('M')">M</button><button class="tecla tecla-grande" onclick="borrarLetra()">BORRAR</button></div>
+
     </div>
+
   </div>
+
 
   <div id="pantalla-trivial" class="screen">
+
     <div class="wordle-header">
+
       <button class="btn-volver" onclick="cerrarTrivial()">⬅️ VOLVER</button>
+
       <h2 style="margin:0; color:var(--primary);">TRIVIAL</h2>
+
       <div style="width: 70px;"></div> 
+
     </div>
+
     <div class="card-container" style="margin-top: 20px; width: 100%; max-width: 350px;">
+
       <h3 id="trivial-pregunta" style="color:var(--primary); margin-bottom: 25px; font-size: 18px;">Cargando...</h3>
+
       <button class="btn-opcion" id="btn-triv-a" onclick="comprobarTrivial('A')">Opción A</button>
+
       <button class="btn-opcion" id="btn-triv-b" onclick="comprobarTrivial('B')">Opción B</button>
+
       <button class="btn-opcion" id="btn-triv-c" onclick="comprobarTrivial('C')">Opción C</button>
+
       <button class="btn-opcion" id="btn-triv-d" onclick="comprobarTrivial('D')">Opción D</button>
+
     </div>
+
   </div>
 
+
   <script>
-    // PEGA AQUÍ TU URL DE GOOGLE APPS SCRIPT
-    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbx3l3w9rSrRu0lr07jAuP-HDNFbaHHg9OnG1xaFrt2CAB6NPbD-W-a9Lt5QV-Rm1NY-Hg/exec"; 
+
+    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbxHVh9Q-4XDNFvbfpmr_TWuZqvi57SnHubpRoHSNMoHNVg_ff1K1Cxiwz5e1vwX6aTa2A/exec"; 
+
 
     let palabraSecretaDelDia = "";
-    let claveGlobal = ""; 
+
     let cargandoInicial = false; 
+
     let misPuntosActuales = 0; 
+
     let trivialActual = { pregunta: "", a: "", b: "", c: "", d: "", respuesta: "" };
 
+
     window.onload = function() {
+
       if(localStorage.getItem('jugador_nombre') && localStorage.getItem('jugador_dep')) mostrarLobby(); 
+
     }
 
-    async function entrar() {
+
+    function entrar() {
+
       const nombreInput = document.getElementById('nombre').value.trim();
+
       const departamentoInput = document.getElementById('departamento').value;
-      const claveInput = document.getElementById('clave').value.trim();
+
       const btnEntrar = document.getElementById('btn-entrar');
-      
-      if(!nombreInput || !departamentoInput || !claveInput) { 
-        alert("Completa todos los campos."); return; 
-      }
-      
-      btnEntrar.disabled = true;
-      btnEntrar.innerText = "CONECTANDO...";
 
-      try {
-        // Hacemos una petición rápida al servidor para obtener SOLO la configuración y validar clave
-        const respuesta = await fetch(URL_GOOGLE + "?_tsc=" + new Date().getTime());
-        const datos = await respuesta.json();
+      if(!nombreInput || !departamentoInput) { alert("Introduce tu nombre y selecciona tu área."); return; }
 
-        // VALIDACIÓN DE SEGURIDAD
-        if (datos.claveAcceso && claveInput.toLowerCase() !== datos.claveAcceso.toLowerCase()) {
-          alert("❌ Clave incorrecta.");
-          btnEntrar.disabled = false;
-          btnEntrar.innerText = "ACCEDER";
-          return;
+      btnEntrar.disabled = true; btnEntrar.innerText = "VERIFICANDO...";
+
+      localStorage.setItem('jugador_nombre', nombreInput); localStorage.setItem('jugador_dep', departamentoInput);
+
+      cargarMarcadores(function(exito) {
+
+        if (exito) mostrarLobby();
+
+        else {
+
+          localStorage.removeItem('jugador_nombre'); localStorage.removeItem('jugador_dep');
+
+          btnEntrar.disabled = false; btnEntrar.innerText = "ACCEDER";
+
+          alert("No se pudo conectar con el servidor.");
+
         }
 
-        // Si la clave es OK, guardamos y entramos
-        localStorage.setItem('jugador_nombre', nombreInput);
-        localStorage.setItem('jugador_dep', departamentoInput);
-        
-        // Entramos al lobby y cargamos los marcadores después de haber verificado
-        mostrarLobby();
+      });
 
-      } catch (error) {
-        console.error("Fallo:", error);
-        btnEntrar.disabled = false;
-        btnEntrar.innerText = "ACCEDER";
-        alert("No se pudo contactar con el servidor. Por favor, comprueba tu conexión.");
-      }
     }
+
+
     function mostrarLobby() {
+
       document.getElementById('pantalla-registro').classList.remove('active');
+
       document.getElementById('pantalla-lobby').classList.add('active');
+
       document.getElementById('pantalla-wordle').classList.remove('active');
+
       document.getElementById('pantalla-trivial').classList.remove('active');
+
       document.getElementById('nombre-usuario').innerText = localStorage.getItem('jugador_nombre');
+
       document.getElementById('dep-usuario').innerText = localStorage.getItem('jugador_dep');
+
       if (!cargandoInicial) cargarMarcadores();
+
     }
+
 
     function cambiarSeccionLobby(seccionId, elementoNav) {
+
       document.querySelectorAll('.seccion-lobby').forEach(sec => sec.classList.remove('active-sec'));
+
       document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active-nav'));
+
       document.getElementById('sec-' + seccionId).classList.add('active-sec');
+
       elementoNav.classList.add('active-nav');
+
       if(seccionId === 'ranking' || seccionId === 'juegos') cargarMarcadores();
+
     }
+
 
     function cambiarFiltroRanking(vista) {
+
       document.getElementById('vista-equipos').style.display = 'none'; document.getElementById('vista-agentes').style.display = 'none'; document.getElementById('vista-logros').style.display = 'none';
+
       document.getElementById('btn-equipos').classList.remove('active-tab'); document.getElementById('btn-agentes').classList.remove('active-tab'); document.getElementById('btn-logros').classList.remove('active-tab');
+
       if(vista === 'equipos') { document.getElementById('vista-equipos').style.display = 'block'; document.getElementById('btn-equipos').classList.add('active-tab'); }
+
       else if (vista === 'agentes') { document.getElementById('vista-agentes').style.display = 'block'; document.getElementById('btn-agentes').classList.add('active-tab'); }
+
       else { document.getElementById('vista-logros').style.display = 'block'; document.getElementById('btn-logros').classList.add('active-tab'); }
+
     }
+
 
     function toggleMuro() {
+
       const contenido = document.getElementById('muro-contenido'); const icono = document.getElementById('muro-icono');
+
       if (contenido.style.display === 'none') { contenido.style.display = 'block'; icono.innerText = '-'; } 
+
       else { contenido.style.display = 'none'; icono.innerText = '+'; }
+
     }
 
+
     function cargarMarcadores(callback) {
+
       if (cargandoInicial && !callback) return; if (!callback) cargandoInicial = true;
+
       const loadingText = document.getElementById('loading-text'); if (loadingText) loadingText.style.display = 'block';
+
       fetch(URL_GOOGLE + "?_tsc=" + new Date().getTime())
+
         .then(response => response.json())
+
         .then(datos => {
+
           if (loadingText) loadingText.style.display = 'none'; cargandoInicial = false;
+
           if (datos.error) { if(callback) callback(false); return; }
 
+
           const deps = datos.departamentos || {};
+
           const pProd = Number(deps["Producción"]) || 0; const pMant = Number(deps["Mantenimiento"]) || 0; const pOfic = Number(deps["Oficinas"]) || 0;
+
           const maxPts = Math.max(pProd, pMant, pOfic, 1);
+
           document.getElementById('pts-prod').innerText = pProd + " pts"; document.getElementById('barra-prod').style.width = (pProd / maxPts * 100) + "%";
+
           document.getElementById('pts-mant').innerText = pMant + " pts"; document.getElementById('barra-mant').style.width = (pMant / maxPts * 100) + "%";
+
           document.getElementById('pts-ofic').innerText = pOfic + " pts"; document.getElementById('barra-ofic').style.width = (pOfic / maxPts * 100) + "%";
 
-          let nombreGuardado = localStorage.getItem('jugador_nombre');
-          if (datos.puntosTotalesJugadores && nombreGuardado) {
-             misPuntosActuales = datos.puntosTotalesJugadores[nombreGuardado] || 0;
+
+          if (datos.puntosTotalesJugadores) {
+
+             misPuntosActuales = datos.puntosTotalesJugadores[localStorage.getItem('jugador_nombre')] || 0;
+
              document.getElementById('mis-puntos-num').innerText = misPuntosActuales;
+
              if(misPuntosActuales < 0) document.getElementById('mis-puntos-num').style.color = "var(--error-text)";
+
              else document.getElementById('mis-puntos-num').style.color = "var(--text)";
+
           }
+
+
+          // FIX: Forzar recarga visual de la interfaz de la ruleta con los nuevos puntos cargados
 
           actualizarInterfazRuleta();
 
+
           const tablaBody = document.getElementById('tabla-agentes-body');
+
           if (datos.agentes && tablaBody) {
+
               tablaBody.innerHTML = "<tr><th>Pos</th><th>Usuario</th><th>Área</th><th>Pts</th></tr>";
+
               datos.agentes.forEach((agente, index) => { tablaBody.innerHTML += `<tr><td>${index + 1}º</td><td>${agente.nombre}</td><td>${agente.departamento}</td><td>${agente.puntos}</td></tr>`; });
+
           }
+
+
+          // FIX LOGROS: Corregido el lector dinámico para la nueva interfaz
 
           const contenedorLogros = document.getElementById('lista-logros');
+
           if (contenedorLogros) {
+
               if (datos.logros && datos.logros.length > 0) {
+
                   contenedorLogros.innerHTML = datos.logros.map(logro => `
+
                       <div class="logro-item">
+
                           <div class="logro-titulo">${logro.icono} ${logro.nombre}</div>
+
                           <div class="logro-desc">${logro.descripcion}</div>
+
                       </div>
+
                   `).join('');
+
               } else {
+
                   contenedorLogros.innerHTML = `<div style="color:var(--text-muted); padding: 20px; font-size:13px;">No hay logros destacados esta semana.</div>`;
+
               }
+
           }
+
 
           if (datos.trivialPregunta) {
+
               trivialActual.pregunta = datos.trivialPregunta; trivialActual.a = datos.trivialA; trivialActual.b = datos.trivialB;
+
               trivialActual.c = datos.trivialC; trivialActual.d = datos.trivialD; trivialActual.respuesta = datos.trivialRespuesta;
+
           }
 
+
           if (datos.palabra) palabraSecretaDelDia = datos.palabra;
-          if (datos.claveAcceso) claveGlobal = datos.claveAcceso;
-          
+
           if(callback) callback(true);
+
         }).catch(error => { 
+
           if (loadingText) loadingText.style.display = 'none'; cargandoInicial = false; if(callback) callback(false);
+
         });
+
     }
+
 
     function enviarPuntosAJuego(accion, cantidadPuntos, palabra) {
+
       const datos = { nombre: localStorage.getItem('jugador_nombre'), departamento: localStorage.getItem('jugador_dep'), accion: accion, puntos: cantidadPuntos, palabra: palabra || "N/A" };
+
       fetch(URL_GOOGLE, { method: 'POST', body: JSON.stringify(datos) })
+
       .then(res => res.json())
+
       .then(data => { 
+
         if (accion === "Código Localizado") alert(data.mensaje);
+
         setTimeout(cargarMarcadores, 500); 
+
       }).catch(err => console.error("Error en POST:", err));
+
     }
+
+// =========================================================================
+
+    // SUBIDA DE FOTOS A DRIVE
+
+    // =========================================================================
 
     function subirFotoDrive() {
+
       const fileInput = document.getElementById('input-foto');
+
       const file = fileInput.files[0];
-      if (!file) { alert("Por favor, selecciona una foto primero."); return; }
+
+      
+
+      if (!file) {
+
+        alert("Por favor, selecciona una foto primero.");
+
+        return;
+
+      }
+
+
+      // Mostrar texto de carga y bloquear botón
+
       document.getElementById('mensaje-foto').style.display = 'block';
+
       document.getElementById('btn-subir-foto').disabled = true;
 
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const base64Data = e.target.result.split(',')[1];
-        const nombreJugador = localStorage.getItem('jugador_nombre');
-        const nombreArchivo = nombreJugador + "_" + new Date().getTime() + "_" + file.name;
-        const datos = { nombre: nombreJugador, departamento: localStorage.getItem('jugador_dep'), accion: "Subir Foto", puntos: 0, palabra: "Envió una foto", archivoBase64: base64Data, mimeType: file.type, nombreArchivo: nombreArchivo };
 
-        fetch(URL_GOOGLE, { method: 'POST', body: JSON.stringify(datos) })
-        .then(res => res.json())
-        .then(data => {
-          alert(data.mensaje);
-          document.getElementById('mensaje-foto').style.display = 'none';
-          document.getElementById('btn-subir-foto').disabled = false;
-          fileInput.value = ""; 
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+
+        // Extraer la parte Base64 (quitando el data:image/jpeg;base64,)
+
+        const base64Data = e.target.result.split(',')[1];
+
+        
+
+        const nombreJugador = localStorage.getItem('jugador_nombre');
+
+        const nombreArchivo = nombreJugador + "_" + new Date().getTime() + "_" + file.name;
+
+
+        const datos = {
+
+          nombre: nombreJugador,
+
+          departamento: localStorage.getItem('jugador_dep'),
+
+          accion: "Subir Foto",
+
+          puntos: 0,
+
+          palabra: "Envió una foto",
+
+          archivoBase64: base64Data,
+
+          mimeType: file.type,
+
+          nombreArchivo: nombreArchivo
+
+        };
+
+
+        fetch(URL_GOOGLE, {
+
+          method: 'POST',
+
+          body: JSON.stringify(datos)
+
         })
-        .catch(err => {
-          console.error("Error al subir foto:", err);
-          alert("Hubo un error al conectar con el servidor.");
+
+        .then(res => res.json())
+
+        .then(data => {
+
+          alert(data.mensaje);
+
           document.getElementById('mensaje-foto').style.display = 'none';
+
           document.getElementById('btn-subir-foto').disabled = false;
+
+          fileInput.value = ""; // Limpiar el input
+
+        })
+
+        .catch(err => {
+
+          console.error("Error al subir foto:", err);
+
+          alert("Hubo un error al conectar con el servidor.");
+
+          document.getElementById('mensaje-foto').style.display = 'none';
+
+          document.getElementById('btn-subir-foto').disabled = false;
+
         });
+
       };
+
+      
+
       reader.readAsDataURL(file);
+
     }
+
+    // =========================================================================
+
+    // LA RULETA (CON FILTRO DE BLOQUEO DE SALDO)
+
+    // =========================================================================
 
     function obtenerCosteGiroActual() {
+
         let hoy = new Date().toDateString();
+
         let ultimoDia = localStorage.getItem('ruleta_dia');
+
         let tiradasHoy = 0;
-        if (ultimoDia === hoy) tiradasHoy = parseInt(localStorage.getItem('ruleta_tiradas')) || 0;
-        else localStorage.setItem('ruleta_dia', hoy);
+
         
+
+        if (ultimoDia === hoy) tiradasHoy = parseInt(localStorage.getItem('ruleta_tiradas')) || 0;
+
+        else localStorage.setItem('ruleta_dia', hoy);
+
+        
+
         if (tiradasHoy === 0) return 0;
+
         if (tiradasHoy === 1) return 20;
+
         if (tiradasHoy === 2) return 50;
+
         return 50 * Math.pow(2, tiradasHoy - 2);
+
     }
+
 
     function actualizarInterfazRuleta() {
+
         let coste = obtenerCosteGiroActual();
+
         let btn = document.getElementById('btn-ruleta');
+
         let txtCoste = document.getElementById('coste-ruleta-txt');
+
         
+
         if (coste === 0) {
+
             txtCoste.innerHTML = `Coste próximo giro: <span style="color:var(--success)">GRATIS</span>`;
+
             btn.disabled = false;
+
         } else {
+
             txtCoste.innerHTML = `Coste próximo giro: <span style="color:var(--error-text)">${coste} pts</span>`;
+
+            
+
+            // FILTRO DE SEGURIDAD EXTREMA: Bloquear botón si el coste supera el saldo del jugador
+
             if (misPuntosActuales < coste) {
+
                 txtCoste.innerHTML += `<br><span style="color:var(--error-text); font-size:11px;">⚠️ SALDO INSUFICIENTE PARA JUGAR</span>`;
+
                 btn.disabled = true;
+
             } else {
+
                 btn.disabled = false;
+
             }
+
         }
+
     }
+
 
     function girarRuleta() {
+
         let tiradasHoy = parseInt(localStorage.getItem('ruleta_tiradas')) || 0;
+
+        
+
+        // --- NUEVO LÍMITE: MAX 5 TIRADAS ---
+
         if (tiradasHoy >= 5) {
+
             alert("¡Has alcanzado el límite máximo de 5 tiradas diarias! Vuelve mañana para probar suerte de nuevo.");
+
             return;
+
         }
+
 
         let costeNumerico = obtenerCosteGiroActual();
+
+
+        // Control de saldo
+
         if (misPuntosActuales < costeNumerico) {
+
             alert(`No puedes girar la ruleta. El giro cuesta ${costeNumerico} pts y tú tienes ${misPuntosActuales} pts.`);
+
             actualizarInterfazRuleta();
+
             return;
+
         }
 
+
         document.getElementById('btn-ruleta').disabled = true;
+
         let box = document.getElementById('ruleta-box');
+
         
+
         const premios = [
+
             { texto: "💎 +500 PTS", valor: 500, prob: 0.05 },
+
             { texto: "💰 +200 PTS", valor: 200, prob: 0.15 },
+
             { texto: "💵 +50 PTS", valor: 50, prob: 0.25 },
+
             { texto: "🤷‍♂️ NADA", valor: 0, prob: 0.35 },
+
             { texto: "💸 -50 PTS", valor: -50, prob: 0.10 },
+
             { texto: "💣 -100 PTS", valor: -100, prob: 0.10 }
+
         ];
 
+
         let giros = 0;
+
         box.style.backgroundColor = "#fff3cd";
 
+
         let intervalo = setInterval(() => {
+
             let randomText = premios[Math.floor(Math.random() * premios.length)].texto;
+
             box.innerText = randomText;
+
             giros++;
+
             
+
             if (giros > 15) {
+
                 clearInterval(intervalo);
-                let rand = Math.random();
-                let acumulado = 0;
-                let premioFinal = premios[premios.length - 1];
+
                 
+
+                let rand = Math.random();
+
+                let acumulado = 0;
+
+                let premioFinal = premios[premios.length - 1];
+
+                
+
                 for (let p of premios) {
+
                     acumulado += p.prob;
+
                     if (rand <= acumulado) { premioFinal = p; break; }
+
                 }
+
 
                 if (premioFinal.valor < 0 && (misPuntosActuales - costeNumerico + premioFinal.valor) < 0) {
+
                     premioFinal = { texto: "🤷‍♂️ NADA (Salvado de bajo cero)", valor: 0 };
+
                 }
 
+
                 box.innerText = premioFinal.texto;
+
                 box.style.backgroundColor = premioFinal.valor > 0 ? "#d4edda" : (premioFinal.valor < 0 ? "#f8d7da" : "#e2e3e5");
+
                 
+
                 let puntosNetos = premioFinal.valor - costeNumerico;
+
                 localStorage.setItem('ruleta_tiradas', tiradasHoy + 1);
+
                 
+
                 let mensajeChivato = `Tirada ${tiradasHoy + 1} (Costó ${costeNumerico}). Salió: ${premioFinal.texto}. Balance: ${puntosNetos}`;
+
                 enviarPuntosAJuego("Ruleta", puntosNetos, mensajeChivato);
 
+
                 setTimeout(() => {
+
                     alert(`El giro te costó ${costeNumerico} pts y sacaste ${premioFinal.texto}.\nTu balance neto es de: ${puntosNetos} pts.`);
+
                     box.style.backgroundColor = "#f1f3f4";
+
+                    
+
+                    // Comprobación si ha llegado a 5 tras el giro
+
                     actualizarInterfazRuleta();
+
                     cargarMarcadores(); 
+
                 }, 800);
+
             }
+
         }, 120);
+
     }
 
+
+    // =========================================================================
+
+    // TRIVIAL & WORDLE RESTANTE
+
+    // =========================================================================
+
     function abrirTrivial() {
+
       if (localStorage.getItem('trivial_ultimo_dia') === new Date().toDateString()) { alert("Ya has respondido al Trivial de hoy."); return; }
+
       if (!trivialActual.pregunta) { alert("Aún no se ha configurado la pregunta."); return; }
+
       document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-trivial').classList.add('active');
+
       document.getElementById('trivial-pregunta').innerText = trivialActual.pregunta;
+
       ['a','b','c','d'].forEach(letra => {
+
           let btn = document.getElementById('btn-triv-' + letra);
+
           btn.innerText = letra.toUpperCase() + ") " + trivialActual[letra];
+
           btn.className = "btn-opcion"; btn.disabled = false;
+
       });
+
     }
+
 
     function cerrarTrivial() { document.getElementById('pantalla-trivial').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); }
 
+
     function comprobarTrivial(opcionElegida) {
+
       ['a','b','c','d'].forEach(letra => document.getElementById('btn-triv-' + letra).disabled = true);
+
       const correcta = trivialActual.respuesta.toUpperCase();
+
       document.getElementById('btn-triv-' + opcionElegida.toLowerCase()).classList.add(opcionElegida === correcta ? 'correct' : 'wrong');
+
       if (opcionElegida !== correcta) document.getElementById('btn-triv-' + correcta.toLowerCase()).classList.add('correct');
+
       localStorage.setItem('trivial_ultimo_dia', new Date().toDateString());
+
       
+
       setTimeout(() => {
+
           if (opcionElegida === correcta) {
+
             alert("¡Correcto! Sumas 50 puntos."); enviarPuntosAJuego("Victoria Trivial", 50, trivialActual.pregunta);
+
           } else {
+
             alert("¡Incorrecto!"); enviarPuntosAJuego("Intento Trivial (Fallo)", 0, trivialActual.pregunta);
+
           }
+
           cerrarTrivial();
+
       }, 1500);
+
     }
 
+
     const tablero = document.getElementById('tablero');
+
     if (tablero) {
+
         for (let i = 0; i < 6; i++) {
+
           let fila = document.createElement('div'); fila.className = 'fila';
-          for (let j = 0; j < 5; j++) { let casilla = document.createElement('div'); casilla.className = 'casilla'; casilla.id = `casilla-${i}-${j}`; fila.appendChild(casilla); }
-          tablero.appendChild(fila);
-        }
-    }
-    function abrirWordle() {
-      if (localStorage.getItem('wordle_ultimo_dia') === new Date().toDateString()) { alert("Ya has completado el Wordle de hoy."); return; }
-      document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-wordle').classList.add('active');
-      juegoTerminado = false; intentos = 0; letrasActuales = [];
-      for (let i=0; i<6; i++) for (let j=0; j<5; j++) { document.getElementById(`casilla-${i}-${j}`).innerText = ""; document.getElementById(`casilla-${i}-${j}`).className = "casilla"; }
-    }
-    function cerrarWordle() { document.getElementById('pantalla-wordle').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); }
-    function presionarTecla(letra) { if (juegoTerminado || letrasActuales.length >= 5) return; letrasActuales.push(letra); actualizarFila(); }
-    function borrarLetra() { if (juegoTerminado || letrasActuales.length === 0) return; letrasActuales.pop(); actualizarFila(); }
-    function actualizarFila() { for (let i = 0; i < 5; i++) { let casilla = document.getElementById(`casilla-${intentos}-${i}`); if(casilla) casilla.innerText = letrasActuales[i] || ""; } }
-    
-    function revisarPalabra() {
-      if (!palabraSecretaDelDia) { alert("Sincronizando..."); return; }
-      if (juegoTerminado) return; if (letrasActuales.length !== 5) { alert("Deben ser 5 letras"); return; }
-      let palabraAdivinada = letrasActuales.join('');
-      enviarPuntosAJuego("Intento Wordle", 0, palabraAdivinada);
-      
-      let secretaArray = palabraSecretaDelDia.split(''); let adivinadaArray = letrasActuales; let feedback = Array(5).fill('gris');
-      for (let i = 0; i < 5; i++) if (adivinadaArray[i] === secretaArray[i]) { feedback[i] = 'verde'; secretaArray[i] = null; }
-      for (let i = 0; i < 5; i++) if (feedback[i] === 'gris') { let idx = secretaArray.indexOf(adivinadaArray[i]); if (idx !== -1) { feedback[i] = 'amarillo'; secretaArray[idx] = null; } }
-      
-      for (let i = 0; i < 5; i++) {
-        let casilla = document.getElementById(`casilla-${intentos}-${i}`); casilla.style.transform = "rotateX(90deg)";
-        setTimeout(() => { casilla.classList.add(feedback[i]); casilla.style.transform = "rotateX(0deg)"; }, i * 200);
-      }
-      setTimeout(() => {
-          if (palabraAdivinada === palabraSecretaDelDia) {
-            juegoTerminado = true; localStorage.setItem('wordle_ultimo_dia', new Date().toDateString());
-            setTimeout(() => { alert("¡Éxito! Sumas 100 puntos."); enviarPuntosAJuego("Éxito Wordle", 100, palabraAdivinada); cerrarWordle(); }, 500);
-          } else {
-            intentos++; letrasActuales = [];
-            if (intentos === 6) { juegoTerminado = true; localStorage.setItem('wordle_ultimo_dia', new Date().toDateString()); setTimeout(() => { alert("Has agotado los intentos. Era: " + palabraSecretaDelDia); enviarPuntosAJuego("Fallo Wordle", 0, "No adivinó la palabra"); cerrarWordle(); }, 500); }
+
+          for (let j = 0; j < 5; j++) {
+
+            let casilla = document.createElement('div'); casilla.className = 'casilla'; casilla.id = `casilla-${i}-${j}`; fila.appendChild(casilla);
+
           }
+
+          tablero.appendChild(fila);
+
+        }
+
+    }
+
+    function abrirWordle() {
+
+      if (localStorage.getItem('wordle_ultimo_dia') === new Date().toDateString()) { alert("Ya has completado el Wordle de hoy."); return; }
+
+      document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-wordle').classList.add('active');
+
+      juegoTerminado = false; intentos = 0; letrasActuales = [];
+
+      for (let i=0; i<6; i++) for (let j=0; j<5; j++) { document.getElementById(`casilla-${i}-${j}`).innerText = ""; document.getElementById(`casilla-${i}-${j}`).className = "casilla"; }
+
+    }
+
+    function cerrarWordle() { document.getElementById('pantalla-wordle').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); }
+
+    function presionarTecla(letra) { if (juegoTerminado || letrasActuales.length >= 5) return; letrasActuales.push(letra); actualizarFila(); }
+
+    function borrarLetra() { if (juegoTerminado || letrasActuales.length === 0) return; letrasActuales.pop(); actualizarFila(); }
+
+    function actualizarFila() { for (let i = 0; i < 5; i++) { let casilla = document.getElementById(`casilla-${intentos}-${i}`); if(casilla) casilla.innerText = letrasActuales[i] || ""; } }
+
+    
+
+    function revisarPalabra() {
+
+      if (!palabraSecretaDelDia) { alert("Sincronizando..."); return; }
+
+      if (juegoTerminado) return; if (letrasActuales.length !== 5) { alert("Deben ser 5 letras"); return; }
+
+      let palabraAdivinada = letrasActuales.join('');
+
+      enviarPuntosAJuego("Intento Wordle", 0, palabraAdivinada);
+
+      
+
+      let secretaArray = palabraSecretaDelDia.split(''); let adivinadaArray = letrasActuales; let feedback = Array(5).fill('gris');
+
+      for (let i = 0; i < 5; i++) if (adivinadaArray[i] === secretaArray[i]) { feedback[i] = 'verde'; secretaArray[i] = null; }
+
+      for (let i = 0; i < 5; i++) if (feedback[i] === 'gris') { let idx = secretaArray.indexOf(adivinadaArray[i]); if (idx !== -1) { feedback[i] = 'amarillo'; secretaArray[idx] = null; } }
+
+      
+
+      for (let i = 0; i < 5; i++) {
+
+        let casilla = document.getElementById(`casilla-${intentos}-${i}`); casilla.style.transform = "rotateX(90deg)";
+
+        setTimeout(() => { casilla.classList.add(feedback[i]); casilla.style.transform = "rotateX(0deg)"; }, i * 200);
+
+      }
+
+      setTimeout(() => {
+
+          if (palabraAdivinada === palabraSecretaDelDia) {
+
+            juegoTerminado = true; localStorage.setItem('wordle_ultimo_dia', new Date().toDateString());
+
+            setTimeout(() => { alert("¡Éxito! Sumas 100 puntos."); enviarPuntosAJuego("Éxito Wordle", 100, palabraAdivinada); cerrarWordle(); }, 500);
+
+          } else {
+
+            intentos++; letrasActuales = [];
+
+            if (intentos === 6) { juegoTerminado = true; localStorage.setItem('wordle_ultimo_dia', new Date().toDateString()); setTimeout(() => { alert("Has agotado los intentos. Era: " + palabraSecretaDelDia); enviarPuntosAJuego("Fallo Wordle", 0, "No adivinó la palabra"); cerrarWordle(); }, 500); }
+
+          }
+
       }, 1500);
+
     }  
+
   </script>
+
 </body>
+
 </html>

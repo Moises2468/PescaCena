@@ -103,7 +103,7 @@
   <div id="pantalla-registro" class="screen active">
     <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;">
       <img src="logo.png" class="logo-corporativo" alt="PROYECTO ENERO">
-      <h1>PROYECTO ENERO</h1>
+      <h1>Cena Fin de Campaña</h1>
       <p class="subtitulo">Indica tus datos</p>
       <input type="text" id="nombre" placeholder="Nombre/Apodo" required>
       <select id="departamento">
@@ -121,14 +121,21 @@
     <img src="logo.png" class="logo-corporativo" alt="PROYECTO ENERO" style="width: 120px; margin-top: 5px;">
     
     <div id="sec-inicio" class="seccion-lobby active-sec">
-      <p style="margin:20px 0 0 0; color:var(--text-muted); font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Tiempo para el evento:</p>
+      <p style="margin:20px 0 0 0; color:var(--text-muted); font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Tiempo para la cena:</p>
       <div class="contador">168:00:00</div>
       <div class="info-jugador">Usuario: <strong id="nombre-usuario"></strong><br>Área: <strong id="dep-usuario"></strong></div>
       
       <div class="card-container" style="text-align: left;">
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">👋 ¡Bienvenido!</h3>
-        <p style="font-size: 14px; color:var(--text-muted); margin-bottom: 0;">Navega por el menú inferior para jugar, consultar tus puntos y los de tu equipo, o canjear códigos QR.</p>
+        <p style="font-size: 14px; color:var(--text-muted); margin-bottom: 0;">Vota por tus nominados en los primeros PescOscars, juega y consigue puntos para ti y tu equipo, sube fotos para compartirlas en la cena, y gana premios! (Quiza).</p>
       </div>
+
+      <div class="card-container">
+        <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🏆 PescaOscars</h3>
+        <p style="font-size: 13px; color:var(--text-muted);">Elige a tus candidatos para los premios especiales del evento.</p>
+        <button class="btn-juego" style="background-color: #ff9800;" onclick="abrirVotaciones()">IR A VOTACIONES</button>
+      </div>
+      
     </div>
 
     <div id="sec-ranking" class="seccion-lobby">
@@ -167,15 +174,6 @@
           <div id="lista-muro"></div>
         </div>
       </div>
-      
-      <!-- CADA DE VOTACIONES MÚLTIPLES GENERADA DINÁMICAMENTE -->
-      <div class="card-container" id="caja-votaciones" style="display: none;">
-        <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🏆 Premios Pescanova</h3>
-        <p style="font-size: 13px; color:var(--text-muted);">Vota en todas las categorías. ¡Recuerda que no puedes votarte a ti mismo!</p>
-        <div id="formulario-votaciones"></div>
-        <button class="btn-juego" style="background-color: #ff9800; margin-top: 15px;" onclick="emitirVotos()">ENVIAR MIS VOTOS</button>
-      </div>
-    </div>
 
     <div id="sec-juegos" class="seccion-lobby">
       <h2>Retos Activos</h2>
@@ -262,9 +260,23 @@
     </div>
   </div>
 
+  <div id="pantalla-votaciones" class="screen">
+    <div class="wordle-header">
+      <button class="btn-volver" onclick="cerrarVotaciones()">⬅️ VOLVER</button>
+      <h2 style="margin:0; color:var(--primary);">PREMIOS</h2>
+      <div style="width: 70px;"></div> 
+    </div>
+    <div class="card-container" style="width: 100%; max-width: 350px;">
+      <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🏆 PescaOscars</h3>
+      <p style="font-size: 13px; color:var(--text-muted);">Vota en todas las categorías. ¡Recuerda que no puedes votarte a ti mismo!</p>
+      <div id="formulario-votaciones"></div>
+      <button class="btn-juego" style="background-color: #ff9800; margin-top: 15px;" onclick="emitirVotos()">ENVIAR MIS VOTOS</button>
+    </div>
+  </div>
+
   <script>
     // URL DE TU GOOGLE APPS SCRIPTs
-    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbzPVa9hU123IXGIugtqWqL9khlzHP4Blo3Qxng3HGIZuhN5xN9Yxhgu7k2PMzXLRZ1jaw/exec"; 
+    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbyPbG7KF2_XY6eZ8PEaVsl5wHxd9lTE1965zzbjpqyfkL1dbZZrIQIpA4B5rDldioORfA/exec"; 
 
     // VARIABLES GLOBALES (Imprescindibles para que funcione Trivial y Wordle)
     let palabraSecretaDelDia = "";
@@ -445,7 +457,6 @@
           // DIBUJAR CATEGORÍAS DE VOTACIÓN DINÁMICAMENTE
           // ============================================
           if (datos.categoriasVotacion && datos.categoriasVotacion.length > 0) {
-              document.getElementById('caja-votaciones').style.display = 'block';
               let formHTML = '';
               datos.categoriasVotacion.forEach((cat, index) => {
                   formHTML += `
@@ -684,6 +695,16 @@
         }
     }
 
+    function abrirVotaciones() {
+      document.getElementById('pantalla-lobby').classList.remove('active');
+      document.getElementById('pantalla-votaciones').classList.add('active');
+    }
+
+    function cerrarVotaciones() {
+      document.getElementById('pantalla-votaciones').classList.remove('active');
+      document.getElementById('pantalla-lobby').classList.add('active');
+    }
+    
     function abrirWordle() {
       if (localStorage.getItem('wordle_ultimo_dia') === new Date().toDateString()) { alert("Ya has completado el Wordle de hoy."); return; }
       document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-wordle').classList.add('active');

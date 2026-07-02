@@ -135,7 +135,6 @@
         <p style="font-size: 13px; color:var(--text-muted);">Elige a tus candidatos para los premios especiales del evento.</p>
         <button class="btn-juego" style="background-color: #ff9800;" onclick="abrirVotaciones()">IR A VOTACIONES</button>
       </div>
-      
     </div>
 
     <div id="sec-ranking" class="seccion-lobby">
@@ -174,6 +173,7 @@
           <div id="lista-muro"></div>
         </div>
       </div>
+    </div> <!-- ¡ESTE ES EL DIV QUE FALTABA PARA CERRAR EL RANKING! -->
 
     <div id="sec-juegos" class="seccion-lobby">
       <h2>Retos Activos</h2>
@@ -266,10 +266,13 @@
       <h2 style="margin:0; color:var(--primary);">PREMIOS</h2>
       <div style="width: 70px;"></div> 
     </div>
-    <div class="card-container" style="width: 100%; max-width: 350px;">
+    <!-- LE HEMOS PUESTO EL ID A ESTA CAJA PARA QUE EL MENSAJE DE ÉXITO NO ROMPA EL CÓDIGO -->
+    <div class="card-container" id="caja-votaciones" style="width: 100%; max-width: 350px;">
       <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🏆 PescaOscars</h3>
       <p style="font-size: 13px; color:var(--text-muted);">Vota en todas las categorías. ¡Recuerda que no puedes votarte a ti mismo!</p>
-      <div id="formulario-votaciones"></div>
+      <div id="formulario-votaciones">
+          <div style="font-size:13px; color:var(--text-muted); margin: 20px 0;">Sincronizando categorías...</div>
+      </div>
       <button class="btn-juego" style="background-color: #ff9800; margin-top: 15px;" onclick="emitirVotos()">ENVIAR MIS VOTOS</button>
     </div>
   </div>
@@ -345,6 +348,7 @@
       document.getElementById('pantalla-lobby').classList.add('active');
       document.getElementById('pantalla-wordle').classList.remove('active');
       document.getElementById('pantalla-trivial').classList.remove('active');
+      document.getElementById('pantalla-votaciones').classList.remove('active');
       document.getElementById('nombre-usuario').innerText = localStorage.getItem('jugador_nombre');
       document.getElementById('dep-usuario').innerText = localStorage.getItem('jugador_dep');
       if (!cargandoInicial) cargarMarcadores();
@@ -445,13 +449,9 @@
 
           if (datos.palabra) palabraSecretaDelDia = datos.palabra;
           
-          // ============================================
-          // CARGAR DICCIONARIO DESDE GOOGLE
-          // ============================================
           if (datos.diccionario) {
               diccionarioLocal = datos.diccionario;
           }
-          // ============================================
           
           // ============================================
           // DIBUJAR CATEGORÍAS DE VOTACIÓN DINÁMICAMENTE
@@ -466,10 +466,13 @@
                   </div>`;
               });
               
-              // Solo actualiza si no se había pintado ya, para no borrar lo que estuvieran escribiendo
-              if (document.getElementById('formulario-votaciones').innerHTML === "") {
-                  document.getElementById('formulario-votaciones').innerHTML = formHTML;
+              // Evitamos machacar el HTML si el usuario ya está escribiendo
+              let contenedorVotaciones = document.getElementById('formulario-votaciones');
+              if (contenedorVotaciones.innerHTML.includes("Sincronizando") || contenedorVotaciones.innerHTML === "") {
+                  contenedorVotaciones.innerHTML = formHTML;
               }
+          } else {
+             document.getElementById('formulario-votaciones').innerHTML = `<div style="font-size:13px; color:var(--text-muted); padding: 15px;">Aún no hay categorías para votar.</div>`;
           }
           // ============================================
 
@@ -773,6 +776,11 @@
       let votos = [];
       let miNombre = localStorage.getItem('jugador_nombre').toLowerCase().trim();
       
+      if (inputs.length === 0) {
+          alert("⚠️ Aún no hay categorías para votar.");
+          return;
+      }
+
       for (let i = 0; i < inputs.length; i++) {
           let votoEscrito = inputs[i].value.trim();
           let categoria = inputs[i].getAttribute('data-cat');

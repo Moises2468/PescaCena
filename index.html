@@ -266,6 +266,7 @@
     let juegoTerminado = false;
     let intentos = 0;
     let letrasActuales = [];
+    let diccionarioLocal = [];
 
     window.onload = function() {
       if(localStorage.getItem('jugador_nombre') && localStorage.getItem('jugador_dep')) mostrarLobby(); 
@@ -348,16 +349,12 @@
         .then(datos => {
           if (loadingText) loadingText.style.display = 'none'; cargandoInicial = false;
           
-          // ============================================
-          // AQUI VA EL CÓDIGO DEL TICKER (NOTICIA)
-          // ============================================
           if (datos.noticiaGlobal) {
             const container = document.getElementById('ticker-container');
             const text = document.getElementById('ticker-text');
             text.innerText = datos.noticiaGlobal;
             container.style.display = 'block'; 
           }
-          // ============================================
 
           if (datos.error) { 
               if(callback) callback(false); 
@@ -404,9 +401,9 @@
           const muroContainer = document.getElementById('muro-container');
           if (contenedorMuro && datos.muro && datos.muro.length > 0) {
               contenedorMuro.innerHTML = datos.muro.map(tramposo => `<div style="margin-bottom:5px;">🚨 ${tramposo}</div>`).join('');
-              muroContainer.style.display = 'block'; // Mostramos la caja roja si hay alguien
+              muroContainer.style.display = 'block'; 
           } else if (muroContainer) {
-              muroContainer.style.display = 'none'; // Ocultamos la caja si el Muro está vacío
+              muroContainer.style.display = 'none'; 
           }
 
           if (datos.trivialPregunta) {
@@ -415,6 +412,15 @@
           }
 
           if (datos.palabra) palabraSecretaDelDia = datos.palabra;
+          
+          // ============================================
+          // CARGAR DICCIONARIO DESDE GOOGLE
+          // ============================================
+          if (datos.diccionario) {
+              diccionarioLocal = datos.diccionario;
+          }
+          // ============================================
+
           if(callback) callback(true);
         }).catch(error => { 
           if (loadingText) loadingText.style.display = 'none'; 
@@ -652,7 +658,21 @@
     function revisarPalabra() {
       if (!palabraSecretaDelDia) { alert("Sincronizando..."); return; }
       if (juegoTerminado) return; if (letrasActuales.length !== 5) { alert("Deben ser 5 letras"); return; }
+      
       let palabraAdivinada = letrasActuales.join('');
+      
+      // ============================================
+      // VALIDACIÓN LOCAL DEL DICCIONARIO
+      // ============================================
+      if (diccionarioLocal && diccionarioLocal.length > 0) {
+          // Nos aseguramos de comprobar la palabra en mayúsculas por si el diccionario tiene minúsculas
+          if (!diccionarioLocal.includes(palabraAdivinada) && !diccionarioLocal.includes(palabraAdivinada.toLowerCase())) {
+              alert("Esa palabra no está en nuestro diccionario.");
+              return; // Bloqueamos el intento y no dejamos que pierda el turno
+          }
+      }
+      // ============================================
+
       enviarPuntosAJuego("Intento Wordle", 0, palabraAdivinada);
       
       let secretaArray = palabraSecretaDelDia.split(''); let adivinadaArray = letrasActuales; let feedback = Array(5).fill('gris');
@@ -665,8 +685,18 @@
       }
       setTimeout(() => {
           if (palabraAdivinada === palabraSecretaDelDia) {
-            juegoTerminado = true; localStorage.setItem('wordle_ultimo_dia', new Date().toDateString());
-            setTimeout(() => { alert("¡Éxito! Sumas 100 puntos."); enviarPuntosAJuego("Éxito Wordle", 100, palabraAdivinada); cerrarWordle(); }, 500);
+            juegoTerminado = true; 
+            localStorage.setItem('wordle_ultimo_dia', new Date().toDateString());
+            
+            let intentosSobrantes = 5 - intentos; 
+            let puntosGanados = (intentosSobrantes + 1) * 20; 
+            
+            setTimeout(() => { 
+                alert("¡Éxito! Has usado " + (intentos + 1) + " intentos. Sumas " + puntosGanados + " puntos."); 
+                enviarPuntosAJuego("Éxito Wordle", puntosGanados, palabraAdivinada); 
+                cerrarWordle(); 
+            }, 500);
+            
           } else {
             intentos++; letrasActuales = [];
             if (intentos === 6) { juegoTerminado = true; localStorage.setItem('wordle_ultimo_dia', new Date().toDateString()); setTimeout(() => { alert("Has agotado los intentos. Era: " + palabraSecretaDelDia); enviarPuntosAJuego("Fallo Wordle", 0, "No adivinó la palabra"); cerrarWordle(); }, 500); }

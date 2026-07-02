@@ -359,6 +359,7 @@
       document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active-nav'));
       document.getElementById('sec-' + seccionId).classList.add('active-sec');
       elementoNav.classList.add('active-nav');
+      window.scrollTo(0, 0); 
       if(seccionId === 'ranking' || seccionId === 'juegos') cargarMarcadores();
     }
 

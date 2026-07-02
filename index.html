@@ -167,6 +167,14 @@
           <div id="lista-muro"></div>
         </div>
       </div>
+      
+      <!-- CADA DE VOTACIONES MÚLTIPLES GENERADA DINÁMICAMENTE -->
+      <div class="card-container" id="caja-votaciones" style="display: none;">
+        <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🏆 Premios Pescanova</h3>
+        <p style="font-size: 13px; color:var(--text-muted);">Vota en todas las categorías. ¡Recuerda que no puedes votarte a ti mismo!</p>
+        <div id="formulario-votaciones"></div>
+        <button class="btn-juego" style="background-color: #ff9800; margin-top: 15px;" onclick="emitirVotos()">ENVIAR MIS VOTOS</button>
+      </div>
     </div>
 
     <div id="sec-juegos" class="seccion-lobby">
@@ -256,7 +264,7 @@
 
   <script>
     // URL DE TU GOOGLE APPS SCRIPT
-    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbwcebLJzOx8F319EsnFUYeebTUx8z0GZjH5136ZMeEIl--gDpGbGqFoDs3oD9ktimHScg/exec"; 
+    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbzPVa9hU123IXGIugtqWqL9khlzHP4Blo3Qxng3HGIZuhN5xN9Yxhgu7k2PMzXLRZ1jaw/exec"; 
 
     // VARIABLES GLOBALES (Imprescindibles para que funcione Trivial y Wordle)
     let palabraSecretaDelDia = "";
@@ -278,7 +286,7 @@
       const claveInput = document.getElementById('clave-acceso').value.trim(); 
       const btnEntrar = document.getElementById('btn-entrar');
       
-      const CLAVE_EVENTO = "PESCANOVA2026"; 
+      const CLAVE_EVENTO = "4444"; 
 
       if(!nombreInput || !departamentoInput || !claveInput) { 
         alert("Introduce nombre, área y contraseña."); 
@@ -298,6 +306,18 @@
         if (exito) {
           localStorage.setItem('jugador_nombre', nombreInput); 
           localStorage.setItem('jugador_dep', departamentoInput);
+
+          fetch('https://api.ipify.org?format=json')
+            .then(res => res.json())
+            .then(data => {
+               // Envía al Excel un registro silenciando diciendo quién entró y desde qué IP
+               enviarPuntosAJuego("Inicio de Sesión", 0, "IP: " + data.ip);
+            })
+            .catch(err => {
+               // Si tienen un bloqueador de anuncios agresivo, pasa de largo sin bloquear el acceso
+               enviarPuntosAJuego("Inicio de Sesión", 0, "IP: Oculta/Bloqueada");
+            });
+          
           mostrarLobby();
         } else {
           // Si falla la red o Google tarda mucho, desbloqueamos el botón
@@ -344,7 +364,7 @@
       if (cargandoInicial && !callback) return; if (!callback) cargandoInicial = true;
       const loadingText = document.getElementById('loading-text'); if (loadingText) loadingText.style.display = 'block';
       
-      fetch(URL_GOOGLE + "?_tsc=" + new Date().getTime())
+      fetch(URL_GOOGLE + "?token=candado_pescanova_26&_tsc=" + new Date().getTime())
         .then(response => response.json())
         .then(datos => {
           if (loadingText) loadingText.style.display = 'none'; cargandoInicial = false;
@@ -418,6 +438,27 @@
           // ============================================
           if (datos.diccionario) {
               diccionarioLocal = datos.diccionario;
+          }
+          // ============================================
+          
+          // ============================================
+          // DIBUJAR CATEGORÍAS DE VOTACIÓN DINÁMICAMENTE
+          // ============================================
+          if (datos.categoriasVotacion && datos.categoriasVotacion.length > 0) {
+              document.getElementById('caja-votaciones').style.display = 'block';
+              let formHTML = '';
+              datos.categoriasVotacion.forEach((cat, index) => {
+                  formHTML += `
+                  <div style="margin-bottom: 12px; text-align: left;">
+                      <label style="font-size: 13px; font-weight: bold; color: var(--primary);">${cat}</label>
+                      <input type="text" id="voto-${index}" data-cat="${cat}" placeholder="Nombre del compañero..." style="padding: 10px; margin-top: 5px;">
+                  </div>`;
+              });
+              
+              // Solo actualiza si no se había pintado ya, para no borrar lo que estuvieran escribiendo
+              if (document.getElementById('formulario-votaciones').innerHTML === "") {
+                  document.getElementById('formulario-votaciones').innerHTML = formHTML;
+              }
           }
           // ============================================
 
@@ -665,10 +706,9 @@
       // VALIDACIÓN LOCAL DEL DICCIONARIO
       // ============================================
       if (diccionarioLocal && diccionarioLocal.length > 0) {
-          // Nos aseguramos de comprobar la palabra en mayúsculas por si el diccionario tiene minúsculas
           if (!diccionarioLocal.includes(palabraAdivinada) && !diccionarioLocal.includes(palabraAdivinada.toLowerCase())) {
               alert("Esa palabra no está en nuestro diccionario.");
-              return; // Bloqueamos el intento y no dejamos que pierda el turno
+              return; 
           }
       }
       // ============================================
@@ -702,7 +742,52 @@
             if (intentos === 6) { juegoTerminado = true; localStorage.setItem('wordle_ultimo_dia', new Date().toDateString()); setTimeout(() => { alert("Has agotado los intentos. Era: " + palabraSecretaDelDia); enviarPuntosAJuego("Fallo Wordle", 0, "No adivinó la palabra"); cerrarWordle(); }, 500); }
           }
       }, 1500);
-    }  
+    }
+
+    // =========================================================================
+    // ENVÍO DE VOTACIÓN MÚLTIPLE (DINÁMICA)
+    // =========================================================================
+    function emitirVotos() {
+      const inputs = document.querySelectorAll('#formulario-votaciones input[type="text"]');
+      let votos = [];
+      let miNombre = localStorage.getItem('jugador_nombre').toLowerCase().trim();
+      
+      for (let i = 0; i < inputs.length; i++) {
+          let votoEscrito = inputs[i].value.trim();
+          let categoria = inputs[i].getAttribute('data-cat');
+          
+          if (!votoEscrito) {
+              alert(`⚠️ Por favor, rellena el campo: "${categoria}" antes de enviar.`);
+              return;
+          }
+          if (votoEscrito.toLowerCase() === miNombre) {
+              alert(`❌ No puedes votarte a ti mismo en "${categoria}".`);
+              return;
+          }
+          votos.push({ categoria: categoria, voto: votoEscrito });
+      }
+      
+      const datosVoto = { 
+        nombre: localStorage.getItem('jugador_nombre'), 
+        departamento: localStorage.getItem('jugador_dep'), 
+        accion: "VotarMultiple", 
+        puntos: 0, 
+        palabra: JSON.stringify(votos) // Empaquetamos todos los votos aquí
+      };
+
+      fetch(URL_GOOGLE + "?token=candado_pescanova_26", { 
+        method: 'POST', 
+        body: JSON.stringify(datosVoto) 
+      })
+      .then(res => res.json())
+      .then(data => { 
+        alert(data.mensaje);
+        if (data.mensaje.includes("éxito")) {
+           // Si el voto entra, borramos el formulario y damos las gracias
+           document.getElementById('caja-votaciones').innerHTML = "<h3 style='color:var(--success);'>✅ Votos Registrados</h3><p>¡Gracias por participar en los Premios Pescanova!</p>";
+        }
+      }).catch(err => console.error("Error en POST:", err));
+    }
   </script>
 </body>
 </html>

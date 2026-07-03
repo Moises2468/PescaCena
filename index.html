@@ -218,6 +218,7 @@
       </div>
     </div>
 
+    <!-- PESTAÑA CÓDIGOS (INTACTA Y FUNCIONAL) -->
     <div id="sec-codigos" class="seccion-lobby">
       <h2>Validar Código</h2>
       <div class="card-container">
@@ -298,7 +299,7 @@
 
   <script>
     // URL DE TU GOOGLE APPS SCRIPT
-    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbyPbG7KF2_XY6eZ8PEaVsl5wHxd9lTE1965zzbjpqyfkL1dbZZrIQIpA4B5rDldioORfA/exec"; 
+    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbxgzcUcjtNwFE2V7IxGkjK4j0THR6gYIuNuSG1TEFh5tSBQpmjxHe4XSpShlHQmrShx8A/exec"; 
 
     // VARIABLES GLOBALES
     let palabraSecretaDelDia = ""; let cargandoInicial = false; let misPuntosActuales = 0; let trivialActual = { pregunta: "", a: "", b: "", c: "", d: "", respuesta: "" }; let juegoTerminado = false; let intentos = 0; let letrasActuales = []; let diccionarioLocal = [];
@@ -324,6 +325,17 @@
               localStorage.setItem('jugador_nombre', nombreInput);
               localStorage.setItem('jugador_dep', departamentoInput);
               mostrarLobby();
+              
+              // CAPTURA DE IP Y REGISTRO
+              fetch('https://api.ipify.org?format=json')
+                .then(res => res.json())
+                .then(data => {
+                   enviarPuntosAJuego("Inicio de Sesión", 0, "IP: " + data.ip);
+                })
+                .catch(err => {
+                   enviarPuntosAJuego("Inicio de Sesión", 0, "IP: Oculta/Bloqueada");
+                });
+
           } else {
               btnEntrar.disabled = false; 
               btnEntrar.innerText = "ACCEDER";
@@ -452,7 +464,6 @@
           if (datos.palabra) palabraSecretaDelDia = datos.palabra;
           if (datos.diccionario) diccionarioLocal = datos.diccionario;
           
-          // GENERACIÓN DE LOS INPUTS DE VOTACIÓN (SI LAS VOTACIONES SIGUEN ACTIVAS)
           if (datos.categoriasVotacion && datos.categoriasVotacion.length > 0) {
               let formHTML = '';
               datos.categoriasVotacion.forEach((cat, index) => {
@@ -467,20 +478,17 @@
               }
           }
 
-          // LÓGICA DE VOTACIONES FINALIZADAS Y NOMINADOS
+          // LÓGICA DE NOMINADOS Y FIN DE VOTACIONES
           if (datos.votacionesFinalizadas === true) {
-              // 1. Ocultar el botón de votar del menú de inicio
               const btnVotarMenu = document.getElementById('btn-abrir-votaciones');
               if (btnVotarMenu) btnVotarMenu.style.display = 'none';
 
-              // 2. Mostrar la tarjeta de nominados
               const cajaNominados = document.getElementById('caja-nominados');
               const listaNominados = document.getElementById('lista-nominados-contenido');
               
               if (cajaNominados && listaNominados && datos.nominadosFinales) {
                   cajaNominados.style.display = 'block';
                   let htmlNominados = '';
-                  
                   datos.nominadosFinales.forEach(cat => {
                       htmlNominados += `
                           <div style="margin-bottom: 15px; border-bottom: 1px solid #f1f3f4; padding-bottom: 10px;">
@@ -508,7 +516,11 @@
       fetch(URL_GOOGLE, { method: 'POST', body: JSON.stringify(datos) })
       .then(res => res.json())
       .then(data => { 
-        if (accion === "Código Localizado") alert(data.mensaje);
+        if (accion === "Código Localizado") {
+            alert(data.mensaje);
+            // Limpiamos la caja de texto tras canjear el QR
+            document.getElementById('palabra-secreta').value = ""; 
+        }
         setTimeout(cargarMarcadores, 500); 
       }).catch(err => console.error("Error en POST:", err));
     }

@@ -326,11 +326,16 @@
   <script>
     const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbztVS6mgIOJP0OG4J-V1pz0PX8waTzrnu8MUDPjm7I-orRXdEJUn9R2LN6y8aG_qxfRBA/exec"; 
 
-    // VARIABLES GLOBALES
+    // VARIABLES GLOBALES (Limpiadas y unificadas)
     let palabraSecretaDelDia = ""; let cargandoInicial = false; let misPuntosActuales = 0; let trivialActual = { pregunta: "", a: "", b: "", c: "", d: "", respuesta: "" }; let juegoTerminado = false; let intentos = 0; let letrasActuales = []; let diccionarioLocal = [];
     let controladorFetch = null; 
     let miMisionActual = "Esperando sincronización..."; 
-    let ultimosDatosServidor = null; // Almacena el JSON para repintar el ranking al cambiar el filtro
+    let ultimosDatosServidor = null; 
+    
+    // Variables de Zip reparadas
+    let zipPath = []; let zipDrawing = false; let zipNextDot = 2;
+    let zipStartTime = 0; let zipTimerInterval = null;
+    let zipNivelActual = { puntos: {}, totalDots: 5 };
 
     window.onload = function() {
       if(localStorage.getItem('jugador_nombre') && localStorage.getItem('jugador_dep')) {
@@ -417,7 +422,7 @@
     function cerrarWordle() { document.getElementById('pantalla-wordle').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); window.scrollTo(0,0); }
 
     // =========================================================================
-    // LÓGICA DE CARGA PROTEGIDA p
+    // LÓGICA DE CARGA PROTEGIDA 
     // =========================================================================
     function cargarMarcadores(callback) {
       if (cargandoInicial && !callback) return; 
@@ -468,7 +473,7 @@
 
     function pintarDatos(datos) {
         if (!datos) return;
-        ultimosDatosServidor = datos; // Guardamos en global para los filtros de ranking
+        ultimosDatosServidor = datos;
 
         if (datos.noticiaGlobal) {
             const container = document.getElementById('ticker-container');
@@ -498,8 +503,6 @@
         }
 
         actualizarInterfazRuleta();
-        
-        // Llamada a la nueva función de Ranking dinámico
         actualizarTablaRanking();
 
         const contenedorLogros = document.getElementById('lista-logros');
@@ -573,9 +576,6 @@
         }
     }
 
-    // -------------------------------------------------------------------------
-    // NUEVA FUNCIÓN: ACTUALIZAR TABLA DE RANKING SEGÚN FILTRO
-    // -------------------------------------------------------------------------
     function actualizarTablaRanking() {
         const tablaBody = document.getElementById('tabla-agentes-body');
         const filtro = document.getElementById('filtro-ranking').value;
@@ -588,14 +588,13 @@
         let etiquetaColumna = "Pts";
         let sufijoValor = "";
 
-        // 1. Preparar los datos según el filtro seleccionado
         if (filtro === "global") {
             etiquetaColumna = "Pts";
             if (ultimosDatosServidor.puntosTotalesJugadores) {
                 for (let n in ultimosDatosServidor.puntosTotalesJugadores) {
                     rankingCompleto.push({ nombre: n, valor: ultimosDatosServidor.puntosTotalesJugadores[n] });
                 }
-                rankingCompleto.sort((a, b) => b.valor - a.valor); // Puntos: Mayor es mejor
+                rankingCompleto.sort((a, b) => b.valor - a.valor);
             }
         } 
         else if (filtro === "zip") {
@@ -603,7 +602,7 @@
             sufijoValor = "s";
             if (ultimosDatosServidor.rankingZip) {
                 rankingCompleto = ultimosDatosServidor.rankingZip;
-                rankingCompleto.sort((a, b) => a.valor - b.valor); // Tiempo ZIP: Menor es mejor
+                rankingCompleto.sort((a, b) => a.valor - b.valor);
             } else {
                 tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Estamos procesando los tiempos del Zip...</td></tr>";
                 return;
@@ -613,14 +612,13 @@
             etiquetaColumna = "Puntos";
             if (ultimosDatosServidor.rankingWordle) {
                 rankingCompleto = ultimosDatosServidor.rankingWordle;
-                rankingCompleto.sort((a, b) => b.valor - a.valor); // Wordle Puntos: Mayor es mejor
+                rankingCompleto.sort((a, b) => b.valor - a.valor);
             } else {
                 tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Estamos procesando las jugadas de Wordle...</td></tr>";
                 return;
             }
         }
 
-        // 2. Buscar mi posición
         rankingCompleto.forEach((jugador, index) => {
             if (jugador.nombre.toLowerCase().trim() === miNombre.toLowerCase().trim()) {
                 miPosicion = index + 1;
@@ -628,10 +626,8 @@
             }
         });
 
-        // 3. Dibujar la cabecera
         tablaBody.innerHTML = `<tr><th>Pos</th><th>Usuario</th><th>${etiquetaColumna}</th></tr>`;
 
-        // 4. Pintar los 10 primeros
         for (let i = 0; i < Math.min(10, rankingCompleto.length); i++) {
             let j = rankingCompleto[i];
             let esMiFila = (i + 1 === miPosicion) ? 'style="background-color: #fff3cd; font-weight: bold;"' : '';
@@ -640,20 +636,15 @@
             tablaBody.innerHTML += `<tr ${esMiFila}><td style="font-weight:bold; color:var(--primary);">${icono}</td><td>${txtNombre}</td><td>${j.valor}${sufijoValor}</td></tr>`;
         }
 
-        // 5. Si no estás en el Top 10 y has jugado, añadir tu fila destacada
         if (miPosicion > 10) {
             tablaBody.innerHTML += `<tr><td colspan="3" style="text-align:center; color: var(--text-muted); font-size:12px; padding: 5px;">⋮</td></tr>`;
             tablaBody.innerHTML += `<tr style="background-color: #fff3cd; font-weight: bold; color: var(--error-text);"><td>${miPosicion}º</td><td>${miNombre} (TÚ)</td><td>${miValor}${sufijoValor}</td></tr>`;
         } else if (miPosicion === -1 && rankingCompleto.length > 0) {
-            // Si hay ranking pero no estás en él (ej. no has jugado a ese juego aún)
             tablaBody.innerHTML += `<tr><td colspan="3" style="text-align:center; color: var(--text-muted); font-size:12px; padding: 5px;">⋮</td></tr>`;
             tablaBody.innerHTML += `<tr style="background-color: #fff3cd; font-weight: bold; color: var(--text-muted);"><td>-</td><td>${miNombre} (TÚ)</td><td>Sin registrar</td></tr>`;
         }
     }
 
-    // =========================================================================
-    // BOTONES Y FORMULARIOS
-    // =========================================================================
     function enviarPuntosAJuego(accion, cantidadPuntos, palabra) {
       const datos = { nombre: localStorage.getItem('jugador_nombre'), departamento: localStorage.getItem('jugador_dep'), accion: accion, puntos: cantidadPuntos, palabra: palabra || "N/A" };
       fetch(URL_GOOGLE, { method: 'POST', body: JSON.stringify(datos) })
@@ -750,70 +741,45 @@
     }
 
     // =========================================================================
-    // JUEGO ZIP (CON CRONÓMETRO VISUAL)
+    // JUEGO ZIP (CON CRONÓMETRO VISUAL) Y GENERADOR DIARIO
     // =========================================================================
-    let zipPath = []; let zipDrawing = false; let zipNextDot = 2;
-    let zipStartTime = 0;
-    let zipTimerInterval = null;
 
-    let nivelActual = { puntos: {}, totalDots: 5 };
-
-    // 2. Generador de mapas pre-validados (siempre jugables)
-    function generarNivelAleatorio() {
+    function getZipNivelDiario() {
         const rutas = [
             ["0,0", "0,1", "1,1", "1,2", "2,2"], 
             ["3,0", "2,0", "2,1", "2,2", "1,2"],
             ["0,3", "1,3", "2,3", "2,2", "2,1"],
             ["1,0", "1,1", "0,1", "0,2", "0,3"],
-            ["0,0", "1,0", "2,0", "3,0", "3,1"]
+            ["0,0", "1,0", "2,0", "3,0", "3,1"],
+            ["3,3", "3,2", "2,2", "1,2", "0,2"]
         ];
-        // Selecciona una ruta basada en el día del mes
+        // Seleccionamos mapa según el día del mes
         const index = new Date().getDate() % rutas.length;
-        const rutaSeleccionada = rutas[index];
+        const ruta = rutas[index];
         const puntos = {};
-        rutaSeleccionada.forEach((pos, i) => puntos[pos] = i + 1);
+        ruta.forEach((pos, i) => puntos[pos] = i + 1);
         return { puntos, totalDots: 5 };
     }
 
-    // 3. Inicializador ajustado
     function inicializarTableroZip() {
-        nivelActual = generarNivelAleatorio();
-        const tablero = document.getElementById('tablero-zip'); 
-        tablero.innerHTML = ''; 
-        tablero.style.gridTemplateColumns = `repeat(4, 1fr)`; // Forzamos el grid 4x4
-        
-        for(let r = 0; r < 4; r++) {
-            for(let c = 0; c < 4; c++) {
-                let cell = document.createElement('div'); 
-                cell.className = 'zip-cell'; 
-                cell.dataset.id = `${r},${c}`;
-                // Dibujar el punto si existe en la ruta de hoy
-                if(nivelActual.puntos[`${r},${c}`]) {
-                    cell.innerHTML = `<div class="zip-dot">${nivelActual.puntos[`${r},${c}`]}</div>`;
-                }
-                tablero.appendChild(cell);
-            }
-        }
-        resetZip();
-    }
-    function inicializarTableroZip() {
-      nivelActual = getZipNivel();
+      zipNivelActual = getZipNivelDiario();
       const tablero = document.getElementById('tablero-zip'); 
       tablero.innerHTML = ''; 
+      tablero.style.gridTemplateColumns = `repeat(4, 1fr)`;
       
-      // Mantenemos tu estructura de bucles original para no romper el grid
       for(let r = 0; r < 4; r++) {
           for(let c = 0; c < 4; c++) {
               let cell = document.createElement('div'); 
               cell.className = 'zip-cell'; 
               cell.dataset.id = `${r},${c}`;
-              let num = nivelActual.puntos[`${r},${c}`];
+              let num = zipNivelActual.puntos[`${r},${c}`];
               if(num) cell.innerHTML = `<div class="zip-dot">${num}</div>`;
               tablero.appendChild(cell);
           }
       }
       resetZip();
     }
+
     function resetZip() { 
       zipPath = []; zipDrawing = false; zipNextDot = 2; 
       zipStartTime = 0;
@@ -840,13 +806,11 @@
        let [r1, c1] = lastId.split(',').map(Number); 
        let [r2, c2] = id.split(',').map(Number);
        
-       // Adyacencia
        let isAdyacent = (Math.abs(r1-r2) === 1 && c1 === c2) || (Math.abs(c1-c2) === 1 && r1 === r2);
        if(!isAdyacent) return;
        
-       // Verificación de secuencia
-       if(nivelActual.puntos[id]) { 
-           if(nivelActual.puntos[id] !== zipNextDot) return; 
+       if(zipNivelActual.puntos[id]) { 
+           if(zipNivelActual.puntos[id] !== zipNextDot) return; 
            zipNextDot++; 
        }
        
@@ -854,22 +818,35 @@
        actualizarTableroZip();
        
        // Victoria
-       if(zipNextDot > 5) {
+       if(zipNextDot > zipNivelActual.totalDots) {
            zipDrawing = false;
            if(zipTimerInterval) clearInterval(zipTimerInterval); 
+           
            let zipTime = (Date.now() - zipStartTime) / 1000;
-           alert("¡Increíble! Lo completaste en " + zipTime.toFixed(1) + "s. ¡Sumas 150 puntos!"); 
-           localStorage.setItem('zip_ultimo_dia', new Date().toDateString()); 
-           enviarPuntosAJuego("Éxito ZIP", 150, "Tiempo: " + zipTime.toFixed(1) + "s"); 
-           cerrarZip();
+           document.getElementById('zip-timer-display').innerText = zipTime.toFixed(1) + "s";
+           
+           let puntosZip = 150;
+           if (zipTime <= 3) puntosZip = 150;        
+           else if (zipTime <= 6) puntosZip = 120;   
+           else if (zipTime <= 10) puntosZip = 80;   
+           else puntosZip = 50;                      
+           
+           setTimeout(() => { 
+               alert("¡Increíble! Lo completaste en " + zipTime.toFixed(1) + " segundos. ¡Sumas " + puntosZip + " puntos!"); 
+               localStorage.setItem('zip_ultimo_dia', new Date().toDateString()); 
+               enviarPuntosAJuego("Éxito ZIP", puntosZip, "Tiempo: " + zipTime.toFixed(1) + "s"); 
+               cerrarZip(); 
+           }, 300);
        }
     }
+
     function iniciarEscuchadoresZip() {
         const tableroZip = document.getElementById('tablero-zip');
         if (tableroZip) {
             tableroZip.addEventListener('pointerdown', (e) => {
                 let cell = e.target.closest('.zip-cell'); if(!cell) return; let id = cell.dataset.id;
-                if(zipNivel.puntos[id] === 1 && zipPath.length === 0) { 
+                // CORRECCIÓN: Aquí es donde fallaba, estaba leyendo la variable vieja
+                if(zipNivelActual.puntos[id] === 1 && zipPath.length === 0) { 
                     zipDrawing = true; zipPath = [id]; zipNextDot = 2; 
                     
                     zipStartTime = Date.now(); 

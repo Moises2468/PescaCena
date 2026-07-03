@@ -91,12 +91,15 @@
       transition: background-color 0.3s;
     }
 
-    /* ESTILOS DEL NUEsVO JUEnGO ZIP */
-    #tablero-zip { display: grid; gap: 4px; margin: 20px auto; width: 100%; max-width: 320px; background: #dadce0; padding: 4px; border-radius: 8px; touch-action: none; user-select: none; }
+    /* ESTILOS DEL NUEVO JUEGO ZIP */
+    #tablero-zip { display: grid; gap: 4px; margin: 15px auto; width: 100%; max-width: 320px; background: #dadce0; padding: 4px; border-radius: 8px; touch-action: none; user-select: none; }
     .zip-cell { background: white; border-radius: 6px; aspect-ratio: 1; display: flex; justify-content: center; align-items: center; position: relative; cursor: pointer; }
     .zip-cell.path { background: #ffcc00; transition: background 0.1s ease;}
     .zip-cell.path-head { background: #ff9800; transform: scale(0.95); transition: 0.1s;}
     .zip-dot { background: var(--primary); color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; z-index: 2; pointer-events: none; font-weight: bold; font-size: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+    
+    /* ESTILO PARA EL CRONÓMETRO */
+    #zip-timer-display { font-size: 32px; font-family: monospace; font-weight: bold; color: var(--primary); margin: 5px 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); transition: color 0.3s; }
 
     @keyframes ticker { 0% { transform: translate(100%, 0); } 100% { transform: translate(-100%, 0); } }
   </style>
@@ -278,6 +281,10 @@
   <!-- PANTALLA ZIP -->
   <div id="pantalla-zip" class="screen">
     <div class="wordle-header"><button class="btn-volver" onclick="cerrarZip()">⬅️ VOLVER</button><h2 style="margin:0; color:var(--primary);">PESCA-ZIP</h2><div style="width: 70px;"></div></div>
+    
+    <!-- EL NUEVO CRONÓMETRO VISUAL -->
+    <div id="zip-timer-display">0.0s</div>
+    
     <p style="font-size: 13px; color:var(--text-muted); margin-bottom: 5px;">Arrastra el dedo desde el 1 hasta el 5.</p>
     <p style="font-size: 12px; color:var(--error-text); margin-top: 0; font-weight: bold;">Debes pasar por TODOS los cuadrados grises.</p>
     <div id="tablero-zip"></div>
@@ -302,10 +309,13 @@
     // VARIABLES GLOBALES
     let palabraSecretaDelDia = ""; let cargandoInicial = false; let misPuntosActuales = 0; let trivialActual = { pregunta: "", a: "", b: "", c: "", d: "", respuesta: "" }; let juegoTerminado = false; let intentos = 0; let letrasActuales = []; let diccionarioLocal = [];
     let controladorFetch = null; // Asesino de peticiones zombi
-    let zipStartTime = 0; // Cronómetro del ZIP
 
     window.onload = function() {
-      if(localStorage.getItem('jugador_nombre') && localStorage.getItem('jugador_dep')) mostrarLobby();
+      // FIX RECARGA: Si recargas, entra en el lobby Y LLAMA a cargarMarcadores automáticamente.
+      if(localStorage.getItem('jugador_nombre') && localStorage.getItem('jugador_dep')) {
+          mostrarLobby();
+          cargarMarcadores(); 
+      }
       iniciarEscuchadoresZip();
     }
 
@@ -320,10 +330,13 @@
       btnEntrar.disabled = true; 
       btnEntrar.innerText = "VERIFICANDO...";
       
+      // FIX PRIMERA CARGA: Guardamos temporalmente los datos ANTES de pedir los puntos.
+      // Así el sistema ya sabe quién eres cuando lleguen tus puntos.
+      localStorage.setItem('jugador_nombre', nombreInput);
+      localStorage.setItem('jugador_dep', departamentoInput);
+
       cargarMarcadores((exito) => {
           if (exito) {
-              localStorage.setItem('jugador_nombre', nombreInput);
-              localStorage.setItem('jugador_dep', departamentoInput);
               mostrarLobby();
               
               fetch('https://api.ipify.org?format=json')
@@ -332,6 +345,9 @@
                 .catch(err => { enviarPuntosAJuego("Inicio de Sesión", 0, "IP: Oculta/Bloqueada"); });
 
           } else {
+              // Si falla, borramos para que vuelva a intentar.
+              localStorage.removeItem('jugador_nombre');
+              localStorage.removeItem('jugador_dep');
               btnEntrar.disabled = false; 
               btnEntrar.innerText = "ACCEDER";
               alert("Error de conexión. Inténtalo de nuevo.");
@@ -390,14 +406,12 @@
     function cargarMarcadores(callback) {
       if (cargandoInicial && !callback) return; 
 
-      // 1. Asesino de peticiones Zombi (Evita atascos si le dan rápido)
       if (controladorFetch) controladorFetch.abort();
       controladorFetch = new AbortController();
 
       const loadingText = document.getElementById('loading-text'); 
       if (loadingText) loadingText.style.display = 'block';
 
-      // 2. Guardavidas Local (Pinta la web instantáneamente con lo último guardado)
       try {
           const cacheStr = localStorage.getItem('marcadores_cache');
           if (cacheStr && !cargandoInicial) {
@@ -408,27 +422,27 @@
       cargandoInicial = true;
       
       fetch(URL_GOOGLE + "?token=candado_pescanova_26&_tsc=" + new Date().getTime(), { signal: controladorFetch.signal })
-        .then(response => response.text()) // Leer como texto primero
+        .then(response => response.text()) 
         .then(texto => {
           let datos;
           try {
-              datos = JSON.parse(texto); // 3. Escudo anti-basura de Google
+              datos = JSON.parse(texto); 
           } catch(err) {
               throw new Error("JSON malformado recibido del servidor");
           }
 
-          localStorage.setItem('marcadores_cache', texto); // Guardamos copia de seguridad
+          localStorage.setItem('marcadores_cache', texto); 
           
           if (loadingText) loadingText.style.display = 'none'; 
           cargandoInicial = false;
           
           if (datos.error) { if(callback) callback(false); return; }
 
-          pintarDatos(datos); // Actualizamos la interfaz con los nuevos datos
+          pintarDatos(datos); 
           if(callback) callback(true);
         })
         .catch(error => { 
-          if (error.name === 'AbortError') return; // Cancelado a propósito, no hacemos nada
+          if (error.name === 'AbortError') return; 
           if (loadingText) loadingText.style.display = 'none'; 
           cargandoInicial = false; 
           console.warn("Fallo de conexión ignorado para proteger la web:", error);
@@ -436,52 +450,56 @@
         });
     }
 
-    // Función exclusiva para pintar en pantalla (Limpia y segura)
     function pintarDatos(datos) {
+        if (!datos) return;
+
         if (datos.noticiaGlobal) {
             const container = document.getElementById('ticker-container');
             const text = document.getElementById('ticker-text');
-            text.innerText = datos.noticiaGlobal;
-            container.style.display = 'block'; 
+            if(text) text.innerText = datos.noticiaGlobal;
+            if(container) container.style.display = 'block'; 
         }
 
         const deps = datos.departamentos || {};
         const pProd = Number(deps["Producción"]) || 0; const pMant = Number(deps["Mantenimiento"]) || 0; const pOfic = Number(deps["Oficinas"]) || 0;
         const maxPts = Math.max(pProd, pMant, pOfic, 1);
-        document.getElementById('pts-prod').innerText = pProd + " pts"; document.getElementById('barra-prod').style.width = (pProd / maxPts * 100) + "%";
-        document.getElementById('pts-mant').innerText = pMant + " pts"; document.getElementById('barra-mant').style.width = (pMant / maxPts * 100) + "%";
-        document.getElementById('pts-ofic').innerText = pOfic + " pts"; document.getElementById('barra-ofic').style.width = (pOfic / maxPts * 100) + "%";
+        if(document.getElementById('pts-prod')) {
+            document.getElementById('pts-prod').innerText = pProd + " pts"; document.getElementById('barra-prod').style.width = (pProd / maxPts * 100) + "%";
+            document.getElementById('pts-mant').innerText = pMant + " pts"; document.getElementById('barra-mant').style.width = (pMant / maxPts * 100) + "%";
+            document.getElementById('pts-ofic').innerText = pOfic + " pts"; document.getElementById('barra-ofic').style.width = (pOfic / maxPts * 100) + "%";
+        }
 
         if (datos.puntosTotalesJugadores) {
-             misPuntosActuales = datos.puntosTotalesJugadores[localStorage.getItem('jugador_nombre')] || 0;
-             document.getElementById('mis-puntos-num').innerText = misPuntosActuales;
-             document.getElementById('mis-puntos-num').style.color = (misPuntosActuales < 0) ? "var(--error-text)" : "var(--text)";
+             let nom = localStorage.getItem('jugador_nombre');
+             if(nom) {
+                 misPuntosActuales = datos.puntosTotalesJugadores[nom] || 0;
+                 if(document.getElementById('mis-puntos-num')){
+                     document.getElementById('mis-puntos-num').innerText = misPuntosActuales;
+                     document.getElementById('mis-puntos-num').style.color = (misPuntosActuales < 0) ? "var(--error-text)" : "var(--text)";
+                 }
+             }
         }
 
         actualizarInterfazRuleta();
 
         const tablaBody = document.getElementById('tabla-agentes-body');
-        if (datos.agentes && tablaBody) {
+        if (datos.agentes && Array.isArray(datos.agentes) && tablaBody) {
             tablaBody.innerHTML = "<tr><th>Pos</th><th>Usuario</th><th>Área</th><th>Pts</th></tr>";
             datos.agentes.forEach((agente, index) => { tablaBody.innerHTML += `<tr><td>${index + 1}º</td><td>${agente.nombre}</td><td>${agente.departamento}</td><td>${agente.puntos}</td></tr>`; });
         }
 
         const contenedorLogros = document.getElementById('lista-logros');
-        if (contenedorLogros) {
-            if (datos.logros && datos.logros.length > 0) {
-                contenedorLogros.innerHTML = datos.logros.map(logro => `
-                    <div class="logro-item"><div class="logro-titulo">${logro.icono} ${logro.nombre}</div><div class="logro-desc">${logro.descripcion}</div></div>
-                `).join('');
-            } else {
-                contenedorLogros.innerHTML = `<div style="color:var(--text-muted); padding: 20px;">No hay logros destacados.</div>`;
-            }
+        if (contenedorLogros && datos.logros && Array.isArray(datos.logros)) {
+            contenedorLogros.innerHTML = datos.logros.length > 0 ? datos.logros.map(logro => `
+                <div class="logro-item"><div class="logro-titulo">${logro.icono} ${logro.nombre}</div><div class="logro-desc">${logro.descripcion}</div></div>
+            `).join('') : '<div style="color:var(--text-muted); padding: 20px;">No hay logros destacados.</div>';
         }
 
         const contenedorMuro = document.getElementById('lista-muro');
         const muroContainer = document.getElementById('muro-container');
-        if (contenedorMuro && datos.muro && datos.muro.length > 0) {
+        if (contenedorMuro && datos.muro && Array.isArray(datos.muro) && datos.muro.length > 0) {
             contenedorMuro.innerHTML = datos.muro.map(tramposo => `<div style="margin-bottom:5px;">🚨 ${tramposo}</div>`).join('');
-            muroContainer.style.display = 'block'; 
+            if(muroContainer) muroContainer.style.display = 'block'; 
         } else if (muroContainer) {
             muroContainer.style.display = 'none'; 
         }
@@ -495,7 +513,7 @@
         
         // Votaciones Formulario
         const containerVot = document.getElementById('formulario-votaciones');
-        if (datos.categoriasVotacion && datos.categoriasVotacion.length > 0 && containerVot && containerVot.innerHTML === "") {
+        if (datos.categoriasVotacion && Array.isArray(datos.categoriasVotacion) && datos.categoriasVotacion.length > 0 && containerVot && containerVot.innerHTML === "") {
             let formHTML = '';
             datos.categoriasVotacion.forEach((cat, index) => {
                 formHTML += `<div style="margin-bottom: 12px; text-align: left;"><label style="font-size: 13px; font-weight: bold; color: var(--primary);">${cat}</label><input type="text" id="voto-${index}" data-cat="${cat}" placeholder="Nombre del compañero..." style="padding: 10px; margin-top: 5px;"></div>`;
@@ -503,7 +521,7 @@
             containerVot.innerHTML = formHTML;
         }
 
-        // Votaciones Nominados Finales (Protegido por try-catch)
+        // Votaciones Nominados Finales
         try {
             const btnVotarMenu = document.getElementById('btn-abrir-votaciones');
             const cajaNominados = document.getElementById('caja-nominados');
@@ -511,13 +529,13 @@
 
             if (datos.votacionesFinalizadas === true) {
                 if (btnVotarMenu) btnVotarMenu.style.display = 'none';
-                if (cajaNominados && listaNominados && datos.nominadosFinales) {
+                if (cajaNominados && listaNominados && datos.nominadosFinales && Array.isArray(datos.nominadosFinales)) {
                     cajaNominados.style.display = 'block';
                     listaNominados.innerHTML = datos.nominadosFinales.map(cat => `
                         <div style="margin-bottom: 15px; border-bottom: 1px solid #f1f3f4; padding-bottom: 10px;">
                             <div style="font-weight: bold; color: var(--primary); font-size: 14px; margin-bottom: 5px;">${cat.categoria}</div>
                             <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-muted);">
-                                ${cat.nominados ? cat.nominados.map(nom => `<li style="margin-bottom: 3px;">${nom}</li>`).join('') : '<li>Sin nominados</li>'}
+                                ${cat.nominados && Array.isArray(cat.nominados) ? cat.nominados.map(nom => `<li style="margin-bottom: 3px;">${nom}</li>`).join('') : '<li>Sin nominados</li>'}
                             </ul>
                         </div>
                     `).join('');
@@ -542,7 +560,6 @@
       .catch(err => console.error("Error en POST:", err));
     }
 
-    // NUEVO BOTÓN CÓDIGOS (Se bloquea y pone ENVIANDO...)
     function canjearCodigo() {
         const input = document.getElementById('palabra-secreta');
         const btn = document.getElementById('btn-canjear-codigo');
@@ -589,10 +606,12 @@
     }
 
     // =========================================================================
-    // JUEGO ZIP (PUNTOS BASADOS EN TIEMPO)
+    // JUEGO ZIP (CON CRONÓMETRO VISUAL)
     // =========================================================================
     let zipNivel = { filas: 4, cols: 4, totalDots: 5, puntos: { "0,0": 1, "0,3": 2, "3,2": 3, "2,1": 4, "1,0": 5 } };
     let zipPath = []; let zipDrawing = false; let zipNextDot = 2;
+    let zipStartTime = 0;
+    let zipTimerInterval = null;
 
     function inicializarTableroZip() {
       const tablero = document.getElementById('tablero-zip'); tablero.innerHTML = ''; tablero.style.gridTemplateColumns = `repeat(${zipNivel.cols}, 1fr)`;
@@ -606,7 +625,17 @@
       resetZip();
     }
 
-    function resetZip() { zipPath = []; zipDrawing = false; zipNextDot = 2; actualizarTableroZip(); }
+    function resetZip() { 
+      zipPath = []; zipDrawing = false; zipNextDot = 2; 
+      zipStartTime = 0;
+      if (zipTimerInterval) clearInterval(zipTimerInterval);
+      const timerEl = document.getElementById('zip-timer-display');
+      if (timerEl) {
+          timerEl.innerText = "0.0s";
+          timerEl.style.color = "var(--primary)";
+      }
+      actualizarTableroZip(); 
+    }
     
     function actualizarTableroZip() {
       document.querySelectorAll('.zip-cell').forEach(cell => {
@@ -626,14 +655,16 @@
        
        if(zipPath.length === (zipNivel.filas * zipNivel.cols) && zipNextDot > zipNivel.totalDots) {
            zipDrawing = false;
+           if(zipTimerInterval) clearInterval(zipTimerInterval); // Detenemos el reloj
            
-           // CALCULAR PUNTOS POR TIEMPO
            let zipTime = (Date.now() - zipStartTime) / 1000;
+           document.getElementById('zip-timer-display').innerText = zipTime.toFixed(1) + "s";
+           
            let puntosZip = 150;
-           if (zipTime <= 3) puntosZip = 150;        // 3 segundos: NINJA
-           else if (zipTime <= 6) puntosZip = 120;   // 6 segundos: Rápido
-           else if (zipTime <= 10) puntosZip = 80;   // 10 segundos: Normal
-           else puntosZip = 50;                      // Lento
+           if (zipTime <= 3) puntosZip = 150;        
+           else if (zipTime <= 6) puntosZip = 120;   
+           else if (zipTime <= 10) puntosZip = 80;   
+           else puntosZip = 50;                      
            
            setTimeout(() => { 
                alert("¡Increíble! Lo completaste en " + zipTime.toFixed(1) + " segundos. ¡Sumas " + puntosZip + " puntos!"); 
@@ -651,12 +682,32 @@
                 let cell = e.target.closest('.zip-cell'); if(!cell) return; let id = cell.dataset.id;
                 if(zipNivel.puntos[id] === 1 && zipPath.length === 0) { 
                     zipDrawing = true; zipPath = [id]; zipNextDot = 2; 
-                    zipStartTime = Date.now(); // INICIAMOS EL CRONÓMETRO AQUÍ
+                    
+                    // INICIAMOS EL CRONÓMETRO VISUAL AQUÍ
+                    zipStartTime = Date.now(); 
+                    if (zipTimerInterval) clearInterval(zipTimerInterval);
+                    zipTimerInterval = setInterval(() => {
+                        let current = (Date.now() - zipStartTime) / 1000;
+                        let timerEl = document.getElementById('zip-timer-display');
+                        timerEl.innerText = current.toFixed(1) + "s";
+                        
+                        // Sistema de colores para meter presión
+                        if(current > 10) timerEl.style.color = "var(--error-text)"; // Rojo (lento)
+                        else if(current > 6) timerEl.style.color = "#ff9800"; // Naranja (normal)
+                        else if(current > 3) timerEl.style.color = "var(--success)"; // Verde (rápido)
+                        else timerEl.style.color = "var(--primary)"; // Azul (ninja inicial)
+                    }, 100);
+
                     actualizarTableroZip(); 
                 } 
                 else if (zipPath.includes(id) && id === zipPath[zipPath.length - 1]) { zipDrawing = true; }
             });
-            window.addEventListener('pointerup', () => { zipDrawing = false; });
+            window.addEventListener('pointerup', () => { 
+                if (zipDrawing) {
+                    zipDrawing = false; 
+                    if(zipTimerInterval) clearInterval(zipTimerInterval); // Paramos reloj si levanta el dedo
+                }
+            });
             tableroZip.addEventListener('touchmove', (e) => {
                if(!zipDrawing) return; e.preventDefault(); let touch = e.touches[0]; let element = document.elementFromPoint(touch.clientX, touch.clientY);
                if(element && element.closest('.zip-cell')) handleZipMove(element.closest('.zip-cell').dataset.id);
@@ -668,7 +719,7 @@
     }
 
     // =========================================================================
-    // RULETA, WORDLE Y TRIVIAL (Se mantienen igual)
+    // RULETA, WORDLE Y TRIVIAL
     // =========================================================================
     function obtenerCosteGiroActual() { let hoy = new Date().toDateString(); let ultimoDia = localStorage.getItem('ruleta_dia'); let tiradasHoy = 0; if (ultimoDia === hoy) tiradasHoy = parseInt(localStorage.getItem('ruleta_tiradas')) || 0; else localStorage.setItem('ruleta_dia', hoy); if (tiradasHoy === 0) return 0; if (tiradasHoy === 1) return 20; if (tiradasHoy === 2) return 50; return 50 * Math.pow(2, tiradasHoy - 2); }
     function actualizarInterfazRuleta() { let coste = obtenerCosteGiroActual(); let btn = document.getElementById('btn-ruleta'); let txtCoste = document.getElementById('coste-ruleta-txt'); if (coste === 0) { txtCoste.innerHTML = `Coste próximo giro: <span style="color:var(--success)">GRATIS</span>`; btn.disabled = false; } else { txtCoste.innerHTML = `Coste próximo giro: <span style="color:var(--error-text)">${coste} pts</span>`; if (misPuntosActuales < coste) { txtCoste.innerHTML += `<br><span style="color:var(--error-text); font-size:11px;">⚠️ SALDO INSUFICIENTE PARA JUGAR</span>`; btn.disabled = true; } else { btn.disabled = false; } } }

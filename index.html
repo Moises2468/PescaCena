@@ -758,54 +758,39 @@
 
     function getZipNivel() {
         const hoy = new Date();
-        // Usamos una semilla basada en el día para que todos tengan el mismo tablero hoy
         const seed = hoy.getDate() + (hoy.getMonth() + 1) + hoy.getFullYear();
-        
-        // Caminos predefinidos (garantizan que los puntos sean alcanzables)
-        // Cada camino es una lista de coordenadas [r,c]
-        const caminos = [
-            ["0,0", "0,1", "1,1", "2,1", "2,0"],
-            ["1,0", "1,1", "1,2", "2,2", "3,2"],
+        const rutas = [
+            ["0,0", "0,1", "1,1", "1,2", "2,2"], 
+            ["3,0", "2,0", "2,1", "2,2", "1,2"],
             ["0,3", "1,3", "2,3", "2,2", "2,1"],
-            ["3,0", "3,1", "2,1", "1,1", "0,1"]
+            ["1,0", "1,1", "0,1", "0,2", "0,3"]
         ];
-
-        // Elegimos un camino basado en la semilla del día
-        const caminoElegido = caminos[seed % caminos.length];
-
+        const ruta = rutas[seed % rutas.length];
         return {
-            filas: 4, cols: 4, totalDots: 5,
-            puntos: {
-                [caminoElegido[0]]: 1,
-                [caminoElegido[1]]: 2,
-                [caminoElegido[2]]: 3,
-                [caminoElegido[3]]: 4,
-                [caminoElegido[4]]: 5
-            }
+            puntos: { [ruta[0]]: 1, [ruta[1]]: 2, [ruta[2]]: 3, [ruta[3]]: 4, [ruta[4]]: 5 },
+            totalDots: 5
         };
     }
 
+    let nivelActual = null; 
+
     function inicializarTableroZip() {
-      let nivelActual = getZipNivel();
+      nivelActual = getZipNivel(); // Generamos el nivel UNA VEZ al abrir
+      zipPath = [];
+      zipNextDot = 2; // Empezamos buscando el 2, porque el 1 ya está "tocado"
       const tablero = document.getElementById('tablero-zip'); 
       tablero.innerHTML = ''; 
-      tablero.style.gridTemplateColumns = `repeat(${nivelActual.cols}, 1fr)`;
       
-      // Aseguramos que el punto '1' siempre esté presente
-      let puntos = nivelActual.puntos;
-      if (!Object.values(puntos).includes(1)) {
-          // Si por algún milagro no se generó el 1, lo forzamos en 0,0
-          puntos["0,0"] = 1;
-      }
-      
-      for(let r = 0; r < nivelActual.filas; r++) {
-          for(let c = 0; c < nivelActual.cols; c++) {
+      for(let r = 0; r < 4; r++) {
+          for(let c = 0; c < 4; c++) {
               let cell = document.createElement('div'); 
               cell.className = 'zip-cell'; 
               cell.dataset.id = `${r},${c}`;
-              if(puntos[`${r},${c}`]) {
-                  cell.innerHTML = `<div class="zip-dot">${puntos[`${r},${c}`]}</div>`;
-              }
+              let num = nivelActual.puntos[`${r},${c}`];
+              if(num) cell.innerHTML = `<div class="zip-dot">${num}</div>`;
+              
+              cell.onpointerdown = (e) => startZip(e.target);
+              cell.onpointerenter = (e) => moveZip(e.target);
               tablero.appendChild(cell);
           }
       }
@@ -831,45 +816,34 @@
       });
     }
 
-    function handleZipMove(id) {
-       let nivelActual = getZipNivel(); // Obtenemos el tablero del día
-       
-       if(!zipDrawing || zipPath[zipPath.length - 1] === id || zipPath.includes(id)) return;
-       
-       let lastId = zipPath[zipPath.length-1]; 
-       let [r1, c1] = lastId.split(',').map(Number); 
-       let [r2, c2] = id.split(',').map(Number);
-       
-       // Validar adyacencia (movimiento ortogonal)
-       let isAdyacent = (Math.abs(r1-r2) === 1 && c1 === c2) || (Math.abs(c1-c2) === 1 && r1 === r2);
-       if(!isAdyacent) return;
-       
-       // Validar si el punto es el siguiente en la secuencia (1 -> 2 -> 3...)
-       if(nivelActual.puntos[id]) { 
-           if(nivelActual.puntos[id] !== zipNextDot) return; 
-           zipNextDot++; 
-       }
-       
-       zipPath.push(id); 
-       actualizarTableroZip();
-       
-       // Condición de victoria: recorrer todos los puntos (5)
-       if(zipNextDot > nivelActual.totalDots) {
-           zipDrawing = false;
-           if(zipTimerInterval) clearInterval(zipTimerInterval); 
-           
-           let zipTime = (Date.now() - zipStartTime) / 1000;
-           document.getElementById('zip-timer-display').innerText = zipTime.toFixed(1) + "s";
-           
-           let puntosZip = (zipTime <= 3) ? 150 : (zipTime <= 6) ? 120 : (zipTime <= 10) ? 80 : 50;
-           
-           setTimeout(() => { 
-               alert("¡Increíble! Lo completaste en " + zipTime.toFixed(1) + " segundos. ¡Sumas " + puntosZip + " puntos!"); 
-               localStorage.setItem('zip_ultimo_dia', new Date().toDateString()); 
-               enviarPuntosAJuego("Éxito ZIP", puntosZip, "Tiempo: " + zipTime.toFixed(1) + "s"); 
-               cerrarZip(); 
-           }, 300);
-       }
+    function moveZip(el) {
+      if (!zipDrawing) return;
+      let id = el.dataset.id;
+      if (zipPath.includes(id)) return;
+
+      let lastId = zipPath[zipPath.length-1];
+      let [r1, c1] = lastId.split(',').map(Number);
+      let [r2, c2] = id.split(',').map(Number);
+      
+      // Validar adyacencia (distancia 1)
+      if (Math.abs(r1-r2) + Math.abs(c1-c2) !== 1) return;
+
+      // Validar si el punto es el siguiente en la secuencia
+      let num = nivelActual.puntos[id];
+      if (num && num !== zipNextDot) return;
+      if (num === zipNextDot) zipNextDot++;
+
+      zipPath.push(id);
+      el.classList.add('path');
+
+      // Victoria
+      if (zipNextDot > 5) {
+        zipDrawing = false;
+        clearInterval(zipTimerInterval);
+        let zipTime = (Date.now() - zipStartTime) / 1000;
+        alert("¡Completado en " + zipTime + "s!");
+        enviarPuntosAJuego("Éxito ZIP", 100, "Tiempo: " + zipTime + "s");
+      }
     }
     function iniciarEscuchadoresZip() {
         const tableroZip = document.getElementById('tablero-zip');

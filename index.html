@@ -395,12 +395,15 @@
       if (!callback) cargandoInicial = true;
       const loadingText = document.getElementById('loading-text'); 
       if (loadingText) loadingText.style.display = 'block';
+      const botones = document.querySelectorAll('button');
+      botones.forEach(b => b.disabled = true);
       
       fetch(URL_GOOGLE + "?token=candado_pescanova_26&_tsc=" + new Date().getTime())
         .then(response => response.json())
         .then(datos => {
           if (loadingText) loadingText.style.display = 'none'; 
           cargandoInicial = false;
+        botones.forEach(b => b.disabled = false);
           
           if (datos.error) { if(callback) callback(false); return; }
 

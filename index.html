@@ -391,18 +391,18 @@
     function cerrarWordle() { document.getElementById('pantalla-wordle').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); window.scrollTo(0,0); }
 
     function cargarMarcadores(callback) {
-      if (cargandoInicial && !callback) return; if (!callback) cargandoInicial = true;
-      const loadingText = document.getElementById('loading-text'); if (loadingText) loadingText.style.display = 'block';
+      if (cargandoInicial && !callback) return; 
+      if (!callback) cargandoInicial = true;
+      const loadingText = document.getElementById('loading-text'); 
+      if (loadingText) loadingText.style.display = 'block';
       
       fetch(URL_GOOGLE + "?token=candado_pescanova_26&_tsc=" + new Date().getTime())
         .then(response => response.json())
         .then(datos => {
-          if (loadingText) loadingText.style.display = 'none'; cargandoInicial = false;
+          if (loadingText) loadingText.style.display = 'none'; 
+          cargandoInicial = false;
           
-          if (datos.error) { 
-              if(callback) callback(false); 
-              return; 
-          }
+          if (datos.error) { if(callback) callback(false); return; }
 
           // 1. Noticia Global
           if (datos.noticiaGlobal) {
@@ -485,28 +485,11 @@
               }
           }
 
-          // 9. LÓGICA DE NOMINADOS (AQUÍ ESTÁ EL CAMBIO SEGURIZADO)
+          // 9. Lógica final de botones
           const btnVotarMenu = document.getElementById('btn-abrir-votaciones');
           const cajaNominados = document.getElementById('caja-nominados');
-          const listaNominados = document.getElementById('lista-nominados-contenido');
-
-          if (datos.votacionesFinalizadas === true) {
-              if (btnVotarMenu) btnVotarMenu.style.display = 'none';
-              if (cajaNominados && listaNominados && datos.nominadosFinales) {
-                  cajaNominados.style.display = 'block';
-                  listaNominados.innerHTML = datos.nominadosFinales.map(cat => `
-                      <div style="margin-bottom: 15px; border-bottom: 1px solid #f1f3f4; padding-bottom: 10px;">
-                          <div style="font-weight: bold; color: var(--primary); font-size: 14px; margin-bottom: 5px;">${cat.categoria}</div>
-                          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-muted);">
-                              ${cat.nominados.map(nom => `<li style="margin-bottom: 3px;">${nom}</li>`).join('')}
-                          </ul>
-                      </div>
-                  `).join('');
-              }
-          } else {
-              if (btnVotarMenu) btnVotarMenu.style.display = 'block';
-              if (cajaNominados) cajaNominados.style.display = 'none';
-          }
+          if(btnVotarMenu) btnVotarMenu.style.display = 'block';
+          if(cajaNominados) cajaNominados.style.display = 'none';
 
           if(callback) callback(true);
         }).catch(error => { 

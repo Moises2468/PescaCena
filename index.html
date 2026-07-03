@@ -759,6 +759,7 @@
     function getZipNivel() {
         const hoy = new Date();
         const seed = hoy.getDate() + (hoy.getMonth() + 1) + hoy.getFullYear();
+        // Rutas que garantizan adyacencia (4x4)
         const rutas = [
             ["0,0", "0,1", "1,1", "1,2", "2,2"], 
             ["3,0", "2,0", "2,1", "2,2", "1,2"],
@@ -771,16 +772,14 @@
             totalDots: 5
         };
     }
-
     let nivelActual = null; 
 
     function inicializarTableroZip() {
-      nivelActual = getZipNivel(); // Generamos el nivel UNA VEZ al abrir
-      zipPath = [];
-      zipNextDot = 2; // Empezamos buscando el 2, porque el 1 ya está "tocado"
+      nivelActual = getZipNivel();
       const tablero = document.getElementById('tablero-zip'); 
       tablero.innerHTML = ''; 
       
+      // Mantenemos tu estructura de bucles original para no romper el grid
       for(let r = 0; r < 4; r++) {
           for(let c = 0; c < 4; c++) {
               let cell = document.createElement('div'); 
@@ -788,15 +787,11 @@
               cell.dataset.id = `${r},${c}`;
               let num = nivelActual.puntos[`${r},${c}`];
               if(num) cell.innerHTML = `<div class="zip-dot">${num}</div>`;
-              
-              cell.onpointerdown = (e) => startZip(e.target);
-              cell.onpointerenter = (e) => moveZip(e.target);
               tablero.appendChild(cell);
           }
       }
       resetZip();
     }
-
     function resetZip() { 
       zipPath = []; zipDrawing = false; zipNextDot = 2; 
       zipStartTime = 0;
@@ -816,34 +811,33 @@
       });
     }
 
-    function moveZip(el) {
-      if (!zipDrawing) return;
-      let id = el.dataset.id;
-      if (zipPath.includes(id)) return;
-
-      let lastId = zipPath[zipPath.length-1];
-      let [r1, c1] = lastId.split(',').map(Number);
-      let [r2, c2] = id.split(',').map(Number);
-      
-      // Validar adyacencia (distancia 1)
-      if (Math.abs(r1-r2) + Math.abs(c1-c2) !== 1) return;
-
-      // Validar si el punto es el siguiente en la secuencia
-      let num = nivelActual.puntos[id];
-      if (num && num !== zipNextDot) return;
-      if (num === zipNextDot) zipNextDot++;
-
-      zipPath.push(id);
-      el.classList.add('path');
-
-      // Victoria
-      if (zipNextDot > 5) {
-        zipDrawing = false;
-        clearInterval(zipTimerInterval);
-        let zipTime = (Date.now() - zipStartTime) / 1000;
-        alert("¡Completado en " + zipTime + "s!");
-        enviarPuntosAJuego("Éxito ZIP", 100, "Tiempo: " + zipTime + "s");
-      }
+    function handleZipMove(id) {
+       if(!zipDrawing || zipPath[zipPath.length - 1] === id || zipPath.includes(id)) return;
+       
+       let lastId = zipPath[zipPath.length-1]; 
+       let [r1, c1] = lastId.split(',').map(Number); 
+       let [r2, c2] = id.split(',').map(Number);
+       
+       // Validar que sea adyacente (movimiento ortogonal)
+       if (Math.abs(r1-r2) + Math.abs(c1-c2) !== 1) return;
+       
+       // Validar secuencia numérica si la celda tiene un número
+       let num = nivelActual.puntos[id];
+       if(num && num !== zipNextDot) return;
+       if(num === zipNextDot) zipNextDot++;
+       
+       zipPath.push(id); 
+       actualizarTableroZip();
+       
+       // Victoria
+       if(zipNextDot > 5) {
+           zipDrawing = false;
+           clearInterval(zipTimerInterval); 
+           let zipTime = (Date.now() - zipStartTime) / 1000;
+           alert("¡Completado en " + zipTime + "s!");
+           enviarPuntosAJuego("Éxito ZIP", 100, "Tiempo: " + zipTime + "s");
+           cerrarZip();
+       }
     }
     function iniciarEscuchadoresZip() {
         const tableroZip = document.getElementById('tablero-zip');

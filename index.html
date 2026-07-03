@@ -391,14 +391,23 @@
     function cerrarWordle() { document.getElementById('pantalla-wordle').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); window.scrollTo(0,0); }
 
     function cargarMarcadores(callback) {
-      if (cargandoInicial && !callback) return; if (!callback) cargandoInicial = true;
-      const loadingText = document.getElementById('loading-text'); if (loadingText) loadingText.style.display = 'block';
+      if (cargandoInicial && !callback) return; 
+      if (!callback) cargandoInicial = true;
+      const loadingText = document.getElementById('loading-text'); 
+      if (loadingText) loadingText.style.display = 'block';
       
       fetch(URL_GOOGLE + "?token=candado_pescanova_26&_tsc=" + new Date().getTime())
         .then(response => response.json())
         .then(datos => {
-          if (loadingText) loadingText.style.display = 'none'; cargandoInicial = false;
+          if (loadingText) loadingText.style.display = 'none'; 
+          cargandoInicial = false;
           
+          if (datos.error) { 
+              if(callback) callback(false); 
+              return; 
+          }
+
+          // 1. Noticia Global
           if (datos.noticiaGlobal) {
             const container = document.getElementById('ticker-container');
             const text = document.getElementById('ticker-text');
@@ -406,18 +415,17 @@
             container.style.display = 'block'; 
           }
 
-          if (datos.error) { 
-              if(callback) callback(false); 
-              return; 
-          }
-
+          // 2. Rankings de equipos
           const deps = datos.departamentos || {};
-          const pProd = Number(deps["Producción"]) || 0; const pMant = Number(deps["Mantenimiento"]) || 0; const pOfic = Number(deps["Oficinas"]) || 0;
+          const pProd = Number(deps["Producción"]) || 0; 
+          const pMant = Number(deps["Mantenimiento"]) || 0; 
+          const pOfic = Number(deps["Oficinas"]) || 0;
           const maxPts = Math.max(pProd, pMant, pOfic, 1);
           document.getElementById('pts-prod').innerText = pProd + " pts"; document.getElementById('barra-prod').style.width = (pProd / maxPts * 100) + "%";
           document.getElementById('pts-mant').innerText = pMant + " pts"; document.getElementById('barra-mant').style.width = (pMant / maxPts * 100) + "%";
           document.getElementById('pts-ofic').innerText = pOfic + " pts"; document.getElementById('barra-ofic').style.width = (pOfic / maxPts * 100) + "%";
 
+          // 3. Puntos personales
           if (datos.puntosTotalesJugadores) {
              misPuntosActuales = datos.puntosTotalesJugadores[localStorage.getItem('jugador_nombre')] || 0;
              document.getElementById('mis-puntos-num').innerText = misPuntosActuales;
@@ -427,12 +435,14 @@
 
           actualizarInterfazRuleta();
 
+          // 4. Ranking Agentes
           const tablaBody = document.getElementById('tabla-agentes-body');
           if (datos.agentes && tablaBody) {
               tablaBody.innerHTML = "<tr><th>Pos</th><th>Usuario</th><th>Área</th><th>Pts</th></tr>";
               datos.agentes.forEach((agente, index) => { tablaBody.innerHTML += `<tr><td>${index + 1}º</td><td>${agente.nombre}</td><td>${agente.departamento}</td><td>${agente.puntos}</td></tr>`; });
           }
 
+          // 5. Logros
           const contenedorLogros = document.getElementById('lista-logros');
           if (contenedorLogros) {
               if (datos.logros && datos.logros.length > 0) {
@@ -447,6 +457,7 @@
               }
           }
 
+          // 6. Muro
           const contenedorMuro = document.getElementById('lista-muro');
           const muroContainer = document.getElementById('muro-container');
           if (contenedorMuro && datos.muro && datos.muro.length > 0) {
@@ -456,14 +467,15 @@
               muroContainer.style.display = 'none'; 
           }
 
+          // 7. Trivial y Wordle
           if (datos.trivialPregunta) {
               trivialActual.pregunta = datos.trivialPregunta; trivialActual.a = datos.trivialA; trivialActual.b = datos.trivialB;
               trivialActual.c = datos.trivialC; trivialActual.d = datos.trivialD; trivialActual.respuesta = datos.trivialRespuesta;
           }
-
           if (datos.palabra) palabraSecretaDelDia = datos.palabra;
           if (datos.diccionario) diccionarioLocal = datos.diccionario;
           
+          // 8. Votaciones y Nominados
           if (datos.categoriasVotacion && datos.categoriasVotacion.length > 0) {
               let formHTML = '';
               datos.categoriasVotacion.forEach((cat, index) => {
@@ -478,7 +490,7 @@
               }
           }
 
-          // LÓGICA DE NOMINADOS Y FIN DE VOTACIONES
+          // Lógica de nominados corregida: Se asegura de que los elementos existan antes de modificar el display
           if (datos.votacionesFinalizadas === true) {
               const btnVotarMenu = document.getElementById('btn-abrir-votaciones');
               if (btnVotarMenu) btnVotarMenu.style.display = 'none';
@@ -507,10 +519,10 @@
         }).catch(error => { 
           if (loadingText) loadingText.style.display = 'none'; 
           cargandoInicial = false; 
+          console.error("Error en carga:", error);
           if(callback) callback(false);
         });
     }
-
     function enviarPuntosAJuego(accion, cantidadPuntos, palabra) {
       const datos = { nombre: localStorage.getItem('jugador_nombre'), departamento: localStorage.getItem('jugador_dep'), accion: accion, puntos: cantidadPuntos, palabra: palabra || "N/A" };
       fetch(URL_GOOGLE, { method: 'POST', body: JSON.stringify(datos) })

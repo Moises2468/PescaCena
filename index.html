@@ -436,15 +436,29 @@
               datos.agentes.forEach((agente, index) => { tablaBody.innerHTML += `<tr><td>${index + 1}º</td><td>${agente.nombre}</td><td>${agente.departamento}</td><td>${agente.puntos}</td></tr>`; });
           }
 
-          // 5. Logros y Muro
+          // 5. Logros
           const contenedorLogros = document.getElementById('lista-logros');
-          if (contenedorLogros && datos.logros) {
-              contenedorLogros.innerHTML = datos.logros.length > 0 ? datos.logros.map(logro => `
-                  <div class="logro-item"><div class="logro-titulo">${logro.icono} ${logro.nombre}</div><div class="logro-desc">${logro.descripcion}</div></div>
-              `).join('') : '<div style="color:var(--text-muted); padding: 20px;">No hay logros destacados.</div>';
+          if (contenedorLogros) {
+              if (datos.logros && datos.logros.length > 0) {
+                  contenedorLogros.innerHTML = datos.logros.map(logro => `
+                      <div class="logro-item"><div class="logro-titulo">${logro.icono} ${logro.nombre}</div><div class="logro-desc">${logro.descripcion}</div></div>
+                  `).join('');
+              } else {
+                  contenedorLogros.innerHTML = `<div style="color:var(--text-muted); padding: 20px;">No hay logros destacados.</div>`;
+              }
           }
 
-          // 6. Lógica de Votaciones y Nominados (BLINDADA)
+          // 6. Categorías de Votación (RESTAURADO)
+          if (datos.categoriasVotacion && datos.categoriasVotacion.length > 0) {
+              let formHTML = '';
+              datos.categoriasVotacion.forEach((cat, index) => {
+                  formHTML += `<div style="margin-bottom: 12px; text-align: left;"><label style="font-size: 13px; font-weight: bold; color: var(--primary);">${cat}</label><input type="text" id="voto-${index}" data-cat="${cat}" placeholder="Nombre del compañero..." style="padding: 10px; margin-top: 5px;"></div>`;
+              });
+              const containerVot = document.getElementById('formulario-votaciones');
+              if(containerVot) containerVot.innerHTML = formHTML;
+          }
+
+          // 7. Lógica de Nominados
           try {
               const btnVotarMenu = document.getElementById('btn-abrir-votaciones');
               const cajaNominados = document.getElementById('caja-nominados');
@@ -456,8 +470,10 @@
                       cajaNominados.style.display = 'block';
                       listaNominados.innerHTML = datos.nominadosFinales.map(cat => `
                           <div style="margin-bottom: 15px; border-bottom: 1px solid #f1f3f4; padding-bottom: 10px;">
-                              <div style="font-weight: bold; color: var(--primary);">${cat.categoria}</div>
-                              <ul style="padding-left: 20px;">${cat.nominados.map(nom => `<li>${nom}</li>`).join('')}</ul>
+                              <div style="font-weight: bold; color: var(--primary); font-size: 14px; margin-bottom: 5px;">${cat.categoria}</div>
+                              <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-muted);">
+                                  ${cat.nominados ? cat.nominados.map(nom => `<li style="margin-bottom: 3px;">${nom}</li>`).join('') : '<li>Sin nominados</li>'}
+                              </ul>
                           </div>
                       `).join('');
                   }
@@ -466,14 +482,15 @@
                   if (cajaNominados) cajaNominados.style.display = 'none';
               }
           } catch (e) {
-              console.error("Error visualizando nominados:", e);
+              console.error("Error en nominados:", e);
           }
 
           if(callback) callback(true);
         }).catch(error => { 
           if (loadingText) loadingText.style.display = 'none'; 
           cargandoInicial = false; 
-          callback ? callback(false) : console.error(error);
+          console.error("Error en carga:", error);
+          if(callback) callback(false);
         });
     }
     function enviarPuntosAJuego(accion, cantidadPuntos, palabra) {

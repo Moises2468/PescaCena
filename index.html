@@ -137,10 +137,10 @@
         <p style="font-size: 14px; color:var(--text-muted); margin-bottom: 0;">Navega por el menú inferior para jugar, consultar tus puntos y los de tu equipo, o canjear códigos QR.</p>
       </div>
 
-      <!-- BOTÓN DE VOTAR PREMIOS (Se ocultará cuando terminen las votaciones) -->
+      <!-- BOTÓN DE VOTAR PREMIOS -->
       <button id="btn-abrir-votaciones" class="btn-juego" style="background-color: #ff9800; max-width: 320px;" onclick="abrirVotaciones()">🏆 VOTAR PREMIOS</button>
 
-      <!-- CAJA DE NOMINADOS (Oculta por defecto, se muestra cuando finalizan las votaciones) -->
+      <!-- CAJA DE NOMINADOS -->
       <div class="card-container" id="caja-nominados" style="display: none; margin-top: 15px; text-align: left;">
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🌟 Nominados Finales</h3>
         <p style="font-size: 13px; color:var(--text-muted);">Las votaciones han finalizado. Estos son los nominados a los premios en cada categoría:</p>
@@ -198,10 +198,9 @@
         <button class="btn-juego btn-ruleta-start" id="btn-ruleta" onclick="girarRuleta()">GIRAR RULETA</button>
       </div>
 
-      <!-- EL NUEVO JUEGO ZIP -->
       <div class="card-container">
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🧩 Pesca-Zip (NUEVO)</h3>
-        <p style="font-size: 13px; color:var(--text-muted);">Conecta los puntos numéricos arrastrando el dedo hasta rellenar toda la cuadrícula. Suma 150 puntos.</p>
+        <p style="font-size: 13px; color:var(--text-muted);">Conecta los puntos numéricos arrastrando el dedo hasta rellenar toda la cuadrícula. ¡Cuanto más rápido, más puntos!</p>
         <button class="btn-juego" style="background-color: #8c52ff;" onclick="abrirZip()">JUGAR ZIP</button>
       </div>
 
@@ -218,14 +217,13 @@
       </div>
     </div>
 
-    <!-- PESTAÑA CÓDIGOS (INTACTA Y FUNCIONAL) -->
     <div id="sec-codigos" class="seccion-lobby">
       <h2>Validar Código</h2>
       <div class="card-container">
         <p style="margin-top:0; font-size: 14px; font-weight: bold; color: var(--primary);">Introduce el código localizado:</p>
         <p style="font-size: 12px; color:var(--text-muted); margin-bottom: 15px;">Si has encontrado un código QR, escríbelo aquí para sumar los puntos.</p>
         <input type="text" id="palabra-secreta" placeholder="EJ: A1B2C3" style="text-transform: uppercase; text-align: center; font-weight: bold; letter-spacing: 2px;">
-        <button class="btn-codigo" onclick="enviarPuntosAJuego('Código Localizado', 0, document.getElementById('palabra-secreta').value)">CANJEAR PUNTOS</button>
+        <button id="btn-canjear-codigo" class="btn-codigo" onclick="canjearCodigo()">CANJEAR PUNTOS</button>
       </div>
     </div>
 
@@ -277,7 +275,7 @@
     </div>
   </div>
 
-  <!-- PANTALLA ZIP (NUEVO) -->
+  <!-- PANTALLA ZIP -->
   <div id="pantalla-zip" class="screen">
     <div class="wordle-header"><button class="btn-volver" onclick="cerrarZip()">⬅️ VOLVER</button><h2 style="margin:0; color:var(--primary);">PESCA-ZIP</h2><div style="width: 70px;"></div></div>
     <p style="font-size: 13px; color:var(--text-muted); margin-bottom: 5px;">Arrastra el dedo desde el 1 hasta el 5.</p>
@@ -286,7 +284,7 @@
     <button class="btn-codigo" onclick="resetZip()">REINICIAR TRAZO</button>
   </div>
 
-  <!-- PANTALLA VOTACIONES (NUEVA PANTALLA SEPARADA) -->
+  <!-- PANTALLA VOTACIONES -->
   <div id="pantalla-votaciones" class="screen">
     <div class="wordle-header"><button class="btn-volver" onclick="cerrarVotaciones()">⬅️ VOLVER</button><h2 style="margin:0; color:var(--primary);">VOTACIONES</h2><div style="width: 70px;"></div></div>
     <div class="card-container" id="caja-votaciones-form" style="margin-top: 20px;">
@@ -303,6 +301,8 @@
 
     // VARIABLES GLOBALES
     let palabraSecretaDelDia = ""; let cargandoInicial = false; let misPuntosActuales = 0; let trivialActual = { pregunta: "", a: "", b: "", c: "", d: "", respuesta: "" }; let juegoTerminado = false; let intentos = 0; let letrasActuales = []; let diccionarioLocal = [];
+    let controladorFetch = null; // Asesino de peticiones zombi
+    let zipStartTime = 0; // Cronómetro del ZIP
 
     window.onload = function() {
       if(localStorage.getItem('jugador_nombre') && localStorage.getItem('jugador_dep')) mostrarLobby();
@@ -326,15 +326,10 @@
               localStorage.setItem('jugador_dep', departamentoInput);
               mostrarLobby();
               
-              // CAPTURA DE IP Y REGISTRO
               fetch('https://api.ipify.org?format=json')
                 .then(res => res.json())
-                .then(data => {
-                   enviarPuntosAJuego("Inicio de Sesión", 0, "IP: " + data.ip);
-                })
-                .catch(err => {
-                   enviarPuntosAJuego("Inicio de Sesión", 0, "IP: Oculta/Bloqueada");
-                });
+                .then(data => { enviarPuntosAJuego("Inicio de Sesión", 0, "IP: " + data.ip); })
+                .catch(err => { enviarPuntosAJuego("Inicio de Sesión", 0, "IP: Oculta/Bloqueada"); });
 
           } else {
               btnEntrar.disabled = false; 
@@ -377,7 +372,6 @@
       else { contenido.style.display = 'none'; icono.innerText = '+'; }
     }
 
-    // NAVEGACION JUEGOS Y VOTACIONES
     function abrirVotaciones() { document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-votaciones').classList.add('active'); window.scrollTo(0,0); }
     function cerrarVotaciones() { document.getElementById('pantalla-votaciones').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); window.scrollTo(0,0); }
     
@@ -390,124 +384,189 @@
     function abrirWordle() { if (localStorage.getItem('wordle_ultimo_dia') === new Date().toDateString()) { alert("Ya completaste el Wordle hoy."); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-wordle').classList.add('active'); window.scrollTo(0,0); juegoTerminado = false; intentos = 0; letrasActuales = []; for (let i=0; i<6; i++) for (let j=0; j<5; j++) { document.getElementById(`casilla-${i}-${j}`).innerText = ""; document.getElementById(`casilla-${i}-${j}`).className = "casilla"; } }
     function cerrarWordle() { document.getElementById('pantalla-wordle').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); window.scrollTo(0,0); }
 
+    // =========================================================================
+    // LÓGICA DE CARGA PROTEGIDA (BLINDAJE DE 3 CAPAS)
+    // =========================================================================
     function cargarMarcadores(callback) {
       if (cargandoInicial && !callback) return; 
-      if (!callback) cargandoInicial = true;
+
+      // 1. Asesino de peticiones Zombi (Evita atascos si le dan rápido)
+      if (controladorFetch) controladorFetch.abort();
+      controladorFetch = new AbortController();
+
       const loadingText = document.getElementById('loading-text'); 
       if (loadingText) loadingText.style.display = 'block';
-      const botones = document.querySelectorAll('button');
-      botones.forEach(b => b.disabled = true);
+
+      // 2. Guardavidas Local (Pinta la web instantáneamente con lo último guardado)
+      try {
+          const cacheStr = localStorage.getItem('marcadores_cache');
+          if (cacheStr && !cargandoInicial) {
+              pintarDatos(JSON.parse(cacheStr));
+          }
+      } catch(e) {}
+
+      cargandoInicial = true;
       
-      fetch(URL_GOOGLE + "?token=candado_pescanova_26&_tsc=" + new Date().getTime())
-        .then(response => response.json())
-        .then(datos => {
+      fetch(URL_GOOGLE + "?token=candado_pescanova_26&_tsc=" + new Date().getTime(), { signal: controladorFetch.signal })
+        .then(response => response.text()) // Leer como texto primero
+        .then(texto => {
+          let datos;
+          try {
+              datos = JSON.parse(texto); // 3. Escudo anti-basura de Google
+          } catch(err) {
+              throw new Error("JSON malformado recibido del servidor");
+          }
+
+          localStorage.setItem('marcadores_cache', texto); // Guardamos copia de seguridad
+          
           if (loadingText) loadingText.style.display = 'none'; 
           cargandoInicial = false;
-        botones.forEach(b => b.disabled = false);
           
           if (datos.error) { if(callback) callback(false); return; }
 
-          // 1. Noticia Global
-          if (datos.noticiaGlobal) {
+          pintarDatos(datos); // Actualizamos la interfaz con los nuevos datos
+          if(callback) callback(true);
+        })
+        .catch(error => { 
+          if (error.name === 'AbortError') return; // Cancelado a propósito, no hacemos nada
+          if (loadingText) loadingText.style.display = 'none'; 
+          cargandoInicial = false; 
+          console.warn("Fallo de conexión ignorado para proteger la web:", error);
+          if(callback) callback(false);
+        });
+    }
+
+    // Función exclusiva para pintar en pantalla (Limpia y segura)
+    function pintarDatos(datos) {
+        if (datos.noticiaGlobal) {
             const container = document.getElementById('ticker-container');
             const text = document.getElementById('ticker-text');
             text.innerText = datos.noticiaGlobal;
             container.style.display = 'block'; 
-          }
+        }
 
-          // 2. Rankings de equipos
-          const deps = datos.departamentos || {};
-          const pProd = Number(deps["Producción"]) || 0; const pMant = Number(deps["Mantenimiento"]) || 0; const pOfic = Number(deps["Oficinas"]) || 0;
-          const maxPts = Math.max(pProd, pMant, pOfic, 1);
-          document.getElementById('pts-prod').innerText = pProd + " pts"; document.getElementById('barra-prod').style.width = (pProd / maxPts * 100) + "%";
-          document.getElementById('pts-mant').innerText = pMant + " pts"; document.getElementById('barra-mant').style.width = (pMant / maxPts * 100) + "%";
-          document.getElementById('pts-ofic').innerText = pOfic + " pts"; document.getElementById('barra-ofic').style.width = (pOfic / maxPts * 100) + "%";
+        const deps = datos.departamentos || {};
+        const pProd = Number(deps["Producción"]) || 0; const pMant = Number(deps["Mantenimiento"]) || 0; const pOfic = Number(deps["Oficinas"]) || 0;
+        const maxPts = Math.max(pProd, pMant, pOfic, 1);
+        document.getElementById('pts-prod').innerText = pProd + " pts"; document.getElementById('barra-prod').style.width = (pProd / maxPts * 100) + "%";
+        document.getElementById('pts-mant').innerText = pMant + " pts"; document.getElementById('barra-mant').style.width = (pMant / maxPts * 100) + "%";
+        document.getElementById('pts-ofic').innerText = pOfic + " pts"; document.getElementById('barra-ofic').style.width = (pOfic / maxPts * 100) + "%";
 
-          // 3. Puntos personales
-          if (datos.puntosTotalesJugadores) {
+        if (datos.puntosTotalesJugadores) {
              misPuntosActuales = datos.puntosTotalesJugadores[localStorage.getItem('jugador_nombre')] || 0;
              document.getElementById('mis-puntos-num').innerText = misPuntosActuales;
              document.getElementById('mis-puntos-num').style.color = (misPuntosActuales < 0) ? "var(--error-text)" : "var(--text)";
-          }
+        }
 
-          actualizarInterfazRuleta();
+        actualizarInterfazRuleta();
 
-          // 4. Ranking Agentes
-          const tablaBody = document.getElementById('tabla-agentes-body');
-          if (datos.agentes && tablaBody) {
-              tablaBody.innerHTML = "<tr><th>Pos</th><th>Usuario</th><th>Área</th><th>Pts</th></tr>";
-              datos.agentes.forEach((agente, index) => { tablaBody.innerHTML += `<tr><td>${index + 1}º</td><td>${agente.nombre}</td><td>${agente.departamento}</td><td>${agente.puntos}</td></tr>`; });
-          }
+        const tablaBody = document.getElementById('tabla-agentes-body');
+        if (datos.agentes && tablaBody) {
+            tablaBody.innerHTML = "<tr><th>Pos</th><th>Usuario</th><th>Área</th><th>Pts</th></tr>";
+            datos.agentes.forEach((agente, index) => { tablaBody.innerHTML += `<tr><td>${index + 1}º</td><td>${agente.nombre}</td><td>${agente.departamento}</td><td>${agente.puntos}</td></tr>`; });
+        }
 
-          // 5. Logros
-          const contenedorLogros = document.getElementById('lista-logros');
-          if (contenedorLogros) {
-              if (datos.logros && datos.logros.length > 0) {
-                  contenedorLogros.innerHTML = datos.logros.map(logro => `
-                      <div class="logro-item"><div class="logro-titulo">${logro.icono} ${logro.nombre}</div><div class="logro-desc">${logro.descripcion}</div></div>
-                  `).join('');
-              } else {
-                  contenedorLogros.innerHTML = `<div style="color:var(--text-muted); padding: 20px;">No hay logros destacados.</div>`;
-              }
-          }
+        const contenedorLogros = document.getElementById('lista-logros');
+        if (contenedorLogros) {
+            if (datos.logros && datos.logros.length > 0) {
+                contenedorLogros.innerHTML = datos.logros.map(logro => `
+                    <div class="logro-item"><div class="logro-titulo">${logro.icono} ${logro.nombre}</div><div class="logro-desc">${logro.descripcion}</div></div>
+                `).join('');
+            } else {
+                contenedorLogros.innerHTML = `<div style="color:var(--text-muted); padding: 20px;">No hay logros destacados.</div>`;
+            }
+        }
 
-          // 6. Categorías de Votación (RESTAURADO)
-          if (datos.categoriasVotacion && datos.categoriasVotacion.length > 0) {
-              let formHTML = '';
-              datos.categoriasVotacion.forEach((cat, index) => {
-                  formHTML += `<div style="margin-bottom: 12px; text-align: left;"><label style="font-size: 13px; font-weight: bold; color: var(--primary);">${cat}</label><input type="text" id="voto-${index}" data-cat="${cat}" placeholder="Nombre del compañero..." style="padding: 10px; margin-top: 5px;"></div>`;
-              });
-              const containerVot = document.getElementById('formulario-votaciones');
-              if(containerVot) containerVot.innerHTML = formHTML;
-          }
+        const contenedorMuro = document.getElementById('lista-muro');
+        const muroContainer = document.getElementById('muro-container');
+        if (contenedorMuro && datos.muro && datos.muro.length > 0) {
+            contenedorMuro.innerHTML = datos.muro.map(tramposo => `<div style="margin-bottom:5px;">🚨 ${tramposo}</div>`).join('');
+            muroContainer.style.display = 'block'; 
+        } else if (muroContainer) {
+            muroContainer.style.display = 'none'; 
+        }
 
-          // 7. Lógica de Nominados
-          try {
-              const btnVotarMenu = document.getElementById('btn-abrir-votaciones');
-              const cajaNominados = document.getElementById('caja-nominados');
-              const listaNominados = document.getElementById('lista-nominados-contenido');
+        if (datos.trivialPregunta) {
+            trivialActual.pregunta = datos.trivialPregunta; trivialActual.a = datos.trivialA; trivialActual.b = datos.trivialB;
+            trivialActual.c = datos.trivialC; trivialActual.d = datos.trivialD; trivialActual.respuesta = datos.trivialRespuesta;
+        }
+        if (datos.palabra) palabraSecretaDelDia = datos.palabra;
+        if (datos.diccionario) diccionarioLocal = datos.diccionario;
+        
+        // Votaciones Formulario
+        const containerVot = document.getElementById('formulario-votaciones');
+        if (datos.categoriasVotacion && datos.categoriasVotacion.length > 0 && containerVot && containerVot.innerHTML === "") {
+            let formHTML = '';
+            datos.categoriasVotacion.forEach((cat, index) => {
+                formHTML += `<div style="margin-bottom: 12px; text-align: left;"><label style="font-size: 13px; font-weight: bold; color: var(--primary);">${cat}</label><input type="text" id="voto-${index}" data-cat="${cat}" placeholder="Nombre del compañero..." style="padding: 10px; margin-top: 5px;"></div>`;
+            });
+            containerVot.innerHTML = formHTML;
+        }
 
-              if (datos.votacionesFinalizadas === true) {
-                  if (btnVotarMenu) btnVotarMenu.style.display = 'none';
-                  if (cajaNominados && listaNominados && datos.nominadosFinales) {
-                      cajaNominados.style.display = 'block';
-                      listaNominados.innerHTML = datos.nominadosFinales.map(cat => `
-                          <div style="margin-bottom: 15px; border-bottom: 1px solid #f1f3f4; padding-bottom: 10px;">
-                              <div style="font-weight: bold; color: var(--primary); font-size: 14px; margin-bottom: 5px;">${cat.categoria}</div>
-                              <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-muted);">
-                                  ${cat.nominados ? cat.nominados.map(nom => `<li style="margin-bottom: 3px;">${nom}</li>`).join('') : '<li>Sin nominados</li>'}
-                              </ul>
-                          </div>
-                      `).join('');
-                  }
-              } else {
-                  if (btnVotarMenu) btnVotarMenu.style.display = 'block';
-                  if (cajaNominados) cajaNominados.style.display = 'none';
-              }
-          } catch (e) {
-              console.error("Error en nominados:", e);
-          }
+        // Votaciones Nominados Finales (Protegido por try-catch)
+        try {
+            const btnVotarMenu = document.getElementById('btn-abrir-votaciones');
+            const cajaNominados = document.getElementById('caja-nominados');
+            const listaNominados = document.getElementById('lista-nominados-contenido');
 
-          if(callback) callback(true);
-        }).catch(error => { 
-          if (loadingText) loadingText.style.display = 'none'; 
-          cargandoInicial = false; 
-          console.error("Error en carga:", error);
-          if(callback) callback(false);
-        });
+            if (datos.votacionesFinalizadas === true) {
+                if (btnVotarMenu) btnVotarMenu.style.display = 'none';
+                if (cajaNominados && listaNominados && datos.nominadosFinales) {
+                    cajaNominados.style.display = 'block';
+                    listaNominados.innerHTML = datos.nominadosFinales.map(cat => `
+                        <div style="margin-bottom: 15px; border-bottom: 1px solid #f1f3f4; padding-bottom: 10px;">
+                            <div style="font-weight: bold; color: var(--primary); font-size: 14px; margin-bottom: 5px;">${cat.categoria}</div>
+                            <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-muted);">
+                                ${cat.nominados ? cat.nominados.map(nom => `<li style="margin-bottom: 3px;">${nom}</li>`).join('') : '<li>Sin nominados</li>'}
+                            </ul>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                if (btnVotarMenu) btnVotarMenu.style.display = 'block';
+                if (cajaNominados) cajaNominados.style.display = 'none';
+            }
+        } catch (e) {
+            console.error("Error al pintar nominados:", e);
+        }
     }
+
+    // =========================================================================
+    // BOTONES Y FORMULARIOS
+    // =========================================================================
     function enviarPuntosAJuego(accion, cantidadPuntos, palabra) {
       const datos = { nombre: localStorage.getItem('jugador_nombre'), departamento: localStorage.getItem('jugador_dep'), accion: accion, puntos: cantidadPuntos, palabra: palabra || "N/A" };
       fetch(URL_GOOGLE, { method: 'POST', body: JSON.stringify(datos) })
       .then(res => res.json())
-      .then(data => { 
-        if (accion === "Código Localizado") {
+      .then(data => { setTimeout(cargarMarcadores, 500); })
+      .catch(err => console.error("Error en POST:", err));
+    }
+
+    // NUEVO BOTÓN CÓDIGOS (Se bloquea y pone ENVIANDO...)
+    function canjearCodigo() {
+        const input = document.getElementById('palabra-secreta');
+        const btn = document.getElementById('btn-canjear-codigo');
+        const codigo = input.value.trim();
+        if (!codigo) { alert("Introduce el código localizado:"); return; }
+
+        btn.disabled = true;
+        btn.innerText = "ENVIANDO...";
+
+        const datos = { nombre: localStorage.getItem('jugador_nombre'), departamento: localStorage.getItem('jugador_dep'), accion: "Código Localizado", puntos: 0, palabra: codigo };
+
+        fetch(URL_GOOGLE, { method: 'POST', body: JSON.stringify(datos) })
+        .then(res => res.json())
+        .then(data => {
             alert(data.mensaje);
-            // Limpiamos la caja de texto tras canjear el QR
-            document.getElementById('palabra-secreta').value = ""; 
-        }
-        setTimeout(cargarMarcadores, 500); 
-      }).catch(err => console.error("Error en POST:", err));
+            input.value = "";
+            btn.disabled = false;
+            btn.innerText = "CANJEAR PUNTOS";
+            cargarMarcadores();
+        }).catch(err => {
+            alert("Error de conexión. Inténtalo de nuevo.");
+            btn.disabled = false;
+            btn.innerText = "CANJEAR PUNTOS";
+        });
     }
 
     function subirFotoDrive() {
@@ -524,13 +583,13 @@
         fetch(URL_GOOGLE, { method: 'POST', body: JSON.stringify(datos) })
         .then(res => res.json())
         .then(data => { alert(data.mensaje); document.getElementById('mensaje-foto').style.display = 'none'; document.getElementById('btn-subir-foto').disabled = false; fileInput.value = ""; })
-        .catch(err => { console.error("Error:", err); alert("Error al conectar con el servidor."); document.getElementById('mensaje-foto').style.display = 'none'; document.getElementById('btn-subir-foto').disabled = false; });
+        .catch(err => { alert("Error al conectar con el servidor."); document.getElementById('mensaje-foto').style.display = 'none'; document.getElementById('btn-subir-foto').disabled = false; });
       };
       reader.readAsDataURL(file);
     }
 
     // =========================================================================
-    // JUEGO ZIP
+    // JUEGO ZIP (PUNTOS BASADOS EN TIEMPO)
     // =========================================================================
     let zipNivel = { filas: 4, cols: 4, totalDots: 5, puntos: { "0,0": 1, "0,3": 2, "3,2": 3, "2,1": 4, "1,0": 5 } };
     let zipPath = []; let zipDrawing = false; let zipNextDot = 2;
@@ -562,10 +621,26 @@
        let isAdyacent = (Math.abs(r1-r2) === 1 && c1 === c2) || (Math.abs(c1-c2) === 1 && r1 === r2);
        if(!isAdyacent) return;
        if(zipNivel.puntos[id]) { if(zipNivel.puntos[id] !== zipNextDot) return; zipNextDot++; }
+       
        zipPath.push(id); actualizarTableroZip();
+       
        if(zipPath.length === (zipNivel.filas * zipNivel.cols) && zipNextDot > zipNivel.totalDots) {
            zipDrawing = false;
-           setTimeout(() => { alert("¡Increíble! Has conectado todo el circuito. ¡Sumas 150 puntos!"); localStorage.setItem('zip_ultimo_dia', new Date().toDateString()); enviarPuntosAJuego("Éxito ZIP", 150, "Nivel completado"); cerrarZip(); }, 300);
+           
+           // CALCULAR PUNTOS POR TIEMPO
+           let zipTime = (Date.now() - zipStartTime) / 1000;
+           let puntosZip = 150;
+           if (zipTime <= 3) puntosZip = 150;        // 3 segundos: NINJA
+           else if (zipTime <= 6) puntosZip = 120;   // 6 segundos: Rápido
+           else if (zipTime <= 10) puntosZip = 80;   // 10 segundos: Normal
+           else puntosZip = 50;                      // Lento
+           
+           setTimeout(() => { 
+               alert("¡Increíble! Lo completaste en " + zipTime.toFixed(1) + " segundos. ¡Sumas " + puntosZip + " puntos!"); 
+               localStorage.setItem('zip_ultimo_dia', new Date().toDateString()); 
+               enviarPuntosAJuego("Éxito ZIP", puntosZip, "Tiempo: " + zipTime.toFixed(1) + "s"); 
+               cerrarZip(); 
+           }, 300);
        }
     }
 
@@ -574,7 +649,11 @@
         if (tableroZip) {
             tableroZip.addEventListener('pointerdown', (e) => {
                 let cell = e.target.closest('.zip-cell'); if(!cell) return; let id = cell.dataset.id;
-                if(zipNivel.puntos[id] === 1 && zipPath.length === 0) { zipDrawing = true; zipPath = [id]; zipNextDot = 2; actualizarTableroZip(); } 
+                if(zipNivel.puntos[id] === 1 && zipPath.length === 0) { 
+                    zipDrawing = true; zipPath = [id]; zipNextDot = 2; 
+                    zipStartTime = Date.now(); // INICIAMOS EL CRONÓMETRO AQUÍ
+                    actualizarTableroZip(); 
+                } 
                 else if (zipPath.includes(id) && id === zipPath[zipPath.length - 1]) { zipDrawing = true; }
             });
             window.addEventListener('pointerup', () => { zipDrawing = false; });
@@ -589,7 +668,7 @@
     }
 
     // =========================================================================
-    // RULETA Y JUEGOS
+    // RULETA, WORDLE Y TRIVIAL (Se mantienen igual)
     // =========================================================================
     function obtenerCosteGiroActual() { let hoy = new Date().toDateString(); let ultimoDia = localStorage.getItem('ruleta_dia'); let tiradasHoy = 0; if (ultimoDia === hoy) tiradasHoy = parseInt(localStorage.getItem('ruleta_tiradas')) || 0; else localStorage.setItem('ruleta_dia', hoy); if (tiradasHoy === 0) return 0; if (tiradasHoy === 1) return 20; if (tiradasHoy === 2) return 50; return 50 * Math.pow(2, tiradasHoy - 2); }
     function actualizarInterfazRuleta() { let coste = obtenerCosteGiroActual(); let btn = document.getElementById('btn-ruleta'); let txtCoste = document.getElementById('coste-ruleta-txt'); if (coste === 0) { txtCoste.innerHTML = `Coste próximo giro: <span style="color:var(--success)">GRATIS</span>`; btn.disabled = false; } else { txtCoste.innerHTML = `Coste próximo giro: <span style="color:var(--error-text)">${coste} pts</span>`; if (misPuntosActuales < coste) { txtCoste.innerHTML += `<br><span style="color:var(--error-text); font-size:11px;">⚠️ SALDO INSUFICIENTE PARA JUGAR</span>`; btn.disabled = true; } else { btn.disabled = false; } } }
@@ -638,13 +717,7 @@
       btnEnviar.disabled = true;
       btnEnviar.innerText = "ENVIANDO...";
 
-      const datosVoto = { 
-          nombre: localStorage.getItem('jugador_nombre'), 
-          departamento: localStorage.getItem('jugador_dep'), 
-          accion: "VotarMultiple", 
-          puntos: 0, 
-          palabra: JSON.stringify(votos) 
-      };
+      const datosVoto = { nombre: localStorage.getItem('jugador_nombre'), departamento: localStorage.getItem('jugador_dep'), accion: "VotarMultiple", puntos: 0, palabra: JSON.stringify(votos) };
 
       fetch(URL_GOOGLE + "?token=candado_pescanova_26", { method: 'POST', body: JSON.stringify(datosVoto) })
       .then(res => res.json())
@@ -658,7 +731,6 @@
           }
       })
       .catch(err => { 
-          console.error("Error:", err);
           alert("Hubo un error de conexión. Inténtalo de nuevo.");
           btnEnviar.disabled = false;
           btnEnviar.innerText = "ENVIAR MIS VOTOS";

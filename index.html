@@ -98,6 +98,14 @@
     .zip-dot { background: var(--primary); color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; z-index: 2; pointer-events: none; font-weight: bold; font-size: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);}
     #zip-timer-display { font-size: 32px; font-family: monospace; font-weight: bold; color: var(--primary); margin: 5px 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); transition: color 0.3s; }
 
+    /* ESTILOS DEL SELECTOR DE RANKING */
+    #filtro-ranking { 
+      background-color: #f1f3f4; color: var(--primary); border: 2px solid #dadce0; 
+      border-radius: 8px; padding: 8px; font-weight: bold; font-size: 13px; 
+      margin-top: 0; margin-bottom: 15px; width: 100%; max-width: 100%; 
+      cursor: pointer; outline: none;
+    }
+
     @keyframes ticker { 0% { transform: translate(100%, 0); } 100% { transform: translate(-100%, 0); } }
   </style>
 </head>
@@ -168,6 +176,12 @@
         </div>
         
         <div id="vista-agentes" style="display: none;">
+          <!-- SELECTOR DE RANKING DINÁMICO -->
+          <select id="filtro-ranking" onchange="actualizarTablaRanking()">
+            <option value="global">🌍 Top 10 Global (Puntos Totales)</option>
+            <option value="zip">⚡ Top 10 más Rápidos (Pesca-Zip)</option>
+            <option value="wordle">🧠 Top 10 más Eficientes (Pesca-Wordle)</option>
+          </select>
           <table class="tabla-top" id="tabla-agentes-body">
              <!-- Se rellena por JS (Top 10 + Tú) -->
           </table>
@@ -316,6 +330,7 @@
     let palabraSecretaDelDia = ""; let cargandoInicial = false; let misPuntosActuales = 0; let trivialActual = { pregunta: "", a: "", b: "", c: "", d: "", respuesta: "" }; let juegoTerminado = false; let intentos = 0; let letrasActuales = []; let diccionarioLocal = [];
     let controladorFetch = null; 
     let miMisionActual = "Esperando sincronización..."; 
+    let ultimosDatosServidor = null; // Almacena el JSON para repintar el ranking al cambiar el filtro
 
     window.onload = function() {
       if(localStorage.getItem('jugador_nombre') && localStorage.getItem('jugador_dep')) {
@@ -379,7 +394,7 @@
       document.getElementById('vista-equipos').style.display = 'none'; document.getElementById('vista-agentes').style.display = 'none'; document.getElementById('vista-logros').style.display = 'none';
       document.getElementById('btn-equipos').classList.remove('active-tab'); document.getElementById('btn-agentes').classList.remove('active-tab'); document.getElementById('btn-logros').classList.remove('active-tab');
       if(vista === 'equipos') { document.getElementById('vista-equipos').style.display = 'block'; document.getElementById('btn-equipos').classList.add('active-tab'); }
-      else if (vista === 'agentes') { document.getElementById('vista-agentes').style.display = 'block'; document.getElementById('btn-agentes').classList.add('active-tab'); }
+      else if (vista === 'agentes') { document.getElementById('vista-agentes').style.display = 'block'; document.getElementById('btn-agentes').classList.add('active-tab'); actualizarTablaRanking(); }
       else { document.getElementById('vista-logros').style.display = 'block'; document.getElementById('btn-logros').classList.add('active-tab'); }
     }
 
@@ -453,6 +468,7 @@
 
     function pintarDatos(datos) {
         if (!datos) return;
+        ultimosDatosServidor = datos; // Guardamos en global para los filtros de ranking
 
         if (datos.noticiaGlobal) {
             const container = document.getElementById('ticker-container');
@@ -482,53 +498,9 @@
         }
 
         actualizarInterfazRuleta();
-
-        // ---------------------------------------------------------------------
-        // NUEVA LÓGICA DE RANKING: TOP 10 + TÚ (Si estás fuera)
-        // ---------------------------------------------------------------------
-        const tablaBody = document.getElementById('tabla-agentes-body');
-        if (datos.puntosTotalesJugadores && tablaBody) {
-            let rankingCompleto = [];
-            for (let nombreJugador in datos.puntosTotalesJugadores) {
-                rankingCompleto.push({ 
-                    nombre: nombreJugador, 
-                    puntos: datos.puntosTotalesJugadores[nombreJugador] 
-                });
-            }
-            
-            // Ordenar de mayor a menor
-            rankingCompleto.sort((a, b) => b.puntos - a.puntos);
-
-            let miNombre = localStorage.getItem('jugador_nombre') || "";
-            let miPosicion = -1;
-            let miPuntuacion = 0;
-
-            tablaBody.innerHTML = "<tr><th>Pos</th><th>Usuario</th><th>Pts</th></tr>";
-            
-            // Buscamos tu posición exacta
-            rankingCompleto.forEach((jugador, index) => {
-                if (jugador.nombre.toLowerCase().trim() === miNombre.toLowerCase().trim()) {
-                    miPosicion = index + 1;
-                    miPuntuacion = jugador.puntos;
-                }
-            });
-
-            // Pintar los 10 primeros
-            for (let i = 0; i < Math.min(10, rankingCompleto.length); i++) {
-                let j = rankingCompleto[i];
-                let esMiFila = (i + 1 === miPosicion) ? 'style="background-color: #fff3cd; font-weight: bold;"' : '';
-                let icono = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1) + 'º';
-                let txtNombre = (i + 1 === miPosicion) ? j.nombre + ' (TÚ)' : j.nombre;
-                tablaBody.innerHTML += `<tr ${esMiFila}><td style="font-weight:bold; color:var(--primary);">${icono}</td><td>${txtNombre}</td><td>${j.puntos}</td></tr>`;
-            }
-
-            // Si no estás en el Top 10, añadir tu fila destacada al final
-            if (miPosicion > 10) {
-                tablaBody.innerHTML += `<tr><td colspan="3" style="text-align:center; color: var(--text-muted); font-size:12px; padding: 5px;">⋮</td></tr>`;
-                tablaBody.innerHTML += `<tr style="background-color: #fff3cd; font-weight: bold; color: var(--error-text);"><td>${miPosicion}º</td><td>${miNombre} (TÚ)</td><td>${miPuntuacion}</td></tr>`;
-            }
-        }
-        // ---------------------------------------------------------------------
+        
+        // Llamada a la nueva función de Ranking dinámico
+        actualizarTablaRanking();
 
         const contenedorLogros = document.getElementById('lista-logros');
         if (contenedorLogros && datos.logros && Array.isArray(datos.logros)) {
@@ -598,6 +570,84 @@
             miMisionActual = "Sácate una foto divertida con un compañero.";
             let txtMision = document.getElementById('texto-mision');
             if (txtMision) txtMision.innerText = "Sincronizando misiones, ¡hazte una foto libre de momento!";
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // NUEVA FUNCIÓN: ACTUALIZAR TABLA DE RANKING SEGÚN FILTRO
+    // -------------------------------------------------------------------------
+    function actualizarTablaRanking() {
+        const tablaBody = document.getElementById('tabla-agentes-body');
+        const filtro = document.getElementById('filtro-ranking').value;
+        if (!tablaBody || !ultimosDatosServidor) return;
+
+        let miNombre = localStorage.getItem('jugador_nombre') || "";
+        let miPosicion = -1;
+        let miValor = 0;
+        let rankingCompleto = [];
+        let etiquetaColumna = "Pts";
+        let sufijoValor = "";
+
+        // 1. Preparar los datos según el filtro seleccionado
+        if (filtro === "global") {
+            etiquetaColumna = "Pts";
+            if (ultimosDatosServidor.puntosTotalesJugadores) {
+                for (let n in ultimosDatosServidor.puntosTotalesJugadores) {
+                    rankingCompleto.push({ nombre: n, valor: ultimosDatosServidor.puntosTotalesJugadores[n] });
+                }
+                rankingCompleto.sort((a, b) => b.valor - a.valor); // Puntos: Mayor es mejor
+            }
+        } 
+        else if (filtro === "zip") {
+            etiquetaColumna = "Tiempo";
+            sufijoValor = "s";
+            if (ultimosDatosServidor.rankingZip) {
+                rankingCompleto = ultimosDatosServidor.rankingZip;
+                rankingCompleto.sort((a, b) => a.valor - b.valor); // Tiempo ZIP: Menor es mejor
+            } else {
+                tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Estamos procesando los tiempos del Zip...</td></tr>";
+                return;
+            }
+        } 
+        else if (filtro === "wordle") {
+            etiquetaColumna = "Puntos";
+            if (ultimosDatosServidor.rankingWordle) {
+                rankingCompleto = ultimosDatosServidor.rankingWordle;
+                rankingCompleto.sort((a, b) => b.valor - a.valor); // Wordle Puntos: Mayor es mejor
+            } else {
+                tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Estamos procesando las jugadas de Wordle...</td></tr>";
+                return;
+            }
+        }
+
+        // 2. Buscar mi posición
+        rankingCompleto.forEach((jugador, index) => {
+            if (jugador.nombre.toLowerCase().trim() === miNombre.toLowerCase().trim()) {
+                miPosicion = index + 1;
+                miValor = jugador.valor;
+            }
+        });
+
+        // 3. Dibujar la cabecera
+        tablaBody.innerHTML = `<tr><th>Pos</th><th>Usuario</th><th>${etiquetaColumna}</th></tr>`;
+
+        // 4. Pintar los 10 primeros
+        for (let i = 0; i < Math.min(10, rankingCompleto.length); i++) {
+            let j = rankingCompleto[i];
+            let esMiFila = (i + 1 === miPosicion) ? 'style="background-color: #fff3cd; font-weight: bold;"' : '';
+            let icono = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1) + 'º';
+            let txtNombre = (i + 1 === miPosicion) ? j.nombre + ' (TÚ)' : j.nombre;
+            tablaBody.innerHTML += `<tr ${esMiFila}><td style="font-weight:bold; color:var(--primary);">${icono}</td><td>${txtNombre}</td><td>${j.valor}${sufijoValor}</td></tr>`;
+        }
+
+        // 5. Si no estás en el Top 10 y has jugado, añadir tu fila destacada
+        if (miPosicion > 10) {
+            tablaBody.innerHTML += `<tr><td colspan="3" style="text-align:center; color: var(--text-muted); font-size:12px; padding: 5px;">⋮</td></tr>`;
+            tablaBody.innerHTML += `<tr style="background-color: #fff3cd; font-weight: bold; color: var(--error-text);"><td>${miPosicion}º</td><td>${miNombre} (TÚ)</td><td>${miValor}${sufijoValor}</td></tr>`;
+        } else if (miPosicion === -1 && rankingCompleto.length > 0) {
+            // Si hay ranking pero no estás en él (ej. no has jugado a ese juego aún)
+            tablaBody.innerHTML += `<tr><td colspan="3" style="text-align:center; color: var(--text-muted); font-size:12px; padding: 5px;">⋮</td></tr>`;
+            tablaBody.innerHTML += `<tr style="background-color: #fff3cd; font-weight: bold; color: var(--text-muted);"><td>-</td><td>${miNombre} (TÚ)</td><td>Sin registrar</td></tr>`;
         }
     }
 

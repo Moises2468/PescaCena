@@ -137,8 +137,15 @@
         <p style="font-size: 14px; color:var(--text-muted); margin-bottom: 0;">Navega por el menú inferior para jugar, consultar tus puntos y los de tu equipo, o canjear códigos QR.</p>
       </div>
 
-      <!-- BOTÓN PARA ABRIR VOTACIONES DESDE EL INICIO -->
-      <button class="btn-juego" style="background-color: #ff9800; max-width: 320px;" onclick="abrirVotaciones()">🏆 VOTAR PREMIOS</button>
+      <!-- BOTÓN DE VOTAR PREMIOS (Se ocultará cuando terminen las votaciones) -->
+      <button id="btn-abrir-votaciones" class="btn-juego" style="background-color: #ff9800; max-width: 320px;" onclick="abrirVotaciones()">🏆 VOTAR PREMIOS</button>
+
+      <!-- CAJA DE NOMINADOS (Oculta por defecto, se muestra cuando finalizan las votaciones) -->
+      <div class="card-container" id="caja-nominados" style="display: none; margin-top: 15px; text-align: left;">
+        <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🌟 Nominados Finales</h3>
+        <p style="font-size: 13px; color:var(--text-muted);">Las votaciones han finalizado. Estos son los nominados a los premios en cada categoría:</p>
+        <div id="lista-nominados-contenido" style="margin-top: 15px;"></div>
+      </div>
     </div>
 
     <div id="sec-ranking" class="seccion-lobby">
@@ -184,28 +191,29 @@
       
       <div class="card-container" style="margin-top: 0;">
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🎡 Ruleta de la Suerte</h3>
-        <p style="font-size: 13px; color:var(--text-muted);">El primer tiro del día es GRATIS. Los siguientes cuestan puntos de tu marcador personal.</p>
+        <p style="font-size: 13px; color:var(--text-muted);">El primer tiro del día es GRATIS. Los siguientes cuestan puntos de tu marcador personal. ¡Prohibido bajar de 0 puntos!</p>
         <div id="ruleta-box">❓❓❓</div>
         <p id="coste-ruleta-txt" style="font-size: 13px; font-weight: bold; color: var(--text); margin-bottom:5px;">Cargando...</p>
         <p id="mis-puntos-txt" style="font-size: 11px; color: var(--text-muted); margin-top:0;">Tus puntos actuales: <span id="mis-puntos-num">0</span></p>
         <button class="btn-juego btn-ruleta-start" id="btn-ruleta" onclick="girarRuleta()">GIRAR RULETA</button>
       </div>
 
+      <!-- EL NUEVO JUEGO ZIP -->
       <div class="card-container">
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🧩 Pesca-Zip (NUEVO)</h3>
-        <p style="font-size: 13px; color:var(--text-muted);">Conecta los puntos numéricos arrastrando el dedo. Suma 150 puntos.</p>
+        <p style="font-size: 13px; color:var(--text-muted);">Conecta los puntos numéricos arrastrando el dedo hasta rellenar toda la cuadrícula. Suma 150 puntos.</p>
         <button class="btn-juego" style="background-color: #8c52ff;" onclick="abrirZip()">JUGAR ZIP</button>
       </div>
 
       <div class="card-container">
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🧠 Trivial Diario</h3>
-        <p style="font-size: 13px; color:var(--text-muted);">Responde a la pregunta corporativa al primer intento y llévate 50 puntos.</p>
+        <p style="font-size: 13px; color:var(--text-muted);">Responde a la pregunta corporativa del día al primer intento y llévate 50 puntos.</p>
         <button class="btn-juego btn-trivial-start" onclick="abrirTrivial()">JUGAR TRIVIAL</button>
       </div>
 
       <div class="card-container">
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🎮 Pesca-Wordle</h3>
-        <p style="font-size: 13px; color:var(--text-muted);">Descifra la palabra oculta. Suma 100 puntos.</p>
+        <p style="font-size: 13px; color:var(--text-muted);">Descifra la palabra oculta del día en menos de 6 intentos. Suma 100 puntos directos.</p>
         <button class="btn-juego" onclick="abrirWordle()">JUGAR WORDLE</button>
       </div>
     </div>
@@ -214,6 +222,8 @@
       <h2>Validar Código</h2>
       <div class="card-container">
         <p style="margin-top:0; font-size: 14px; font-weight: bold; color: var(--primary);">Introduce el código localizado:</p>
+        <p style="font-size: 12px; color:var(--text-muted); margin-bottom: 15px;">Si has encontrado un código QR, escríbelo aquí para sumar los puntos.</p>
+        <input type="text" id="palabra-secreta" placeholder="EJ: A1B2C3" style="text-transform: uppercase; text-align: center; font-weight: bold; letter-spacing: 2px;">
         <button class="btn-codigo" onclick="enviarPuntosAJuego('Código Localizado', 0, document.getElementById('palabra-secreta').value)">CANJEAR PUNTOS</button>
       </div>
     </div>
@@ -222,9 +232,11 @@
       <h2>Galería</h2>
       <div class="card-container">
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">📸 Sube tus momentos</h3>
-        <p style="font-size: 13px; color:var(--text-muted);">Comparte tus fotos. Selecciona una imagen:</p>
+        <p style="font-size: 13px; color:var(--text-muted);">Comparte tus fotos para enseñarlas en el evento. Selecciona una imagen de tu móvil:</p>
+        
         <input type="file" id="input-foto" accept="image/*" style="padding: 10px; font-size: 13px;">
         <button id="btn-subir-foto" style="background-color: #2a9d8f; margin-top: 15px;" onclick="subirFotoDrive()">ENVIAR FOTO</button>
+        <p id="mensaje-foto" style="font-size: 12px; color: var(--primary); display: none; font-weight: bold;">Subiendo imagen... ¡no cierres la página!</p>
       </div>
     </div>
 
@@ -237,7 +249,7 @@
     </nav>
   </div>
 
-  <!-- PANTALLAS DE JUEGOS Y VOTACIONES -->
+  <!-- PANTALLA WORDLE -->
   <div id="pantalla-wordle" class="screen">
     <div class="wordle-header">
       <button class="btn-volver" onclick="cerrarWordle()">⬅️ VOLVER</button>
@@ -252,6 +264,7 @@
     </div>
   </div>
 
+  <!-- PANTALLA TRIVIAL -->
   <div id="pantalla-trivial" class="screen">
     <div class="wordle-header"><button class="btn-volver" onclick="cerrarTrivial()">⬅️ VOLVER</button><h2 style="margin:0; color:var(--primary);">TRIVIAL</h2><div style="width: 70px;"></div></div>
     <div class="card-container" style="margin-top: 20px; width: 100%; max-width: 350px;">
@@ -263,6 +276,7 @@
     </div>
   </div>
 
+  <!-- PANTALLA ZIP (NUEVO) -->
   <div id="pantalla-zip" class="screen">
     <div class="wordle-header"><button class="btn-volver" onclick="cerrarZip()">⬅️ VOLVER</button><h2 style="margin:0; color:var(--primary);">PESCA-ZIP</h2><div style="width: 70px;"></div></div>
     <p style="font-size: 13px; color:var(--text-muted); margin-bottom: 5px;">Arrastra el dedo desde el 1 hasta el 5.</p>
@@ -274,17 +288,19 @@
   <!-- PANTALLA VOTACIONES (NUEVA PANTALLA SEPARADA) -->
   <div id="pantalla-votaciones" class="screen">
     <div class="wordle-header"><button class="btn-volver" onclick="cerrarVotaciones()">⬅️ VOLVER</button><h2 style="margin:0; color:var(--primary);">VOTACIONES</h2><div style="width: 70px;"></div></div>
-    <div class="card-container" id="caja-votaciones" style="display: none; margin-top: 20px;">
+    <div class="card-container" id="caja-votaciones-form" style="margin-top: 20px;">
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🏆 Premios Pescanova</h3>
         <p style="font-size: 13px; color:var(--text-muted);">Vota en todas las categorías. ¡Recuerda que no puedes votarte a ti mismo!</p>
         <div id="formulario-votaciones"></div>
-        <!-- AQUÍ AÑADÍ EL ID AL BOTÓN -->
         <button id="btn-enviar-votos" class="btn-juego" style="background-color: #ff9800; margin-top: 15px;" onclick="emitirVotos()">ENVIAR MIS VOTOS</button>
     </div>
   </div>
 
   <script>
+    // URL DE TU GOOGLE APPS SCRIPT
     const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbyPbG7KF2_XY6eZ8PEaVsl5wHxd9lTE1965zzbjpqyfkL1dbZZrIQIpA4B5rDldioORfA/exec"; 
+
+    // VARIABLES GLOBALES
     let palabraSecretaDelDia = ""; let cargandoInicial = false; let misPuntosActuales = 0; let trivialActual = { pregunta: "", a: "", b: "", c: "", d: "", respuesta: "" }; let juegoTerminado = false; let intentos = 0; let letrasActuales = []; let diccionarioLocal = [];
 
     window.onload = function() {
@@ -352,10 +368,13 @@
     // NAVEGACION JUEGOS Y VOTACIONES
     function abrirVotaciones() { document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-votaciones').classList.add('active'); window.scrollTo(0,0); }
     function cerrarVotaciones() { document.getElementById('pantalla-votaciones').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); window.scrollTo(0,0); }
+    
     function abrirZip() { if (localStorage.getItem('zip_ultimo_dia') === new Date().toDateString()) { alert("Ya has resuelto el ZIP de hoy."); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-zip').classList.add('active'); window.scrollTo(0,0); inicializarTableroZip(); }
     function cerrarZip() { document.getElementById('pantalla-zip').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); window.scrollTo(0,0); }
+    
     function abrirTrivial() { if (localStorage.getItem('trivial_ultimo_dia') === new Date().toDateString()) { alert("Ya has respondido al Trivial de hoy."); return; } if (!trivialActual.pregunta) { alert("Aún no se ha configurado la pregunta."); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-trivial').classList.add('active'); window.scrollTo(0,0); document.getElementById('trivial-pregunta').innerText = trivialActual.pregunta; ['a','b','c','d'].forEach(letra => { let btn = document.getElementById('btn-triv-' + letra); btn.innerText = letra.toUpperCase() + ") " + trivialActual[letra]; btn.className = "btn-opcion"; btn.disabled = false; }); }
     function cerrarTrivial() { document.getElementById('pantalla-trivial').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); window.scrollTo(0,0); }
+    
     function abrirWordle() { if (localStorage.getItem('wordle_ultimo_dia') === new Date().toDateString()) { alert("Ya completaste el Wordle hoy."); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-wordle').classList.add('active'); window.scrollTo(0,0); juegoTerminado = false; intentos = 0; letrasActuales = []; for (let i=0; i<6; i++) for (let j=0; j<5; j++) { document.getElementById(`casilla-${i}-${j}`).innerText = ""; document.getElementById(`casilla-${i}-${j}`).className = "casilla"; } }
     function cerrarWordle() { document.getElementById('pantalla-wordle').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); window.scrollTo(0,0); }
 
@@ -433,8 +452,8 @@
           if (datos.palabra) palabraSecretaDelDia = datos.palabra;
           if (datos.diccionario) diccionarioLocal = datos.diccionario;
           
+          // GENERACIÓN DE LOS INPUTS DE VOTACIÓN (SI LAS VOTACIONES SIGUEN ACTIVAS)
           if (datos.categoriasVotacion && datos.categoriasVotacion.length > 0) {
-              document.getElementById('caja-votaciones').style.display = 'block';
               let formHTML = '';
               datos.categoriasVotacion.forEach((cat, index) => {
                   formHTML += `
@@ -445,6 +464,34 @@
               });
               if (document.getElementById('formulario-votaciones').innerHTML === "") {
                   document.getElementById('formulario-votaciones').innerHTML = formHTML;
+              }
+          }
+
+          // LÓGICA DE VOTACIONES FINALIZADAS Y NOMINADOS
+          if (datos.votacionesFinalizadas === true) {
+              // 1. Ocultar el botón de votar del menú de inicio
+              const btnVotarMenu = document.getElementById('btn-abrir-votaciones');
+              if (btnVotarMenu) btnVotarMenu.style.display = 'none';
+
+              // 2. Mostrar la tarjeta de nominados
+              const cajaNominados = document.getElementById('caja-nominados');
+              const listaNominados = document.getElementById('lista-nominados-contenido');
+              
+              if (cajaNominados && listaNominados && datos.nominadosFinales) {
+                  cajaNominados.style.display = 'block';
+                  let htmlNominados = '';
+                  
+                  datos.nominadosFinales.forEach(cat => {
+                      htmlNominados += `
+                          <div style="margin-bottom: 15px; border-bottom: 1px solid #f1f3f4; padding-bottom: 10px;">
+                              <div style="font-weight: bold; color: var(--primary); font-size: 14px; margin-bottom: 5px;">${cat.categoria}</div>
+                              <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-muted);">
+                                  ${cat.nominados.map(nom => `<li style="margin-bottom: 3px;">${nom}</li>`).join('')}
+                              </ul>
+                          </div>
+                      `;
+                  });
+                  listaNominados.innerHTML = htmlNominados;
               }
           }
 
@@ -575,7 +622,7 @@
     }
 
     // =========================================================================
-    // MODIFICADO: VOTACIONES CON FEEDBACK "ENVIANDO..."
+    // VOTACIONES
     // =========================================================================
     function emitirVotos() {
       const inputs = document.querySelectorAll('#formulario-votaciones input[type="text"]');
@@ -590,7 +637,6 @@
           votos.push({ categoria: categoria, voto: votoEscrito });
       }
 
-      // CAMBIOS PARA EL FEEDBACK VISUAL
       const btnEnviar = document.getElementById('btn-enviar-votos');
       btnEnviar.disabled = true;
       btnEnviar.innerText = "ENVIANDO...";
@@ -608,9 +654,8 @@
       .then(data => { 
           alert(data.mensaje); 
           if (data.mensaje.includes("éxito")) { 
-              document.getElementById('caja-votaciones').innerHTML = "<h3 style='color:var(--success);'>✅ Votos Registrados</h3><p>¡Gracias por participar!</p>"; 
+              document.getElementById('caja-votaciones-form').innerHTML = "<h3 style='color:var(--success);'>✅ Votos Registrados</h3><p>¡Gracias por participar!</p>"; 
           } else {
-              // Si falla por lógica de servidor, restaurar el botón
               btnEnviar.disabled = false;
               btnEnviar.innerText = "ENVIAR MIS VOTOS";
           }
@@ -618,7 +663,6 @@
       .catch(err => { 
           console.error("Error:", err);
           alert("Hubo un error de conexión. Inténtalo de nuevo.");
-          // Restaurar botón en caso de error de red
           btnEnviar.disabled = false;
           btnEnviar.innerText = "ENVIAR MIS VOTOS";
       });

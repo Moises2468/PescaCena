@@ -758,20 +758,31 @@
 
     function getZipNivel() {
         const hoy = new Date();
-        // La semilla cambia cada día
         const seed = hoy.getDate() + (hoy.getMonth() + 1) + hoy.getFullYear();
         
-        // Función para obtener coordenadas aleatorias consistentes durante todo el día
-        const random = (i) => Math.floor(Math.abs(Math.sin(seed + i) * 10000) % 4);
-
+        // Generamos todas las posiciones posibles (16 posiciones para un 4x4)
+        let posiciones = [];
+        for(let r=0; r<4; r++) {
+            for(let c=0; c<4; c++) {
+                posiciones.push(`${r},${c}`);
+            }
+        }
+        
+        // Barajamos las posiciones usando la semilla (Fisher-Yates con semilla)
+        for (let i = posiciones.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.abs(Math.sin(seed + i) * 10000) % (i + 1));
+            [posiciones[i], posiciones[j]] = [posiciones[j], posiciones[i]];
+        }
+        
+        // Cogemos las 5 primeras posiciones barajadas para los números 1 al 5
         return {
             filas: 4, cols: 4, totalDots: 5,
             puntos: {
-                [`${random(1)},${random(2)}`]: 1,
-                [`${random(3)},${random(4)}`]: 2,
-                [`${random(5)},${random(6)}`]: 3,
-                [`${random(7)},${random(8)}`]: 4,
-                [`${random(9)},${random(10)}`]: 5
+                [posiciones[0]]: 1,
+                [posiciones[1]]: 2,
+                [posiciones[2]]: 3,
+                [posiciones[3]]: 4,
+                [posiciones[4]]: 5
             }
         };
     }

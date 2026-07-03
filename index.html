@@ -424,8 +424,7 @@
           if (datos.puntosTotalesJugadores) {
              misPuntosActuales = datos.puntosTotalesJugadores[localStorage.getItem('jugador_nombre')] || 0;
              document.getElementById('mis-puntos-num').innerText = misPuntosActuales;
-             if(misPuntosActuales < 0) document.getElementById('mis-puntos-num').style.color = "var(--error-text)";
-             else document.getElementById('mis-puntos-num').style.color = "var(--text)";
+             document.getElementById('mis-puntos-num').style.color = (misPuntosActuales < 0) ? "var(--error-text)" : "var(--text)";
           }
 
           actualizarInterfazRuleta();
@@ -437,66 +436,44 @@
               datos.agentes.forEach((agente, index) => { tablaBody.innerHTML += `<tr><td>${index + 1}º</td><td>${agente.nombre}</td><td>${agente.departamento}</td><td>${agente.puntos}</td></tr>`; });
           }
 
-          // 5. Logros
+          // 5. Logros y Muro
           const contenedorLogros = document.getElementById('lista-logros');
-          if (contenedorLogros) {
-              if (datos.logros && datos.logros.length > 0) {
-                  contenedorLogros.innerHTML = datos.logros.map(logro => `
-                      <div class="logro-item">
-                          <div class="logro-titulo">${logro.icono} ${logro.nombre}</div>
-                          <div class="logro-desc">${logro.descripcion}</div>
-                      </div>
-                  `).join('');
+          if (contenedorLogros && datos.logros) {
+              contenedorLogros.innerHTML = datos.logros.length > 0 ? datos.logros.map(logro => `
+                  <div class="logro-item"><div class="logro-titulo">${logro.icono} ${logro.nombre}</div><div class="logro-desc">${logro.descripcion}</div></div>
+              `).join('') : '<div style="color:var(--text-muted); padding: 20px;">No hay logros destacados.</div>';
+          }
+
+          // 6. Lógica de Votaciones y Nominados (BLINDADA)
+          try {
+              const btnVotarMenu = document.getElementById('btn-abrir-votaciones');
+              const cajaNominados = document.getElementById('caja-nominados');
+              const listaNominados = document.getElementById('lista-nominados-contenido');
+
+              if (datos.votacionesFinalizadas === true) {
+                  if (btnVotarMenu) btnVotarMenu.style.display = 'none';
+                  if (cajaNominados && listaNominados && datos.nominadosFinales) {
+                      cajaNominados.style.display = 'block';
+                      listaNominados.innerHTML = datos.nominadosFinales.map(cat => `
+                          <div style="margin-bottom: 15px; border-bottom: 1px solid #f1f3f4; padding-bottom: 10px;">
+                              <div style="font-weight: bold; color: var(--primary);">${cat.categoria}</div>
+                              <ul style="padding-left: 20px;">${cat.nominados.map(nom => `<li>${nom}</li>`).join('')}</ul>
+                          </div>
+                      `).join('');
+                  }
               } else {
-                  contenedorLogros.innerHTML = `<div style="color:var(--text-muted); padding: 20px; font-size:13px;">No hay logros destacados esta semana.</div>`;
+                  if (btnVotarMenu) btnVotarMenu.style.display = 'block';
+                  if (cajaNominados) cajaNominados.style.display = 'none';
               }
+          } catch (e) {
+              console.error("Error visualizando nominados:", e);
           }
-
-          // 6. Muro
-          const contenedorMuro = document.getElementById('lista-muro');
-          const muroContainer = document.getElementById('muro-container');
-          if (contenedorMuro && datos.muro && datos.muro.length > 0) {
-              contenedorMuro.innerHTML = datos.muro.map(tramposo => `<div style="margin-bottom:5px;">🚨 ${tramposo}</div>`).join('');
-              muroContainer.style.display = 'block'; 
-          } else if (muroContainer) {
-              muroContainer.style.display = 'none'; 
-          }
-
-          // 7. Trivial y Wordle
-          if (datos.trivialPregunta) {
-              trivialActual.pregunta = datos.trivialPregunta; trivialActual.a = datos.trivialA; trivialActual.b = datos.trivialB;
-              trivialActual.c = datos.trivialC; trivialActual.d = datos.trivialD; trivialActual.respuesta = datos.trivialRespuesta;
-          }
-          if (datos.palabra) palabraSecretaDelDia = datos.palabra;
-          if (datos.diccionario) diccionarioLocal = datos.diccionario;
-          
-          // 8. Votaciones
-          if (datos.categoriasVotacion && datos.categoriasVotacion.length > 0) {
-              let formHTML = '';
-              datos.categoriasVotacion.forEach((cat, index) => {
-                  formHTML += `
-                  <div style="margin-bottom: 12px; text-align: left;">
-                      <label style="font-size: 13px; font-weight: bold; color: var(--primary);">${cat}</label>
-                      <input type="text" id="voto-${index}" data-cat="${cat}" placeholder="Nombre del compañero..." style="padding: 10px; margin-top: 5px;">
-                  </div>`;
-              });
-              if (document.getElementById('formulario-votaciones').innerHTML === "") {
-                  document.getElementById('formulario-votaciones').innerHTML = formHTML;
-              }
-          }
-
-          // 9. Lógica final de botones
-          const btnVotarMenu = document.getElementById('btn-abrir-votaciones');
-          const cajaNominados = document.getElementById('caja-nominados');
-          if(btnVotarMenu) btnVotarMenu.style.display = 'block';
-          if(cajaNominados) cajaNominados.style.display = 'none';
 
           if(callback) callback(true);
         }).catch(error => { 
           if (loadingText) loadingText.style.display = 'none'; 
           cargandoInicial = false; 
-          console.error("Error en carga:", error);
-          if(callback) callback(false);
+          callback ? callback(false) : console.error(error);
         });
     }
     function enviarPuntosAJuego(accion, cantidadPuntos, palabra) {

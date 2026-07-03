@@ -391,16 +391,13 @@
     function cerrarWordle() { document.getElementById('pantalla-wordle').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); window.scrollTo(0,0); }
 
     function cargarMarcadores(callback) {
-      if (cargandoInicial && !callback) return; 
-      if (!callback) cargandoInicial = true;
-      const loadingText = document.getElementById('loading-text'); 
-      if (loadingText) loadingText.style.display = 'block';
+      if (cargandoInicial && !callback) return; if (!callback) cargandoInicial = true;
+      const loadingText = document.getElementById('loading-text'); if (loadingText) loadingText.style.display = 'block';
       
       fetch(URL_GOOGLE + "?token=candado_pescanova_26&_tsc=" + new Date().getTime())
         .then(response => response.json())
         .then(datos => {
-          if (loadingText) loadingText.style.display = 'none'; 
-          cargandoInicial = false;
+          if (loadingText) loadingText.style.display = 'none'; cargandoInicial = false;
           
           if (datos.error) { 
               if(callback) callback(false); 
@@ -417,9 +414,7 @@
 
           // 2. Rankings de equipos
           const deps = datos.departamentos || {};
-          const pProd = Number(deps["Producción"]) || 0; 
-          const pMant = Number(deps["Mantenimiento"]) || 0; 
-          const pOfic = Number(deps["Oficinas"]) || 0;
+          const pProd = Number(deps["Producción"]) || 0; const pMant = Number(deps["Mantenimiento"]) || 0; const pOfic = Number(deps["Oficinas"]) || 0;
           const maxPts = Math.max(pProd, pMant, pOfic, 1);
           document.getElementById('pts-prod').innerText = pProd + " pts"; document.getElementById('barra-prod').style.width = (pProd / maxPts * 100) + "%";
           document.getElementById('pts-mant').innerText = pMant + " pts"; document.getElementById('barra-mant').style.width = (pMant / maxPts * 100) + "%";
@@ -475,7 +470,7 @@
           if (datos.palabra) palabraSecretaDelDia = datos.palabra;
           if (datos.diccionario) diccionarioLocal = datos.diccionario;
           
-          // 8. Votaciones y Nominados
+          // 8. Votaciones
           if (datos.categoriasVotacion && datos.categoriasVotacion.length > 0) {
               let formHTML = '';
               datos.categoriasVotacion.forEach((cat, index) => {
@@ -490,29 +485,27 @@
               }
           }
 
-          // Lógica de nominados corregida: Se asegura de que los elementos existan antes de modificar el display
-          if (datos.votacionesFinalizadas === true) {
-              const btnVotarMenu = document.getElementById('btn-abrir-votaciones');
-              if (btnVotarMenu) btnVotarMenu.style.display = 'none';
+          // 9. LÓGICA DE NOMINADOS (AQUÍ ESTÁ EL CAMBIO SEGURIZADO)
+          const btnVotarMenu = document.getElementById('btn-abrir-votaciones');
+          const cajaNominados = document.getElementById('caja-nominados');
+          const listaNominados = document.getElementById('lista-nominados-contenido');
 
-              const cajaNominados = document.getElementById('caja-nominados');
-              const listaNominados = document.getElementById('lista-nominados-contenido');
-              
+          if (datos.votacionesFinalizadas === true) {
+              if (btnVotarMenu) btnVotarMenu.style.display = 'none';
               if (cajaNominados && listaNominados && datos.nominadosFinales) {
                   cajaNominados.style.display = 'block';
-                  let htmlNominados = '';
-                  datos.nominadosFinales.forEach(cat => {
-                      htmlNominados += `
-                          <div style="margin-bottom: 15px; border-bottom: 1px solid #f1f3f4; padding-bottom: 10px;">
-                              <div style="font-weight: bold; color: var(--primary); font-size: 14px; margin-bottom: 5px;">${cat.categoria}</div>
-                              <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-muted);">
-                                  ${cat.nominados.map(nom => `<li style="margin-bottom: 3px;">${nom}</li>`).join('')}
-                              </ul>
-                          </div>
-                      `;
-                  });
-                  listaNominados.innerHTML = htmlNominados;
+                  listaNominados.innerHTML = datos.nominadosFinales.map(cat => `
+                      <div style="margin-bottom: 15px; border-bottom: 1px solid #f1f3f4; padding-bottom: 10px;">
+                          <div style="font-weight: bold; color: var(--primary); font-size: 14px; margin-bottom: 5px;">${cat.categoria}</div>
+                          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-muted);">
+                              ${cat.nominados.map(nom => `<li style="margin-bottom: 3px;">${nom}</li>`).join('')}
+                          </ul>
+                      </div>
+                  `).join('');
               }
+          } else {
+              if (btnVotarMenu) btnVotarMenu.style.display = 'block';
+              if (cajaNominados) cajaNominados.style.display = 'none';
           }
 
           if(callback) callback(true);

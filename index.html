@@ -54,7 +54,6 @@
     .tabla-top { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
     .tabla-top th, .tabla-top td { padding: 8px 5px; border-bottom: 1px solid #f1f3f4; }
     .tabla-top th { color: var(--text-muted); text-transform: uppercase; font-size: 11px; }
-    .tabla-top tr:first-child td { color: var(--primary); font-weight: bold; }
 
     .logro-item { margin-bottom: 12px; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px; text-align: left;}
     .logro-titulo { color: var(--primary); font-size: 14px; font-weight: bold;}
@@ -91,14 +90,12 @@
       transition: background-color 0.3s;
     }
 
-    /* ESTILOS DEL NUEVO JUEGO ZIP */
+    /* ESTILOS DEL JUEGO ZIP */
     #tablero-zip { display: grid; gap: 4px; margin: 15px auto; width: 100%; max-width: 320px; background: #dadce0; padding: 4px; border-radius: 8px; touch-action: none; user-select: none; }
     .zip-cell { background: white; border-radius: 6px; aspect-ratio: 1; display: flex; justify-content: center; align-items: center; position: relative; cursor: pointer; }
     .zip-cell.path { background: #ffcc00; transition: background 0.1s ease;}
     .zip-cell.path-head { background: #ff9800; transform: scale(0.95); transition: 0.1s;}
     .zip-dot { background: var(--primary); color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; z-index: 2; pointer-events: none; font-weight: bold; font-size: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);}
-    
-    /* ESTILO PARA EL CRONÓMETRO */
     #zip-timer-display { font-size: 32px; font-family: monospace; font-weight: bold; color: var(--primary); margin: 5px 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); transition: color 0.3s; }
 
     @keyframes ticker { 0% { transform: translate(100%, 0); } 100% { transform: translate(-100%, 0); } }
@@ -140,16 +137,13 @@
         <p style="font-size: 14px; color:var(--text-muted); margin-bottom: 0;">Navega por el menú inferior para jugar, consultar tus puntos y los de tu equipo, o canjear códigos QR.</p>
       </div>
 
-      <!-- NUEVA CAJA DE MISIÓN SECRETA -->
       <div class="card-container" id="card-mision" style="border: 2px solid var(--mission); margin-top: 15px; text-align: left;">
         <h3 style="color: var(--mission); margin-top:0; font-size: 16px;">🎯 Tu Misión Secreta</h3>
         <p id="texto-mision" style="font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 0;">Sincronizando misión del día...</p>
       </div>
 
-      <!-- BOTÓN DE VOTAR PREMIOS -->
       <button id="btn-abrir-votaciones" class="btn-juego" style="background-color: #ff9800; max-width: 320px;" onclick="abrirVotaciones()">🏆 VOTAR PREMIOS</button>
 
-      <!-- CAJA DE NOMINADOS -->
       <div class="card-container" id="caja-nominados" style="display: none; margin-top: 15px; text-align: left;">
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🌟 Nominados Finales</h3>
         <p style="font-size: 13px; color:var(--text-muted);">Las votaciones han finalizado. Estos son los nominados a los premios en cada categoría:</p>
@@ -162,7 +156,7 @@
       <div class="card-container" style="margin-top: 0;">
         <div class="tabs">
           <button class="tab-btn active-tab" id="btn-equipos" onclick="cambiarFiltroRanking('equipos')">🏆 Equipos</button>
-          <button class="tab-btn" id="btn-agentes" onclick="cambiarFiltroRanking('agentes')">📊 Top 5</button>
+          <button class="tab-btn" id="btn-agentes" onclick="cambiarFiltroRanking('agentes')">📊 Top 10</button>
           <button class="tab-btn" id="btn-logros" onclick="cambiarFiltroRanking('logros')">🏅 Logros</button>
         </div>
         <div id="loading-text">Sincronizando información...</div>
@@ -174,7 +168,9 @@
         </div>
         
         <div id="vista-agentes" style="display: none;">
-          <table class="tabla-top" id="tabla-agentes-body"><tr><th>Pos</th><th>Usuario</th><th>Área</th><th>Pts</th></tr></table>
+          <table class="tabla-top" id="tabla-agentes-body">
+             <!-- Se rellena por JS (Top 10 + Tú) -->
+          </table>
         </div>
   
         <div id="vista-logros" style="display: none;">
@@ -244,7 +240,6 @@
         
         <input type="file" id="input-foto" accept="image/*" style="padding: 10px; font-size: 13px;">
         
-        <!-- CHECKBOX DE LA MISIÓN -->
         <div style="margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; background: #f1f3f4; padding: 10px; border-radius: 8px;">
             <input type="checkbox" id="checkbox-mision" style="width: 20px; margin: 0; cursor: pointer;" onchange="actualizarBotonFoto()">
             <label for="checkbox-mision" style="font-size: 13px; font-weight: bold; color: var(--primary); cursor: pointer;">¡Es la foto de mi Misión!</label>
@@ -320,7 +315,7 @@
     // VARIABLES GLOBALES
     let palabraSecretaDelDia = ""; let cargandoInicial = false; let misPuntosActuales = 0; let trivialActual = { pregunta: "", a: "", b: "", c: "", d: "", respuesta: "" }; let juegoTerminado = false; let intentos = 0; let letrasActuales = []; let diccionarioLocal = [];
     let controladorFetch = null; 
-    let miMisionActual = "Esperando sincronización..."; // Variable para la misión
+    let miMisionActual = "Esperando sincronización..."; 
 
     window.onload = function() {
       if(localStorage.getItem('jugador_nombre') && localStorage.getItem('jugador_dep')) {
@@ -488,11 +483,52 @@
 
         actualizarInterfazRuleta();
 
+        // ---------------------------------------------------------------------
+        // NUEVA LÓGICA DE RANKING: TOP 10 + TÚ (Si estás fuera)
+        // ---------------------------------------------------------------------
         const tablaBody = document.getElementById('tabla-agentes-body');
-        if (datos.agentes && Array.isArray(datos.agentes) && tablaBody) {
-            tablaBody.innerHTML = "<tr><th>Pos</th><th>Usuario</th><th>Área</th><th>Pts</th></tr>";
-            datos.agentes.forEach((agente, index) => { tablaBody.innerHTML += `<tr><td>${index + 1}º</td><td>${agente.nombre}</td><td>${agente.departamento}</td><td>${agente.puntos}</td></tr>`; });
+        if (datos.puntosTotalesJugadores && tablaBody) {
+            let rankingCompleto = [];
+            for (let nombreJugador in datos.puntosTotalesJugadores) {
+                rankingCompleto.push({ 
+                    nombre: nombreJugador, 
+                    puntos: datos.puntosTotalesJugadores[nombreJugador] 
+                });
+            }
+            
+            // Ordenar de mayor a menor
+            rankingCompleto.sort((a, b) => b.puntos - a.puntos);
+
+            let miNombre = localStorage.getItem('jugador_nombre') || "";
+            let miPosicion = -1;
+            let miPuntuacion = 0;
+
+            tablaBody.innerHTML = "<tr><th>Pos</th><th>Usuario</th><th>Pts</th></tr>";
+            
+            // Buscamos tu posición exacta
+            rankingCompleto.forEach((jugador, index) => {
+                if (jugador.nombre.toLowerCase().trim() === miNombre.toLowerCase().trim()) {
+                    miPosicion = index + 1;
+                    miPuntuacion = jugador.puntos;
+                }
+            });
+
+            // Pintar los 10 primeros
+            for (let i = 0; i < Math.min(10, rankingCompleto.length); i++) {
+                let j = rankingCompleto[i];
+                let esMiFila = (i + 1 === miPosicion) ? 'style="background-color: #fff3cd; font-weight: bold;"' : '';
+                let icono = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1) + 'º';
+                let txtNombre = (i + 1 === miPosicion) ? j.nombre + ' (TÚ)' : j.nombre;
+                tablaBody.innerHTML += `<tr ${esMiFila}><td style="font-weight:bold; color:var(--primary);">${icono}</td><td>${txtNombre}</td><td>${j.puntos}</td></tr>`;
+            }
+
+            // Si no estás en el Top 10, añadir tu fila destacada al final
+            if (miPosicion > 10) {
+                tablaBody.innerHTML += `<tr><td colspan="3" style="text-align:center; color: var(--text-muted); font-size:12px; padding: 5px;">⋮</td></tr>`;
+                tablaBody.innerHTML += `<tr style="background-color: #fff3cd; font-weight: bold; color: var(--error-text);"><td>${miPosicion}º</td><td>${miNombre} (TÚ)</td><td>${miPuntuacion}</td></tr>`;
+            }
         }
+        // ---------------------------------------------------------------------
 
         const contenedorLogros = document.getElementById('lista-logros');
         if (contenedorLogros && datos.logros && Array.isArray(datos.logros)) {
@@ -517,7 +553,6 @@
         if (datos.palabra) palabraSecretaDelDia = datos.palabra;
         if (datos.diccionario) diccionarioLocal = datos.diccionario;
         
-        // Votaciones Formulario
         const containerVot = document.getElementById('formulario-votaciones');
         if (datos.categoriasVotacion && Array.isArray(datos.categoriasVotacion) && datos.categoriasVotacion.length > 0 && containerVot && containerVot.innerHTML === "") {
             let formHTML = '';
@@ -527,7 +562,6 @@
             containerVot.innerHTML = formHTML;
         }
 
-        // Votaciones Nominados Finales
         try {
             const btnVotarMenu = document.getElementById('btn-abrir-votaciones');
             const cajaNominados = document.getElementById('caja-nominados');
@@ -554,10 +588,8 @@
             console.error("Error al pintar nominados:", e);
         }
 
-        // LÓGICA DE MISIONES DIARIAS
         if (datos.listaMisiones && Array.isArray(datos.listaMisiones) && datos.listaMisiones.length > 0) {
             let nom = localStorage.getItem('jugador_nombre') || "agente";
-            // Repartir misión en función del día y el nombre del usuario para que sea variada
             let indice = (new Date().getDate() + nom.length) % datos.listaMisiones.length;
             miMisionActual = datos.listaMisiones[indice];
             let txtMision = document.getElementById('texto-mision');
@@ -606,7 +638,6 @@
         });
     }
 
-    // FOTOS CON CHECKBOX DE MISIÓN
     function actualizarBotonFoto() {
         const isChecked = document.getElementById('checkbox-mision').checked;
         const btn = document.getElementById('btn-subir-foto');
@@ -656,7 +687,6 @@
             document.getElementById('btn-subir-foto').disabled = false; 
             fileInput.value = ""; 
             
-            // Resetear checkbox y botón tras subir la foto
             document.getElementById('checkbox-mision').checked = false;
             actualizarBotonFoto();
         })

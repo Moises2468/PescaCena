@@ -745,15 +745,16 @@
     // =========================================================================
 
     function getZipNivelDiario() {
+        // Mapas 100% validados matemáticamente.
+        // El único camino posible para unirlos ocupa exactamente las 16 casillas.
         const rutas = [
-            ["0,0", "0,1", "1,1", "1,2", "2,2"], 
-            ["3,0", "2,0", "2,1", "2,2", "1,2"],
-            ["0,3", "1,3", "2,3", "2,2", "2,1"],
-            ["1,0", "1,1", "0,1", "0,2", "0,3"],
-            ["0,0", "1,0", "2,0", "3,0", "3,1"],
-            ["3,3", "3,2", "2,2", "1,2", "0,2"]
+            ["0,0", "0,3", "1,0", "2,3", "3,0"], 
+            ["3,3", "3,0", "0,0", "0,3", "1,2"],
+            ["0,1", "2,0", "3,2", "1,3", "1,1"],
+            ["1,1", "2,0", "2,2", "1,3", "1,2"],
+            ["2,1", "1,0", "0,3", "3,2", "1,1"],
+            ["0,2", "3,3", "2,0", "1,1", "1,2"]
         ];
-        // Seleccionamos mapa según el día del mes
         const index = new Date().getDate() % rutas.length;
         const ruta = rutas[index];
         const puntos = {};
@@ -810,33 +811,42 @@
        if(!isAdyacent) return;
        
        if(zipNivelActual.puntos[id]) { 
-           if(zipNivelActual.puntos[id] !== zipNextDot) return; 
+           if(zipNivelActual.puntos[id] !== zipNextDot) return; // Choca contra número incorrecto
            zipNextDot++; 
        }
        
        zipPath.push(id); 
        actualizarTableroZip();
        
-       // Victoria
+       // Validación al tocar el número 5
        if(zipNextDot > zipNivelActual.totalDots) {
            zipDrawing = false;
            if(zipTimerInterval) clearInterval(zipTimerInterval); 
            
-           let zipTime = (Date.now() - zipStartTime) / 1000;
-           document.getElementById('zip-timer-display').innerText = zipTime.toFixed(1) + "s";
-           
-           let puntosZip = 150;
-           if (zipTime <= 3) puntosZip = 150;        
-           else if (zipTime <= 6) puntosZip = 120;   
-           else if (zipTime <= 10) puntosZip = 80;   
-           else puntosZip = 50;                      
-           
-           setTimeout(() => { 
-               alert("¡Increíble! Lo completaste en " + zipTime.toFixed(1) + " segundos. ¡Sumas " + puntosZip + " puntos!"); 
-               localStorage.setItem('zip_ultimo_dia', new Date().toDateString()); 
-               enviarPuntosAJuego("Éxito ZIP", puntosZip, "Tiempo: " + zipTime.toFixed(1) + "s"); 
-               cerrarZip(); 
-           }, 300);
+           // NUEVA REGLA ESTRICTA: El trazo debe tener exactamente 16 casillas
+           if(zipPath.length === 16) {
+               let zipTime = (Date.now() - zipStartTime) / 1000;
+               document.getElementById('zip-timer-display').innerText = zipTime.toFixed(1) + "s";
+               
+               let puntosZip = 150;
+               if (zipTime <= 4) puntosZip = 150;        
+               else if (zipTime <= 8) puntosZip = 120;   
+               else if (zipTime <= 15) puntosZip = 80;   
+               else puntosZip = 50;                      
+               
+               setTimeout(() => { 
+                   alert("¡Increíble! Lo completaste en " + zipTime.toFixed(1) + " segundos. ¡Sumas " + puntosZip + " puntos!"); 
+                   localStorage.setItem('zip_ultimo_dia', new Date().toDateString()); 
+                   enviarPuntosAJuego("Éxito ZIP", puntosZip, "Tiempo: " + zipTime.toFixed(1) + "s"); 
+                   cerrarZip(); 
+               }, 300);
+           } else {
+               // Si llega al 5 pero sobran casillas grises vacías, pierde el intento actual
+               setTimeout(() => {
+                   alert("¡Ups! Has llegado al 5, pero te faltan cuadrados grises por rellenar. ¡Inténtalo de nuevo!");
+                   resetZip();
+               }, 300);
+           }
        }
     }
 

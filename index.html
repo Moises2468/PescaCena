@@ -90,7 +90,6 @@
       transition: background-color 0.3s;
     }
 
-    /* ESTILOS DEL JUEGO ZIP */
     #tablero-zip { display: grid; gap: 4px; margin: 15px auto; width: 100%; max-width: 320px; background: #dadce0; padding: 4px; border-radius: 8px; touch-action: none; user-select: none; }
     .zip-cell { background: white; border-radius: 6px; aspect-ratio: 1; display: flex; justify-content: center; align-items: center; position: relative; cursor: pointer; }
     .zip-cell.path { background: #ffcc00; transition: background 0.1s ease;}
@@ -98,7 +97,6 @@
     .zip-dot { background: var(--primary); color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; z-index: 2; pointer-events: none; font-weight: bold; font-size: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);}
     #zip-timer-display { font-size: 32px; font-family: monospace; font-weight: bold; color: var(--primary); margin: 5px 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); transition: color 0.3s; }
 
-    /* ESTILOS DEL SELECTOR DE RANKING */
     #filtro-ranking { 
       background-color: #f1f3f4; color: var(--primary); border: 2px solid #dadce0; 
       border-radius: 8px; padding: 8px; font-weight: bold; font-size: 13px; 
@@ -106,14 +104,46 @@
       cursor: pointer; outline: none;
     }
 
+    /* NUEVO: ESTILOS DEL MODAL */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,34,68,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px); }
+    .modal-overlay.show { opacity: 1; pointer-events: auto; }
+    .modal-box { background: var(--surface); border-radius: 16px; padding: 25px 20px; text-align: center; max-width: 320px; width: 100%; transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .modal-overlay.show .modal-box { transform: scale(1); }
+    .modal-icon { font-size: 50px; margin-bottom: 10px; line-height: 1; }
+    .modal-title { margin: 0 0 10px 0; color: var(--primary); font-size: 20px; font-weight: 800; text-transform: uppercase; }
+    .modal-text { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; font-weight: 500; }
+    .modal-btn { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 25px; font-weight: bold; width: 100%; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+
+    /* NUEVO: ESTILOS DE LOS PUNTOS EN LA ESQUINA */
+    #puntos-esquina {
+      position: fixed; top: 55px; right: 15px; background: var(--surface); color: var(--primary); 
+      padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 14px; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 999; display: none;
+      border: 2px solid var(--accent); align-items: center; gap: 5px;
+      transition: transform 0.3s;
+    }
+    
     @keyframes ticker { 0% { transform: translate(100%, 0); } 100% { transform: translate(-100%, 0); } }
   </style>
 </head>
 <body>
 
+  <!-- MODAL CUSTOM ("Efecto WOW") -->
+  <div id="modal-overlay" class="modal-overlay">
+    <div class="modal-box">
+       <div id="modal-icon" class="modal-icon">ℹ️</div>
+       <h3 id="modal-title">Atención</h3>
+       <p id="modal-text">Mensaje del sistema</p>
+       <button class="modal-btn" onclick="cerrarModal()">ACEPTAR</button>
+    </div>
+  </div>
+
   <div id="ticker-container" style="display: none; background: #ffffff; color: var(--primary); border-bottom: 2px solid var(--accent); width: 100%; overflow: hidden; padding: 10px 0; font-weight: bold; font-size: 14px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
     <div id="ticker-text" style="white-space: nowrap; display: inline-block; padding-left: 100%; animation: ticker 25s linear infinite;"></div>
   </div>
+
+  <!-- PUNTOS EN LA ESQUINA -->
+  <div id="puntos-esquina">🏆 <span id="puntos-esquina-num">0</span> pts</div>
 
   <div id="pantalla-registro" class="screen active">
     <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;">
@@ -323,7 +353,7 @@
   </div>
 
   <script>
-    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbxWkqVDmHnYLU5gpa39J3oyMKK2hVKo5GZDofBGajm5a4JWH-9DzGm7QuBR9a2-FtCf4g/exec"; 
+    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbztVS6mgIOJP0OG4J-V1pz0PX8waTzrnu8MUDPjm7I-orRXdEJUn9R2LN6y8aG_qxfRBA/exec"; 
 
     // VARIABLES GLOBALES
     let palabraSecretaDelDia = ""; let cargandoInicial = false; let misPuntosActuales = 0; let trivialActual = { pregunta: "", a: "", b: "", c: "", d: "", respuesta: "" }; let juegoTerminado = false; let intentos = 0; let letrasActuales = []; let diccionarioLocal = [];
@@ -336,6 +366,29 @@
     let zipStartTime = 0; let zipTimerInterval = null;
     let zipNivelActual = { puntos: {}, totalDots: 5 };
 
+    // =========================================================================
+    // SISTEMA DE MODALES (Efecto WOW)
+    // =========================================================================
+    function showModal(titulo, texto, tipo = 'info') {
+      const overlay = document.getElementById('modal-overlay');
+      const icon = document.getElementById('modal-icon');
+      
+      document.getElementById('modal-title').innerText = titulo;
+      document.getElementById('modal-text').innerText = texto;
+      
+      if (tipo === 'success') { icon.innerText = '🎉'; document.getElementById('modal-title').style.color = 'var(--success)'; }
+      else if (tipo === 'error') { icon.innerText = '❌'; document.getElementById('modal-title').style.color = 'var(--error-text)'; }
+      else if (tipo === 'warning') { icon.innerText = '⚠️'; document.getElementById('modal-title').style.color = '#ff9800'; }
+      else { icon.innerText = 'ℹ️'; document.getElementById('modal-title').style.color = 'var(--primary)'; }
+      
+      overlay.classList.add('show');
+    }
+
+    function cerrarModal() { document.getElementById('modal-overlay').classList.remove('show'); }
+
+    // =========================================================================
+    // INICIO
+    // =========================================================================
     window.onload = function() {
       if(localStorage.getItem('jugador_nombre') && localStorage.getItem('jugador_dep')) {
           mostrarLobby();
@@ -348,8 +401,8 @@
       const nombreInput = document.getElementById('nombre').value.trim();
       const departamentoInput = document.getElementById('departamento').value;
       const claveInput = document.getElementById('clave-acceso').value.trim(); 
-      if(!nombreInput || !departamentoInput || !claveInput) { alert("Introduce datos."); return; }
-      if(claveInput !== "4444") { alert("Clave incorrecta."); return; }
+      if(!nombreInput || !departamentoInput || !claveInput) { showModal("Error", "Introduce todos tus datos para acceder.", "warning"); return; }
+      if(claveInput !== "4444") { showModal("Error", "Clave incorrecta. Pide la clave a la organización.", "error"); return; }
       
       const btnEntrar = document.getElementById('btn-entrar');
       btnEntrar.disabled = true; 
@@ -370,7 +423,7 @@
               localStorage.removeItem('jugador_dep');
               btnEntrar.disabled = false; 
               btnEntrar.innerText = "ACCEDER";
-              alert("Error de conexión. Inténtalo de nuevo.");
+              showModal("Error de conexión", "No se ha podido conectar con el servidor. Inténtalo de nuevo.", "error");
           }
       });
     }
@@ -384,6 +437,7 @@
       document.getElementById('pantalla-votaciones').classList.remove('active');
       document.getElementById('nombre-usuario').innerText = localStorage.getItem('jugador_nombre');
       document.getElementById('dep-usuario').innerText = localStorage.getItem('jugador_dep');
+      document.getElementById('puntos-esquina').style.display = 'flex'; // Mostrar puntos flotantes
     }
 
     function cambiarSeccionLobby(seccionId, elementoNav) {
@@ -408,19 +462,18 @@
       else { contenido.style.display = 'none'; icono.innerText = '+'; }
     }
 
-    function abrirVotaciones() { document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-votaciones').classList.add('active'); window.scrollTo(0,0); }
-    function cerrarVotaciones() { document.getElementById('pantalla-votaciones').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); window.scrollTo(0,0); }
+    function abrirVotaciones() { document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-votaciones').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; window.scrollTo(0,0); }
+    function cerrarVotaciones() { document.getElementById('pantalla-votaciones').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; window.scrollTo(0,0); }
     
-    function abrirZip() { if (localStorage.getItem('zip_ultimo_dia') === new Date().toDateString()) { alert("Ya has resuelto el ZIP de hoy."); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-zip').classList.add('active'); window.scrollTo(0,0); inicializarTableroZip(); }
-    function cerrarZip() { document.getElementById('pantalla-zip').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); window.scrollTo(0,0); }
+    function abrirZip() { if (localStorage.getItem('zip_ultimo_dia') === new Date().toDateString()) { showModal("Atención", "Ya has resuelto el ZIP de hoy. ¡Vuelve mañana!", "info"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-zip').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; window.scrollTo(0,0); inicializarTableroZip(); }
+    function cerrarZip() { document.getElementById('pantalla-zip').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; window.scrollTo(0,0); }
     
-    function abrirTrivial() { if (localStorage.getItem('trivial_ultimo_dia') === new Date().toDateString()) { alert("Ya has respondido al Trivial de hoy."); return; } if (!trivialActual.pregunta) { alert("Aún no se ha configurado la pregunta."); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-trivial').classList.add('active'); window.scrollTo(0,0); document.getElementById('trivial-pregunta').innerText = trivialActual.pregunta; ['a','b','c','d'].forEach(letra => { let btn = document.getElementById('btn-triv-' + letra); btn.innerText = letra.toUpperCase() + ") " + trivialActual[letra]; btn.className = "btn-opcion"; btn.disabled = false; }); }
-    function cerrarTrivial() { document.getElementById('pantalla-trivial').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); window.scrollTo(0,0); }
+    function abrirTrivial() { if (localStorage.getItem('trivial_ultimo_dia') === new Date().toDateString()) { showModal("Atención", "Ya has respondido al Trivial de hoy.", "info"); return; } if (!trivialActual.pregunta) { showModal("Aviso", "Aún no se ha configurado la pregunta.", "warning"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-trivial').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; window.scrollTo(0,0); document.getElementById('trivial-pregunta').innerText = trivialActual.pregunta; ['a','b','c','d'].forEach(letra => { let btn = document.getElementById('btn-triv-' + letra); btn.innerText = letra.toUpperCase() + ") " + trivialActual[letra]; btn.className = "btn-opcion"; btn.disabled = false; }); }
+    function cerrarTrivial() { document.getElementById('pantalla-trivial').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; window.scrollTo(0,0); }
     
-    function abrirWordle() { if (localStorage.getItem('wordle_ultimo_dia') === new Date().toDateString()) { alert("Ya completaste el Wordle hoy."); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-wordle').classList.add('active'); window.scrollTo(0,0); juegoTerminado = false; intentos = 0; letrasActuales = []; for (let i=0; i<6; i++) for (let j=0; j<5; j++) { document.getElementById(`casilla-${i}-${j}`).innerText = ""; document.getElementById(`casilla-${i}-${j}`).className = "casilla"; } }
-    function cerrarWordle() { document.getElementById('pantalla-wordle').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); window.scrollTo(0,0); }
+    function abrirWordle() { if (localStorage.getItem('wordle_ultimo_dia') === new Date().toDateString()) { showModal("Atención", "Ya completaste el Wordle hoy. ¡Descansa esa cabeza!", "info"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-wordle').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; window.scrollTo(0,0); juegoTerminado = false; intentos = 0; letrasActuales = []; for (let i=0; i<6; i++) for (let j=0; j<5; j++) { document.getElementById(`casilla-${i}-${j}`).innerText = ""; document.getElementById(`casilla-${i}-${j}`).className = "casilla"; } }
+    function cerrarWordle() { document.getElementById('pantalla-wordle').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; window.scrollTo(0,0); }
 
-    // Función auxiliar para saber en qué semana estamos
     function getSemanaActual() {
         let fechaActual = new Date();
         let inicioAno = new Date(fechaActual.getFullYear(), 0, 1);
@@ -428,31 +481,20 @@
         return Math.ceil((diasTranscurridos + 1) / 7);
     }
 
-    // Actualizar Textos y Botones de la Misión
     function actualizarInterfazMision() {
         let numeroSemana = getSemanaActual();
         let txtMision = document.getElementById('texto-mision');
         let checkboxMision = document.getElementById('checkbox-mision');
         let labelMision = document.querySelector('label[for="checkbox-mision"]');
         
-        // Si la misión de esta semana ya está completada
         if (localStorage.getItem('mision_semana_completada') == numeroSemana) {
             if (txtMision) txtMision.innerHTML = `<span style="color:var(--success); font-weight:bold;">✅ Misión semanal completada</span>`;
-            if (checkboxMision) {
-                checkboxMision.checked = false;
-                checkboxMision.disabled = true;
-            }
-            if (labelMision) {
-                labelMision.innerText = "✅ Misión semanal completada";
-                labelMision.style.color = "var(--success)";
-            }
+            if (checkboxMision) { checkboxMision.checked = false; checkboxMision.disabled = true; }
+            if (labelMision) { labelMision.innerText = "✅ Misión completada"; labelMision.style.color = "var(--success)"; }
         } else {
             if (txtMision) txtMision.innerText = miMisionActual;
             if (checkboxMision) checkboxMision.disabled = false;
-            if (labelMision) {
-                labelMision.innerText = "¡Es la foto de mi Misión!";
-                labelMision.style.color = "var(--primary)";
-            }
+            if (labelMision) { labelMision.innerText = "¡Es la foto de mi Misión!"; labelMision.style.color = "var(--primary)"; }
         }
         actualizarBotonFoto();
     }
@@ -482,14 +524,9 @@
         .then(response => response.text()) 
         .then(texto => {
           let datos;
-          try {
-              datos = JSON.parse(texto); 
-          } catch(err) {
-              throw new Error("JSON malformado recibido del servidor");
-          }
+          try { datos = JSON.parse(texto); } catch(err) { throw new Error("JSON malformado"); }
 
           localStorage.setItem('marcadores_cache', texto); 
-          
           if (loadingText) loadingText.style.display = 'none'; 
           cargandoInicial = false;
           
@@ -502,7 +539,6 @@
           if (error.name === 'AbortError') return; 
           if (loadingText) loadingText.style.display = 'none'; 
           cargandoInicial = false; 
-          console.warn("Fallo de conexión ignorado para proteger la web:", error);
           if(callback) callback(false);
         });
     }
@@ -534,6 +570,9 @@
                  if(document.getElementById('mis-puntos-num')){
                      document.getElementById('mis-puntos-num').innerText = misPuntosActuales;
                      document.getElementById('mis-puntos-num').style.color = (misPuntosActuales < 0) ? "var(--error-text)" : "var(--text)";
+                 }
+                 if(document.getElementById('puntos-esquina-num')) {
+                     document.getElementById('puntos-esquina-num').innerText = misPuntosActuales;
                  }
              }
         }
@@ -599,16 +638,12 @@
             console.error("Error al pintar nominados:", e);
         }
 
-        // --- NUEVA LÓGICA DE MISIONES SEMANALES ---
         if (datos.listaMisiones && Array.isArray(datos.listaMisiones) && datos.listaMisiones.length > 0) {
             let nom = localStorage.getItem('jugador_nombre') || "agente";
             let numeroSemana = getSemanaActual();
-            
-            // Usamos la semana para seleccionar la misión
             let indice = (numeroSemana + nom.length) % datos.listaMisiones.length;
             miMisionActual = datos.listaMisiones[indice];
-            
-            actualizarInterfazMision(); // Valida si ya se ha completado
+            actualizarInterfazMision(); 
         } else {
             miMisionActual = "Sácate una foto divertida con un compañero.";
             let txtMision = document.getElementById('texto-mision');
@@ -616,6 +651,9 @@
         }
     }
 
+    // =========================================================================
+    // NUEVO: SISTEMA DE RANKING CON TENDENCIAS
+    // =========================================================================
     function actualizarTablaRanking() {
         const tablaBody = document.getElementById('tabla-agentes-body');
         const filtro = document.getElementById('filtro-ranking').value;
@@ -638,14 +676,12 @@
             }
         } 
         else if (filtro === "zip") {
-            etiquetaColumna = "Tiempo";
-            sufijoValor = "s";
+            etiquetaColumna = "Tiempo"; sufijoValor = "s";
             if (ultimosDatosServidor.rankingZip) {
                 rankingCompleto = ultimosDatosServidor.rankingZip;
                 rankingCompleto.sort((a, b) => a.valor - b.valor);
             } else {
-                tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Estamos procesando los tiempos del Zip...</td></tr>";
-                return;
+                tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Estamos procesando los tiempos del Zip...</td></tr>"; return;
             }
         } 
         else if (filtro === "wordle") {
@@ -654,31 +690,62 @@
                 rankingCompleto = ultimosDatosServidor.rankingWordle;
                 rankingCompleto.sort((a, b) => b.valor - a.valor);
             } else {
-                tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Estamos procesando las jugadas de Wordle...</td></tr>";
-                return;
+                tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Estamos procesando las jugadas de Wordle...</td></tr>"; return;
             }
         }
 
-        rankingCompleto.forEach((jugador, index) => {
-            if (jugador.nombre.toLowerCase().trim() === miNombre.toLowerCase().trim()) {
-                miPosicion = index + 1;
-                miValor = jugador.valor;
-            }
+        // Lógica de cálculo de tendencia
+        let hoy = new Date().toDateString();
+        let lastKnownRanks = JSON.parse(localStorage.getItem('last_ranks_' + filtro) || "{}");
+        let lastKnownDate = localStorage.getItem('last_date_' + filtro);
+        let currentRanks = {};
+        
+        rankingCompleto.forEach((j, idx) => {
+            currentRanks[j.nombre] = idx + 1;
+            if (j.nombre.toLowerCase().trim() === miNombre.toLowerCase().trim()) { miPosicion = idx + 1; miValor = j.valor; }
         });
 
+        if (lastKnownDate !== hoy) {
+            localStorage.setItem('baseline_compare_' + filtro, JSON.stringify(lastKnownRanks));
+            localStorage.setItem('last_date_' + filtro, hoy);
+        }
+        localStorage.setItem('last_ranks_' + filtro, JSON.stringify(currentRanks));
+        let compareRanks = JSON.parse(localStorage.getItem('baseline_compare_' + filtro) || "{}");
+
+        // Pintar la tabla
         tablaBody.innerHTML = `<tr><th>Pos</th><th>Usuario</th><th>${etiquetaColumna}</th></tr>`;
 
         for (let i = 0; i < Math.min(10, rankingCompleto.length); i++) {
             let j = rankingCompleto[i];
-            let esMiFila = (i + 1 === miPosicion) ? 'style="background-color: #fff3cd; font-weight: bold;"' : '';
-            let icono = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1) + 'º';
-            let txtNombre = (i + 1 === miPosicion) ? j.nombre + ' (TÚ)' : j.nombre;
-            tablaBody.innerHTML += `<tr ${esMiFila}><td style="font-weight:bold; color:var(--primary);">${icono}</td><td>${txtNombre}</td><td>${j.valor}${sufijoValor}</td></tr>`;
+            let posActual = i + 1;
+            
+            // Determinar Flecha
+            let tendenciaIcon = '<span style="color:#ff9800; font-size:11px; margin-left:3px;">🆕</span>'; // Por defecto nuevo
+            if (compareRanks[j.nombre]) {
+                let posVieja = compareRanks[j.nombre];
+                if (posActual < posVieja) tendenciaIcon = '<span style="color:var(--success); font-size:12px; margin-left:3px; font-weight:bold;">⬆️</span>';
+                else if (posActual > posVieja) tendenciaIcon = '<span style="color:var(--error-text); font-size:12px; margin-left:3px; font-weight:bold;">⬇️</span>';
+                else tendenciaIcon = '<span style="color:var(--text-muted); font-size:12px; margin-left:3px; font-weight:bold;">➖</span>';
+            }
+
+            let esMiFila = (posActual === miPosicion) ? 'style="background-color: #fff3cd; font-weight: bold;"' : '';
+            let icono = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : posActual + 'º';
+            let txtNombre = (posActual === miPosicion) ? j.nombre + ' (TÚ)' : j.nombre;
+            
+            tablaBody.innerHTML += `<tr ${esMiFila}><td style="font-weight:bold; color:var(--primary);">${icono}${tendenciaIcon}</td><td>${txtNombre}</td><td>${j.valor}${sufijoValor}</td></tr>`;
         }
 
         if (miPosicion > 10) {
+            let posViejaMia = compareRanks[miNombre];
+            let miTendencia = '<span style="color:#ff9800; font-size:11px; margin-left:3px;">🆕</span>';
+            if(posViejaMia) {
+                 if (miPosicion < posViejaMia) miTendencia = '<span style="color:var(--success); font-size:12px; margin-left:3px; font-weight:bold;">⬆️</span>';
+                 else if (miPosicion > posViejaMia) miTendencia = '<span style="color:var(--error-text); font-size:12px; margin-left:3px; font-weight:bold;">⬇️</span>';
+                 else miTendencia = '<span style="color:var(--text-muted); font-size:12px; margin-left:3px; font-weight:bold;">➖</span>';
+            }
+
             tablaBody.innerHTML += `<tr><td colspan="3" style="text-align:center; color: var(--text-muted); font-size:12px; padding: 5px;">⋮</td></tr>`;
-            tablaBody.innerHTML += `<tr style="background-color: #fff3cd; font-weight: bold; color: var(--error-text);"><td>${miPosicion}º</td><td>${miNombre} (TÚ)</td><td>${miValor}${sufijoValor}</td></tr>`;
+            tablaBody.innerHTML += `<tr style="background-color: #fff3cd; font-weight: bold; color: var(--error-text);"><td>${miPosicion}º${miTendencia}</td><td>${miNombre} (TÚ)</td><td>${miValor}${sufijoValor}</td></tr>`;
         } else if (miPosicion === -1 && rankingCompleto.length > 0) {
             tablaBody.innerHTML += `<tr><td colspan="3" style="text-align:center; color: var(--text-muted); font-size:12px; padding: 5px;">⋮</td></tr>`;
             tablaBody.innerHTML += `<tr style="background-color: #fff3cd; font-weight: bold; color: var(--text-muted);"><td>-</td><td>${miNombre} (TÚ)</td><td>Sin registrar</td></tr>`;
@@ -697,7 +764,7 @@
         const input = document.getElementById('palabra-secreta');
         const btn = document.getElementById('btn-canjear-codigo');
         const codigo = input.value.trim();
-        if (!codigo) { alert("Introduce el código localizado:"); return; }
+        if (!codigo) { showModal("Código vacío", "Introduce el código localizado.", "warning"); return; }
 
         btn.disabled = true;
         btn.innerText = "ENVIANDO...";
@@ -707,13 +774,15 @@
         fetch(URL_GOOGLE, { method: 'POST', body: JSON.stringify(datos) })
         .then(res => res.json())
         .then(data => {
-            alert(data.mensaje);
+            if(data.mensaje.includes("Enhorabuena")) showModal("¡Código Validado!", data.mensaje, "success");
+            else showModal("Aviso", data.mensaje, "warning");
+            
             input.value = "";
             btn.disabled = false;
             btn.innerText = "CANJEAR PUNTOS";
             cargarMarcadores();
         }).catch(err => {
-            alert("Error de conexión. Inténtalo de nuevo.");
+            showModal("Error", "Problema de conexión al canjear. Inténtalo de nuevo.", "error");
             btn.disabled = false;
             btn.innerText = "CANJEAR PUNTOS";
         });
@@ -735,7 +804,7 @@
     function subirFotoDrive() {
       const fileInput = document.getElementById('input-foto');
       const file = fileInput.files[0];
-      if (!file) { alert("Por favor, selecciona una foto primero."); return; }
+      if (!file) { showModal("Atención", "Por favor, selecciona una foto primero de la galería.", "warning"); return; }
       
       const checkbox = document.getElementById('checkbox-mision');
       const esMision = checkbox ? checkbox.checked : false;
@@ -765,12 +834,11 @@
         fetch(URL_GOOGLE, { method: 'POST', body: JSON.stringify(datos) })
         .then(res => res.json())
         .then(data => { 
-            alert(data.mensaje); 
+            showModal("¡Foto Enviada!", data.mensaje, "success");
             document.getElementById('mensaje-foto').style.display = 'none'; 
             document.getElementById('btn-subir-foto').disabled = false; 
             fileInput.value = ""; 
             
-            // Si acabamos de completar la misión, la bloqueamos
             if (esMision) {
                 localStorage.setItem('mision_semana_completada', getSemanaActual());
                 actualizarInterfazMision();
@@ -780,7 +848,7 @@
             }
         })
         .catch(err => { 
-            alert("Error al conectar con el servidor."); 
+            showModal("Error", "Error al subir la imagen. Inténtalo con una más ligera.", "error"); 
             document.getElementById('mensaje-foto').style.display = 'none'; 
             document.getElementById('btn-subir-foto').disabled = false; 
         });
@@ -832,10 +900,7 @@
       zipStartTime = 0;
       if (zipTimerInterval) clearInterval(zipTimerInterval);
       const timerEl = document.getElementById('zip-timer-display');
-      if (timerEl) {
-          timerEl.innerText = "0.0s";
-          timerEl.style.color = "var(--primary)";
-      }
+      if (timerEl) { timerEl.innerText = "0.0s"; timerEl.style.color = "var(--primary)"; }
       actualizarTableroZip(); 
     }
     
@@ -879,14 +944,14 @@
                else puntosZip = 50;                      
                
                setTimeout(() => { 
-                   alert("¡Increíble! Lo completaste en " + zipTime.toFixed(1) + " segundos. ¡Sumas " + puntosZip + " puntos!"); 
+                   showModal("¡Misión Cumplida!", "Lo completaste en " + zipTime.toFixed(1) + " segundos. ¡Sumas " + puntosZip + " puntos!", "success"); 
                    localStorage.setItem('zip_ultimo_dia', new Date().toDateString()); 
                    enviarPuntosAJuego("Éxito ZIP", puntosZip, "Tiempo: " + zipTime.toFixed(1) + "s"); 
                    cerrarZip(); 
                }, 300);
            } else {
                setTimeout(() => {
-                   alert("¡Ups! Has llegado al 5, pero te faltan cuadrados grises por rellenar. ¡Inténtalo de nuevo!");
+                   showModal("¡Ups!", "Has llegado al 5, pero te faltan cuadrados grises por rellenar. ¡Inténtalo de nuevo sin levantar el dedo!", "warning");
                    resetZip();
                }, 300);
            }
@@ -919,19 +984,9 @@
                 } 
                 else if (zipPath.includes(id) && id === zipPath[zipPath.length - 1]) { zipDrawing = true; }
             });
-            window.addEventListener('pointerup', () => { 
-                if (zipDrawing) {
-                    zipDrawing = false; 
-                    if(zipTimerInterval) clearInterval(zipTimerInterval); 
-                }
-            });
-            tableroZip.addEventListener('touchmove', (e) => {
-               if(!zipDrawing) return; e.preventDefault(); let touch = e.touches[0]; let element = document.elementFromPoint(touch.clientX, touch.clientY);
-               if(element && element.closest('.zip-cell')) handleZipMove(element.closest('.zip-cell').dataset.id);
-            }, {passive: false});
-            tableroZip.addEventListener('mousemove', (e) => {
-               if(!zipDrawing) return; if(e.buttons === 1) { let cell = e.target.closest('.zip-cell'); if(cell) handleZipMove(cell.dataset.id); }
-            });
+            window.addEventListener('pointerup', () => { if (zipDrawing) { zipDrawing = false; if(zipTimerInterval) clearInterval(zipTimerInterval); } });
+            tableroZip.addEventListener('touchmove', (e) => { if(!zipDrawing) return; e.preventDefault(); let touch = e.touches[0]; let element = document.elementFromPoint(touch.clientX, touch.clientY); if(element && element.closest('.zip-cell')) handleZipMove(element.closest('.zip-cell').dataset.id); }, {passive: false});
+            tableroZip.addEventListener('mousemove', (e) => { if(!zipDrawing) return; if(e.buttons === 1) { let cell = e.target.closest('.zip-cell'); if(cell) handleZipMove(cell.dataset.id); } });
         }
     }
 
@@ -940,9 +995,61 @@
     // =========================================================================
     function obtenerCosteGiroActual() { let hoy = new Date().toDateString(); let ultimoDia = localStorage.getItem('ruleta_dia'); let tiradasHoy = 0; if (ultimoDia === hoy) tiradasHoy = parseInt(localStorage.getItem('ruleta_tiradas')) || 0; else localStorage.setItem('ruleta_dia', hoy); if (tiradasHoy === 0) return 0; if (tiradasHoy === 1) return 20; if (tiradasHoy === 2) return 50; return 50 * Math.pow(2, tiradasHoy - 2); }
     function actualizarInterfazRuleta() { let coste = obtenerCosteGiroActual(); let btn = document.getElementById('btn-ruleta'); let txtCoste = document.getElementById('coste-ruleta-txt'); if (coste === 0) { txtCoste.innerHTML = `Coste próximo giro: <span style="color:var(--success)">GRATIS</span>`; btn.disabled = false; } else { txtCoste.innerHTML = `Coste próximo giro: <span style="color:var(--error-text)">${coste} pts</span>`; if (misPuntosActuales < coste) { txtCoste.innerHTML += `<br><span style="color:var(--error-text); font-size:11px;">⚠️ SALDO INSUFICIENTE PARA JUGAR</span>`; btn.disabled = true; } else { btn.disabled = false; } } }
-    function girarRuleta() { let tiradasHoy = parseInt(localStorage.getItem('ruleta_tiradas')) || 0; if (tiradasHoy >= 5) { alert("¡Has alcanzado el límite máximo diario!"); return; } let costeNumerico = obtenerCosteGiroActual(); if (misPuntosActuales < costeNumerico) { alert("No puedes girar la ruleta, saldo insuficiente."); return; } document.getElementById('btn-ruleta').disabled = true; let box = document.getElementById('ruleta-box'); const premios = [ { texto: "💎 +500 PTS", valor: 500, prob: 0.05 }, { texto: "💰 +200 PTS", valor: 200, prob: 0.15 }, { texto: "💵 +50 PTS", valor: 50, prob: 0.25 }, { texto: "🤷‍♂️ NADA", valor: 0, prob: 0.35 }, { texto: "💸 -50 PTS", valor: -50, prob: 0.10 }, { texto: "💣 -100 PTS", valor: -100, prob: 0.10 } ]; let giros = 0; box.style.backgroundColor = "#fff3cd"; let intervalo = setInterval(() => { let randomText = premios[Math.floor(Math.random() * premios.length)].texto; box.innerText = randomText; giros++; if (giros > 15) { clearInterval(intervalo); let rand = Math.random(); let acumulado = 0; let premioFinal = premios[premios.length - 1]; for (let p of premios) { acumulado += p.prob; if (rand <= acumulado) { premioFinal = p; break; } } if (premioFinal.valor < 0 && (misPuntosActuales - costeNumerico + premioFinal.valor) < 0) { premioFinal = { texto: "🤷‍♂️ NADA (Salvado de bajo cero)", valor: 0 }; } box.innerText = premioFinal.texto; box.style.backgroundColor = premioFinal.valor > 0 ? "#d4edda" : (premioFinal.valor < 0 ? "#f8d7da" : "#e2e3e5"); let puntosNetos = premioFinal.valor - costeNumerico; localStorage.setItem('ruleta_tiradas', tiradasHoy + 1); enviarPuntosAJuego("Ruleta", puntosNetos, "Salió: " + premioFinal.texto); setTimeout(() => { alert(`El giro costó ${costeNumerico} pts y sacaste ${premioFinal.texto}. Balance: ${puntosNetos} pts.`); box.style.backgroundColor = "#f1f3f4"; actualizarInterfazRuleta(); cargarMarcadores(); }, 800); } }, 120); }
+    
+    function girarRuleta() { 
+        let tiradasHoy = parseInt(localStorage.getItem('ruleta_tiradas')) || 0; 
+        if (tiradasHoy >= 5) { showModal("Límite Alcanzado", "Has llegado al límite máximo de ruletas por hoy.", "warning"); return; } 
+        let costeNumerico = obtenerCosteGiroActual(); 
+        if (misPuntosActuales < costeNumerico) { showModal("Saldo Insuficiente", "No puedes girar la ruleta, te faltan puntos.", "error"); return; } 
+        
+        document.getElementById('btn-ruleta').disabled = true; 
+        let box = document.getElementById('ruleta-box'); 
+        const premios = [ { texto: "💎 +500 PTS", valor: 500, prob: 0.05 }, { texto: "💰 +200 PTS", valor: 200, prob: 0.15 }, { texto: "💵 +50 PTS", valor: 50, prob: 0.25 }, { texto: "🤷‍♂️ NADA", valor: 0, prob: 0.35 }, { texto: "💸 -50 PTS", valor: -50, prob: 0.10 }, { texto: "💣 -100 PTS", valor: -100, prob: 0.10 } ]; 
+        let giros = 0; box.style.backgroundColor = "#fff3cd"; 
+        
+        let intervalo = setInterval(() => { 
+            let randomText = premios[Math.floor(Math.random() * premios.length)].texto; box.innerText = randomText; giros++; 
+            if (giros > 15) { 
+                clearInterval(intervalo); 
+                let rand = Math.random(); let acumulado = 0; let premioFinal = premios[premios.length - 1]; 
+                for (let p of premios) { acumulado += p.prob; if (rand <= acumulado) { premioFinal = p; break; } } 
+                if (premioFinal.valor < 0 && (misPuntosActuales - costeNumerico + premioFinal.valor) < 0) { premioFinal = { texto: "🤷‍♂️ NADA (Salvado)", valor: 0 }; } 
+                
+                box.innerText = premioFinal.texto; 
+                box.style.backgroundColor = premioFinal.valor > 0 ? "#d4edda" : (premioFinal.valor < 0 ? "#f8d7da" : "#e2e3e5"); 
+                let puntosNetos = premioFinal.valor - costeNumerico; 
+                localStorage.setItem('ruleta_tiradas', tiradasHoy + 1); 
+                enviarPuntosAJuego("Ruleta", puntosNetos, "Salió: " + premioFinal.texto); 
+                
+                setTimeout(() => { 
+                    showModal("Resultado del Giro", `Inversión: ${costeNumerico} pts.\nPremio: ${premioFinal.texto}.\nBalance final: ${puntosNetos} pts.`, premioFinal.valor >= 0 ? "success" : "error"); 
+                    box.style.backgroundColor = "#f1f3f4"; 
+                    actualizarInterfazRuleta(); 
+                    cargarMarcadores(); 
+                }, 800); 
+            } 
+        }, 120); 
+    }
 
-    function comprobarTrivial(opcionElegida) { ['a','b','c','d'].forEach(letra => document.getElementById('btn-triv-' + letra).disabled = true); const correcta = trivialActual.respuesta.toUpperCase(); document.getElementById('btn-triv-' + opcionElegida.toLowerCase()).classList.add(opcionElegida === correcta ? 'correct' : 'wrong'); if (opcionElegida !== correcta) document.getElementById('btn-triv-' + correcta.toLowerCase()).classList.add('correct'); localStorage.setItem('trivial_ultimo_dia', new Date().toDateString()); setTimeout(() => { if (opcionElegida === correcta) { alert("¡Correcto! Sumas 50 puntos."); enviarPuntosAJuego("Victoria Trivial", 50, trivialActual.pregunta); } else { alert("¡Incorrecto!"); enviarPuntosAJuego("Intento Trivial (Fallo)", 0, trivialActual.pregunta); } cerrarTrivial(); }, 1500); }
+    function comprobarTrivial(opcionElegida) { 
+        ['a','b','c','d'].forEach(letra => document.getElementById('btn-triv-' + letra).disabled = true); 
+        const correcta = trivialActual.respuesta.toUpperCase(); 
+        document.getElementById('btn-triv-' + opcionElegida.toLowerCase()).classList.add(opcionElegida === correcta ? 'correct' : 'wrong'); 
+        if (opcionElegida !== correcta) document.getElementById('btn-triv-' + correcta.toLowerCase()).classList.add('correct'); 
+        
+        localStorage.setItem('trivial_ultimo_dia', new Date().toDateString()); 
+        
+        setTimeout(() => { 
+            if (opcionElegida === correcta) { 
+                showModal("¡Has Acertado!", "Trivial corporativo superado. Sumas 50 puntos directos.", "success"); 
+                enviarPuntosAJuego("Victoria Trivial", 50, trivialActual.pregunta); 
+            } else { 
+                showModal("Respuesta Incorrecta", "No has acertado la pregunta. ¡Prueba suerte mañana!", "error"); 
+                enviarPuntosAJuego("Intento Trivial (Fallo)", 0, trivialActual.pregunta); 
+            } 
+            cerrarTrivial(); 
+        }, 1500); 
+    }
 
     const tablero = document.getElementById('tablero');
     if (tablero) { for (let i = 0; i < 6; i++) { let fila = document.createElement('div'); fila.className = 'fila'; for (let j = 0; j < 5; j++) { let casilla = document.createElement('div'); casilla.className = 'casilla'; casilla.id = `casilla-${i}-${j}`; fila.appendChild(casilla); } tablero.appendChild(fila); } }
@@ -952,17 +1059,52 @@
     function actualizarFila() { for (let i = 0; i < 5; i++) { let casilla = document.getElementById(`casilla-${intentos}-${i}`); if(casilla) casilla.innerText = letrasActuales[i] || ""; } }
     
     function revisarPalabra() {
-      if (!palabraSecretaDelDia) { alert("Sincronizando..."); return; } if (juegoTerminado) return; if (letrasActuales.length !== 5) { alert("Deben ser 5 letras"); return; }
+      if (!palabraSecretaDelDia) { showModal("Aviso", "Sincronizando diccionario... espera 1 segundo.", "info"); return; } 
+      if (juegoTerminado) return; 
+      if (letrasActuales.length !== 5) { showModal("Atención", "Deben ser exactamente 5 letras", "warning"); return; }
+      
       let palabraAdivinada = letrasActuales.join('');
       if (diccionarioLocal && diccionarioLocal.length > 0) {
-          if (!diccionarioLocal.includes(palabraAdivinada) && !diccionarioLocal.includes(palabraAdivinada.toLowerCase())) { alert("Esa palabra no está en nuestro diccionario."); return; }
+          if (!diccionarioLocal.includes(palabraAdivinada) && !diccionarioLocal.includes(palabraAdivinada.toLowerCase())) { 
+              showModal("Diccionario", "Esa palabra no está en la base de datos.", "warning"); return; 
+          }
       }
+      
       enviarPuntosAJuego("Intento Wordle", 0, palabraAdivinada);
+      
       let secretaArray = palabraSecretaDelDia.split(''); let adivinadaArray = letrasActuales; let feedback = Array(5).fill('gris');
       for (let i = 0; i < 5; i++) if (adivinadaArray[i] === secretaArray[i]) { feedback[i] = 'verde'; secretaArray[i] = null; }
       for (let i = 0; i < 5; i++) if (feedback[i] === 'gris') { let idx = secretaArray.indexOf(adivinadaArray[i]); if (idx !== -1) { feedback[i] = 'amarillo'; secretaArray[idx] = null; } }
-      for (let i = 0; i < 5; i++) { let casilla = document.getElementById(`casilla-${intentos}-${i}`); casilla.style.transform = "rotateX(90deg)"; setTimeout(() => { casilla.classList.add(feedback[i]); casilla.style.transform = "rotateX(0deg)"; }, i * 200); }
-      setTimeout(() => { if (palabraAdivinada === palabraSecretaDelDia) { juegoTerminado = true; localStorage.setItem('wordle_ultimo_dia', new Date().toDateString()); let intentosSobrantes = 5 - intentos; let puntosGanados = (intentosSobrantes + 1) * 20; setTimeout(() => { alert("¡Éxito! Sumas " + puntosGanados + " puntos."); enviarPuntosAJuego("Éxito Wordle", puntosGanados, palabraAdivinada); cerrarWordle(); }, 500); } else { intentos++; letrasActuales = []; if (intentos === 6) { juegoTerminado = true; localStorage.setItem('wordle_ultimo_dia', new Date().toDateString()); setTimeout(() => { alert("Agotaste los intentos. Era: " + palabraSecretaDelDia); enviarPuntosAJuego("Fallo Wordle", 0, "No adivinó"); cerrarWordle(); }, 500); } } }, 1500);
+      
+      for (let i = 0; i < 5; i++) { 
+          let casilla = document.getElementById(`casilla-${intentos}-${i}`); 
+          casilla.style.transform = "rotateX(90deg)"; 
+          setTimeout(() => { casilla.classList.add(feedback[i]); casilla.style.transform = "rotateX(0deg)"; }, i * 200); 
+      }
+      
+      setTimeout(() => { 
+          if (palabraAdivinada === palabraSecretaDelDia) { 
+              juegoTerminado = true; 
+              localStorage.setItem('wordle_ultimo_dia', new Date().toDateString()); 
+              let intentosSobrantes = 5 - intentos; let puntosGanados = (intentosSobrantes + 1) * 20; 
+              setTimeout(() => { 
+                  showModal("¡Reto Descifrado!", "Has adivinado la palabra. Sumas " + puntosGanados + " puntos.", "success"); 
+                  enviarPuntosAJuego("Éxito Wordle", puntosGanados, palabraAdivinada); 
+                  cerrarWordle(); 
+              }, 500); 
+          } else { 
+              intentos++; letrasActuales = []; 
+              if (intentos === 6) { 
+                  juegoTerminado = true; 
+                  localStorage.setItem('wordle_ultimo_dia', new Date().toDateString()); 
+                  setTimeout(() => { 
+                      showModal("Fin del juego", "Agotaste tus intentos. La palabra era: " + palabraSecretaDelDia, "error"); 
+                      enviarPuntosAJuego("Fallo Wordle", 0, "No adivinó"); 
+                      cerrarWordle(); 
+                  }, 500); 
+              } 
+          } 
+      }, 1500);
     }
 
     // =========================================================================
@@ -976,8 +1118,8 @@
       for (let i = 0; i < inputs.length; i++) {
           let votoEscrito = inputs[i].value.trim(); 
           let categoria = inputs[i].getAttribute('data-cat');
-          if (!votoEscrito) { alert(`⚠️ Rellena el campo: "${categoria}"`); return; }
-          if (votoEscrito.toLowerCase() === miNombre) { alert(`❌ No puedes votarte a ti mismo en "${categoria}".`); return; }
+          if (!votoEscrito) { showModal("Atención", `Rellena el campo: "${categoria}"`, "warning"); return; }
+          if (votoEscrito.toLowerCase() === miNombre) { showModal("Trampa", `No puedes votarte a ti mismo en "${categoria}".`, "error"); return; }
           votos.push({ categoria: categoria, voto: votoEscrito });
       }
 
@@ -990,16 +1132,17 @@
       fetch(URL_GOOGLE + "?token=candado_pescanova_26", { method: 'POST', body: JSON.stringify(datosVoto) })
       .then(res => res.json())
       .then(data => { 
-          alert(data.mensaje); 
           if (data.mensaje.includes("éxito")) { 
+              showModal("¡Gracias!", "Tus votos han quedado registrados.", "success");
               document.getElementById('caja-votaciones-form').innerHTML = "<h3 style='color:var(--success);'>✅ Votos Registrados</h3><p>¡Gracias por participar!</p>"; 
           } else {
+              showModal("Error", data.mensaje, "error");
               btnEnviar.disabled = false;
               btnEnviar.innerText = "ENVIAR MIS VOTOS";
           }
       })
       .catch(err => { 
-          alert("Hubo un error de conexión. Inténtalo de nuevo.");
+          showModal("Fallo de conexión", "Hubo un error al enviar tus votos. Inténtalo de nuevo.", "error");
           btnEnviar.disabled = false;
           btnEnviar.innerText = "ENVIAR MIS VOTOS";
       });

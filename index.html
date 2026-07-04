@@ -63,11 +63,14 @@
     .btn-juego { background-color: var(--primary); color: white; margin-top: 15px; padding: 15px;}
     .btn-trivial-start { background-color: #2a9d8f; }
     .btn-ruleta-start { background-color: #e63946; }
+    .btn-parejas-start { background-color: #f4a261; }
     
     #loading-text { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; display: none; }
 
     .wordle-header { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 320px; margin-bottom: 20px; }
     .btn-volver { background-color: #f1f3f4; color: var(--text); width: auto; padding: 10px 15px; margin: 0; font-size: 12px; box-shadow: none; font-weight: bold; }
+    
+    /* ESTILOS WORDLE */
     .tablero { display: grid; grid-template-rows: repeat(6, 1fr); grid-gap: 5px; margin-bottom: 20px; }
     .fila { display: grid; grid-template-columns: repeat(5, 1fr); grid-gap: 5px; }
     .casilla { width: 50px; height: 50px; border: 2px solid #dadce0; border-radius: 4px; font-size: 30px; font-weight: bold; text-transform: uppercase; display: flex; justify-content: center; align-items: center; color: var(--text); background: white; transition: background-color 0.3s, border-color 0.3s;}
@@ -79,17 +82,15 @@
     .amarillo { background-color: #b59f3b !important; border-color: #b59f3b !important; color: white !important;}
     .gris { background-color: #787c7e !important; border-color: #787c7e !important; color: white !important;}
 
+    /* ESTILOS TRIVIAL */
     .btn-opcion { background-color: var(--surface); color: var(--primary); border: 2px solid var(--primary); margin: 8px 0; text-transform: none; font-size: 15px; padding: 15px; font-weight: 500;}
     .btn-opcion:disabled { cursor: not-allowed; opacity: 0.8; }
     .btn-opcion.correct { background-color: var(--success); border-color: var(--success); color: white; }
     .btn-opcion.wrong { background-color: var(--error-text); border-color: var(--error-text); color: white; }
 
-    #ruleta-box {
-      background: #f1f3f4; padding: 20px; border-radius: 10px; font-size: 22px; 
-      font-weight: bold; margin: 15px 0; border: 3px solid #dadce0;
-      transition: background-color 0.3s;
-    }
+    #ruleta-box { background: #f1f3f4; padding: 20px; border-radius: 10px; font-size: 22px; font-weight: bold; margin: 15px 0; border: 3px solid #dadce0; transition: background-color 0.3s; }
 
+    /* ESTILOS ZIP */
     #tablero-zip { display: grid; gap: 4px; margin: 15px auto; width: 100%; max-width: 320px; background: #dadce0; padding: 4px; border-radius: 8px; touch-action: none; user-select: none; }
     .zip-cell { background: white; border-radius: 6px; aspect-ratio: 1; display: flex; justify-content: center; align-items: center; position: relative; cursor: pointer; }
     .zip-cell.path { background: #ffcc00; transition: background 0.1s ease;}
@@ -97,14 +98,22 @@
     .zip-dot { background: var(--primary); color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; z-index: 2; pointer-events: none; font-weight: bold; font-size: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);}
     #zip-timer-display { font-size: 32px; font-family: monospace; font-weight: bold; color: var(--primary); margin: 5px 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); transition: color 0.3s; }
 
-    #filtro-ranking { 
-      background-color: #f1f3f4; color: var(--primary); border: 2px solid #dadce0; 
-      border-radius: 8px; padding: 8px; font-weight: bold; font-size: 13px; 
-      margin-top: 0; margin-bottom: 15px; width: 100%; max-width: 100%; 
-      cursor: pointer; outline: none;
-    }
+    /* ESTILOS PAREJAS (NUEVO) */
+    .parejas-stats { display: flex; justify-content: space-between; width: 100%; max-width: 320px; font-size: 15px; font-weight: bold; color: var(--text-muted); margin-bottom: 10px; background: #f1f3f4; padding: 10px; border-radius: 8px; box-sizing: border-box;}
+    .parejas-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px auto; width: 100%; max-width: 320px; perspective: 1000px; }
+    .parejas-card { aspect-ratio: 1; position: relative; cursor: pointer; transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1); }
+    .parejas-card.flipped { transform: rotateY(180deg); }
+    .parejas-card-inner { width: 100%; height: 100%; position: absolute; transform-style: preserve-3d; }
+    .parejas-face { width: 100%; height: 100%; position: absolute; backface-visibility: hidden; display: flex; justify-content: center; align-items: center; border-radius: 8px; font-size: 32px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); border: 2px solid #dadce0; box-sizing: border-box;}
+    .parejas-front { background: var(--primary); background-image: radial-gradient(circle, rgba(255,255,255,0.1) 2px, transparent 2px); background-size: 10px 10px; }
+    .parejas-front::after { content: '⚓'; font-size: 20px; opacity: 0.3; }
+    .parejas-back { background: white; transform: rotateY(180deg); }
+    .parejas-back.matched { background: #d4edda; border-color: var(--success); }
 
-    /* NUEVO: ESTILOS DEL MODAL */
+    /* SELECTOR RANKING */
+    #filtro-ranking { background-color: #f1f3f4; color: var(--primary); border: 2px solid #dadce0; border-radius: 8px; padding: 8px; font-weight: bold; font-size: 13px; margin-top: 0; margin-bottom: 15px; width: 100%; max-width: 100%; cursor: pointer; outline: none; }
+
+    /* MODAL CUSTOM */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,34,68,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px); }
     .modal-overlay.show { opacity: 1; pointer-events: auto; }
     .modal-box { background: var(--surface); border-radius: 16px; padding: 25px 20px; text-align: center; max-width: 320px; width: 100%; transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
@@ -114,21 +123,19 @@
     .modal-text { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; font-weight: 500; }
     .modal-btn { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 25px; font-weight: bold; width: 100%; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 
-    /* NUEVO: ESTILOS DE LOS PUNTOS EN LA ESQUINA */
-    #puntos-esquina {
-      position: fixed; top: 55px; right: 15px; background: var(--surface); color: var(--primary); 
-      padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 14px; 
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 999; display: none;
-      border: 2px solid var(--accent); align-items: center; gap: 5px;
-      transition: transform 0.3s;
-    }
+    /* PUNTOS EN LA ESQUINA */
+    #puntos-esquina { position: fixed; top: 55px; right: 15px; background: var(--surface); color: var(--primary); padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 999; display: none; border: 2px solid var(--accent); align-items: center; gap: 5px; transition: transform 0.3s; }
     
+    /* ANIMACIÓN CONFETI (NUEVO) */
+    .confetti-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 10001; overflow: hidden; }
+    .confetti { position: absolute; top: -10px; width: 12px; height: 12px; opacity: 0.9; animation: fall linear forwards; }
+    @keyframes fall { 0% { transform: translateY(-10vh) rotate(0deg); } 100% { transform: translateY(110vh) rotate(720deg); } }
     @keyframes ticker { 0% { transform: translate(100%, 0); } 100% { transform: translate(-100%, 0); } }
   </style>
 </head>
 <body>
 
-  <!-- MODAL CUSTOM ("Efecto WOW") -->
+  <!-- MODAL CUSTOM -->
   <div id="modal-overlay" class="modal-overlay">
     <div class="modal-box">
        <div id="modal-icon" class="modal-icon">ℹ️</div>
@@ -239,7 +246,7 @@
       
       <div class="card-container" style="margin-top: 0;">
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🎡 Ruleta de la Suerte</h3>
-        <p style="font-size: 13px; color:var(--text-muted);">El primer tiro del día es GRATIS. Los siguientes cuestan puntos de tu marcador personal. ¡Prohibido bajar de 0 puntos!</p>
+        <p style="font-size: 13px; color:var(--text-muted);">El primer tiro del día es GRATIS. Los siguientes cuestan puntos de tu marcador. ¡Prohibido bajar de 0 puntos!</p>
         <div id="ruleta-box">❓❓❓</div>
         <p id="coste-ruleta-txt" style="font-size: 13px; font-weight: bold; color: var(--text); margin-bottom:5px;">Cargando...</p>
         <p id="mis-puntos-txt" style="font-size: 11px; color: var(--text-muted); margin-top:0;">Tus puntos actuales: <span id="mis-puntos-num">0</span></p>
@@ -247,21 +254,27 @@
       </div>
 
       <div class="card-container">
-        <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🧩 Pesca-Zip</h3>
-        <p style="font-size: 13px; color:var(--text-muted);">Conecta los puntos numéricos arrastrando el dedo hasta rellenar toda la cuadrícula. ¡Cuanto más rápido, más puntos!</p>
-        <button class="btn-juego" style="background-color: #8c52ff;" onclick="abrirZip()">JUGAR ZIP</button>
+        <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🃏 Pesca-Parejas <span style="color:var(--error-text); font-size:12px;">NUEVO</span></h3>
+        <p style="font-size: 13px; color:var(--text-muted);">Encuentra las parejas ocultas. Cuantos menos movimientos necesites, más puntos ganarás.</p>
+        <button class="btn-juego btn-parejas-start" onclick="abrirParejas()">JUGAR PAREJAS</button>
       </div>
 
       <div class="card-container">
-        <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🧠 Trivial Diario</h3>
-        <p style="font-size: 13px; color:var(--text-muted);">Responde a la pregunta corporativa del día al primer intento y llévate 50 puntos.</p>
-        <button class="btn-juego btn-trivial-start" onclick="abrirTrivial()">JUGAR TRIVIAL</button>
+        <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🧩 Pesca-Zip</h3>
+        <p style="font-size: 13px; color:var(--text-muted);">Conecta los puntos arrastrando el dedo hasta rellenar toda la cuadrícula. ¡Sé rápido!</p>
+        <button class="btn-juego" style="background-color: #8c52ff;" onclick="abrirZip()">JUGAR ZIP</button>
       </div>
 
       <div class="card-container">
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🎮 Pesca-Wordle</h3>
         <p style="font-size: 13px; color:var(--text-muted);">Descifra la palabra oculta del día en menos de 6 intentos. Suma 100 puntos directos.</p>
         <button class="btn-juego" onclick="abrirWordle()">JUGAR WORDLE</button>
+      </div>
+      
+      <div class="card-container">
+        <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🧠 Trivial Diario</h3>
+        <p style="font-size: 13px; color:var(--text-muted);">Responde a la pregunta corporativa del día al primer intento y llévate 50 puntos.</p>
+        <button class="btn-juego btn-trivial-start" onclick="abrirTrivial()">JUGAR TRIVIAL</button>
       </div>
     </div>
 
@@ -341,6 +354,18 @@
     <button class="btn-codigo" onclick="resetZip()">REINICIAR TRAZO</button>
   </div>
 
+  <!-- PANTALLA PAREJAS (NUEVO) -->
+  <div id="pantalla-parejas" class="screen">
+    <div class="wordle-header"><button class="btn-volver" onclick="cerrarParejas()">⬅️ VOLVER</button><h2 style="margin:0; color:var(--primary);">PAREJAS</h2><div style="width: 70px;"></div></div>
+    
+    <div class="parejas-stats">
+        <span>Movimientos: <span id="parejas-mov-txt" style="color:var(--primary);">0</span></span>
+        <span>Aciertos: <span id="parejas-aciertos-txt" style="color:var(--success);">0</span>/8</span>
+    </div>
+    
+    <div id="tablero-parejas" class="parejas-grid"></div>
+  </div>
+
   <!-- PANTALLA VOTACIONES -->
   <div id="pantalla-votaciones" class="screen">
     <div class="wordle-header"><button class="btn-volver" onclick="cerrarVotaciones()">⬅️ VOLVER</button><h2 style="margin:0; color:var(--primary);">VOTACIONES</h2><div style="width: 70px;"></div></div>
@@ -366,8 +391,40 @@
     let zipStartTime = 0; let zipTimerInterval = null;
     let zipNivelActual = { puntos: {}, totalDots: 5 };
 
+    // Variables de Parejas
+    let parejasIconos = ['🐟', '🚢', '🏭', '🌊', '⚓', '🧊', '🎣', '🦞'];
+    let parejasCartas = []; let cartasVolteadas = []; let parejasAcertadas = 0; let parejasMovimientos = 0; let parejasBloqueado = false;
+
     // =========================================================================
-    // SISTEMA DE MODALES (Efecto WOW)
+    // SISTEMA DE CONFETI (Efecto WOW)
+    // =========================================================================
+    function lanzarConfeti() {
+        const container = document.createElement('div');
+        container.className = 'confetti-container';
+        document.body.appendChild(container);
+        
+        const colores = ['#ffcc00', '#003366', '#2a9d8f', '#e63946', '#8c52ff'];
+        
+        for(let i=0; i<80; i++) {
+            let conf = document.createElement('div');
+            conf.className = 'confetti';
+            conf.style.left = Math.random() * 100 + 'vw';
+            conf.style.backgroundColor = colores[Math.floor(Math.random() * colores.length)];
+            conf.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            conf.style.animationDelay = (Math.random() * 0.5) + 's';
+            
+            // Variar formas (algunos círculos, otros cuadrados)
+            if(Math.random() > 0.5) conf.style.borderRadius = "50%";
+            
+            container.appendChild(conf);
+        }
+        
+        // Limpiar el DOM después de la animación
+        setTimeout(() => { if (container.parentNode) container.parentNode.removeChild(container); }, 4000);
+    }
+
+    // =========================================================================
+    // SISTEMA DE MODALES 
     // =========================================================================
     function showModal(titulo, texto, tipo = 'info') {
       const overlay = document.getElementById('modal-overlay');
@@ -434,10 +491,11 @@
       document.getElementById('pantalla-wordle').classList.remove('active');
       document.getElementById('pantalla-trivial').classList.remove('active');
       document.getElementById('pantalla-zip').classList.remove('active');
+      document.getElementById('pantalla-parejas').classList.remove('active');
       document.getElementById('pantalla-votaciones').classList.remove('active');
       document.getElementById('nombre-usuario').innerText = localStorage.getItem('jugador_nombre');
       document.getElementById('dep-usuario').innerText = localStorage.getItem('jugador_dep');
-      document.getElementById('puntos-esquina').style.display = 'flex'; // Mostrar puntos flotantes
+      document.getElementById('puntos-esquina').style.display = 'flex'; 
     }
 
     function cambiarSeccionLobby(seccionId, elementoNav) {
@@ -462,6 +520,7 @@
       else { contenido.style.display = 'none'; icono.innerText = '+'; }
     }
 
+    // NAVEGACIÓN JUEGOS
     function abrirVotaciones() { document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-votaciones').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; window.scrollTo(0,0); }
     function cerrarVotaciones() { document.getElementById('pantalla-votaciones').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; window.scrollTo(0,0); }
     
@@ -473,6 +532,10 @@
     
     function abrirWordle() { if (localStorage.getItem('wordle_ultimo_dia') === new Date().toDateString()) { showModal("Atención", "Ya completaste el Wordle hoy. ¡Descansa esa cabeza!", "info"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-wordle').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; window.scrollTo(0,0); juegoTerminado = false; intentos = 0; letrasActuales = []; for (let i=0; i<6; i++) for (let j=0; j<5; j++) { document.getElementById(`casilla-${i}-${j}`).innerText = ""; document.getElementById(`casilla-${i}-${j}`).className = "casilla"; } }
     function cerrarWordle() { document.getElementById('pantalla-wordle').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; window.scrollTo(0,0); }
+
+    function abrirParejas() { if (localStorage.getItem('parejas_ultimo_dia') === new Date().toDateString()) { showModal("Atención", "Ya has encontrado todas las parejas por hoy. ¡Mañana más!", "info"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-parejas').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; window.scrollTo(0,0); iniciarParejas(); }
+    function cerrarParejas() { document.getElementById('pantalla-parejas').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; window.scrollTo(0,0); }
+
 
     function getSemanaActual() {
         let fechaActual = new Date();
@@ -513,9 +576,7 @@
 
       try {
           const cacheStr = localStorage.getItem('marcadores_cache');
-          if (cacheStr && !cargandoInicial) {
-              pintarDatos(JSON.parse(cacheStr));
-          }
+          if (cacheStr && !cargandoInicial) { pintarDatos(JSON.parse(cacheStr)); }
       } catch(e) {}
 
       cargandoInicial = true;
@@ -634,9 +695,7 @@
                 if (btnVotarMenu) btnVotarMenu.style.display = 'block';
                 if (cajaNominados) cajaNominados.style.display = 'none';
             }
-        } catch (e) {
-            console.error("Error al pintar nominados:", e);
-        }
+        } catch (e) {}
 
         if (datos.listaMisiones && Array.isArray(datos.listaMisiones) && datos.listaMisiones.length > 0) {
             let nom = localStorage.getItem('jugador_nombre') || "agente";
@@ -652,7 +711,7 @@
     }
 
     // =========================================================================
-    // NUEVO: SISTEMA DE RANKING CON TENDENCIAS
+    // RANKING CON TENDENCIAS
     // =========================================================================
     function actualizarTablaRanking() {
         const tablaBody = document.getElementById('tabla-agentes-body');
@@ -660,18 +719,13 @@
         if (!tablaBody || !ultimosDatosServidor) return;
 
         let miNombre = localStorage.getItem('jugador_nombre') || "";
-        let miPosicion = -1;
-        let miValor = 0;
-        let rankingCompleto = [];
-        let etiquetaColumna = "Pts";
-        let sufijoValor = "";
+        let miPosicion = -1; let miValor = 0; let rankingCompleto = [];
+        let etiquetaColumna = "Pts"; let sufijoValor = "";
 
         if (filtro === "global") {
             etiquetaColumna = "Pts";
             if (ultimosDatosServidor.puntosTotalesJugadores) {
-                for (let n in ultimosDatosServidor.puntosTotalesJugadores) {
-                    rankingCompleto.push({ nombre: n, valor: ultimosDatosServidor.puntosTotalesJugadores[n] });
-                }
+                for (let n in ultimosDatosServidor.puntosTotalesJugadores) { rankingCompleto.push({ nombre: n, valor: ultimosDatosServidor.puntosTotalesJugadores[n] }); }
                 rankingCompleto.sort((a, b) => b.valor - a.valor);
             }
         } 
@@ -694,7 +748,6 @@
             }
         }
 
-        // Lógica de cálculo de tendencia
         let hoy = new Date().toDateString();
         let lastKnownRanks = JSON.parse(localStorage.getItem('last_ranks_' + filtro) || "{}");
         let lastKnownDate = localStorage.getItem('last_date_' + filtro);
@@ -712,15 +765,13 @@
         localStorage.setItem('last_ranks_' + filtro, JSON.stringify(currentRanks));
         let compareRanks = JSON.parse(localStorage.getItem('baseline_compare_' + filtro) || "{}");
 
-        // Pintar la tabla
         tablaBody.innerHTML = `<tr><th>Pos</th><th>Usuario</th><th>${etiquetaColumna}</th></tr>`;
 
         for (let i = 0; i < Math.min(10, rankingCompleto.length); i++) {
             let j = rankingCompleto[i];
             let posActual = i + 1;
             
-            // Determinar Flecha
-            let tendenciaIcon = '<span style="color:#ff9800; font-size:11px; margin-left:3px;">🆕</span>'; // Por defecto nuevo
+            let tendenciaIcon = '<span style="color:#ff9800; font-size:11px; margin-left:3px;">🆕</span>';
             if (compareRanks[j.nombre]) {
                 let posVieja = compareRanks[j.nombre];
                 if (posActual < posVieja) tendenciaIcon = '<span style="color:var(--success); font-size:12px; margin-left:3px; font-weight:bold;">⬆️</span>';
@@ -743,7 +794,6 @@
                  else if (miPosicion > posViejaMia) miTendencia = '<span style="color:var(--error-text); font-size:12px; margin-left:3px; font-weight:bold;">⬇️</span>';
                  else miTendencia = '<span style="color:var(--text-muted); font-size:12px; margin-left:3px; font-weight:bold;">➖</span>';
             }
-
             tablaBody.innerHTML += `<tr><td colspan="3" style="text-align:center; color: var(--text-muted); font-size:12px; padding: 5px;">⋮</td></tr>`;
             tablaBody.innerHTML += `<tr style="background-color: #fff3cd; font-weight: bold; color: var(--error-text);"><td>${miPosicion}º${miTendencia}</td><td>${miNombre} (TÚ)</td><td>${miValor}${sufijoValor}</td></tr>`;
         } else if (miPosicion === -1 && rankingCompleto.length > 0) {
@@ -774,8 +824,12 @@
         fetch(URL_GOOGLE, { method: 'POST', body: JSON.stringify(datos) })
         .then(res => res.json())
         .then(data => {
-            if(data.mensaje.includes("Enhorabuena")) showModal("¡Código Validado!", data.mensaje, "success");
-            else showModal("Aviso", data.mensaje, "warning");
+            if(data.mensaje.includes("Enhorabuena")) {
+                lanzarConfeti(); // <--- EFECTO WOW
+                showModal("¡Código Validado!", data.mensaje, "success");
+            } else {
+                showModal("Aviso", data.mensaje, "warning");
+            }
             
             input.value = "";
             btn.disabled = false;
@@ -834,6 +888,7 @@
         fetch(URL_GOOGLE, { method: 'POST', body: JSON.stringify(datos) })
         .then(res => res.json())
         .then(data => { 
+            if(esMision) lanzarConfeti();
             showModal("¡Foto Enviada!", data.mensaje, "success");
             document.getElementById('mensaje-foto').style.display = 'none'; 
             document.getElementById('btn-subir-foto').disabled = false; 
@@ -857,17 +912,110 @@
     }
 
     // =========================================================================
+    // MINIJUEGO: PESCA-PAREJAS (NUEVO)
+    // =========================================================================
+    function barajarArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function iniciarParejas() {
+        parejasCartas = [...parejasIconos, ...parejasIconos]; 
+        parejasCartas = barajarArray(parejasCartas);
+        cartasVolteadas = [];
+        parejasAcertadas = 0;
+        parejasMovimientos = 0;
+        parejasBloqueado = false;
+
+        document.getElementById('parejas-mov-txt').innerText = "0";
+        document.getElementById('parejas-aciertos-txt').innerText = "0";
+
+        const tablero = document.getElementById('tablero-parejas');
+        tablero.innerHTML = '';
+
+        parejasCartas.forEach((icono, index) => {
+            const card = document.createElement('div');
+            card.className = 'parejas-card';
+            card.dataset.id = index;
+            card.dataset.icono = icono;
+            
+            card.innerHTML = `
+                <div class="parejas-card-inner">
+                    <div class="parejas-face parejas-front"></div>
+                    <div class="parejas-face parejas-back">${icono}</div>
+                </div>
+            `;
+            
+            card.addEventListener('click', () => voltearCarta(card));
+            tablero.appendChild(card);
+        });
+    }
+
+    function voltearCarta(card) {
+        if (parejasBloqueado || card.classList.contains('flipped') || cartasVolteadas.length >= 2) return;
+
+        card.classList.add('flipped');
+        cartasVolteadas.push(card);
+
+        if (cartasVolteadas.length === 2) {
+            parejasBloqueado = true;
+            parejasMovimientos++;
+            document.getElementById('parejas-mov-txt').innerText = parejasMovimientos;
+
+            let c1 = cartasVolteadas[0];
+            let c2 = cartasVolteadas[1];
+
+            if (c1.dataset.icono === c2.dataset.icono) {
+                // Acierto
+                setTimeout(() => {
+                    c1.querySelector('.parejas-back').classList.add('matched');
+                    c2.querySelector('.parejas-back').classList.add('matched');
+                    parejasAcertadas++;
+                    document.getElementById('parejas-aciertos-txt').innerText = parejasAcertadas;
+                    cartasVolteadas = [];
+                    parejasBloqueado = false;
+                    comprobarVictoriaParejas();
+                }, 400);
+            } else {
+                // Fallo
+                setTimeout(() => {
+                    c1.classList.remove('flipped');
+                    c2.classList.remove('flipped');
+                    cartasVolteadas = [];
+                    parejasBloqueado = false;
+                }, 1000);
+            }
+        }
+    }
+
+    function comprobarVictoriaParejas() {
+        if (parejasAcertadas === 8) {
+            let pts = 20; // Consuelo
+            if (parejasMovimientos <= 12) pts = 150;
+            else if (parejasMovimientos <= 18) pts = 100;
+            else if (parejasMovimientos <= 24) pts = 50;
+
+            setTimeout(() => {
+                lanzarConfeti();
+                showModal("¡Memoria de Elefante!", `Has encontrado todas las parejas en ${parejasMovimientos} movimientos. \n\n¡Ganas ${pts} puntos!`, "success");
+                localStorage.setItem('parejas_ultimo_dia', new Date().toDateString());
+                enviarPuntosAJuego("Éxito Parejas", pts, "Movimientos: " + parejasMovimientos);
+                cerrarParejas();
+            }, 600);
+        }
+    }
+
+    // =========================================================================
     // JUEGO ZIP 
     // =========================================================================
-
     function getZipNivelDiario() {
         const rutas = [
-            ["0,0", "0,3", "1,0", "2,3", "3,0"], 
-            ["3,3", "3,0", "0,0", "0,3", "1,2"],
-            ["0,1", "2,0", "3,2", "1,3", "1,1"],
-            ["1,1", "2,0", "2,2", "1,3", "1,2"],
-            ["2,1", "1,0", "0,3", "3,2", "1,1"],
-            ["0,2", "3,3", "2,0", "1,1", "1,2"]
+            ["0,0", "0,3", "1,0", "2,3", "3,0"], ["3,3", "3,0", "0,0", "0,3", "1,2"],
+            ["0,1", "2,0", "3,2", "1,3", "1,1"], ["1,1", "2,0", "2,2", "1,3", "1,2"],
+            ["2,1", "1,0", "0,3", "3,2", "1,1"], ["0,2", "3,3", "2,0", "1,1", "1,2"]
         ];
         const index = new Date().getDate() % rutas.length;
         const ruta = rutas[index];
@@ -913,21 +1061,12 @@
 
     function handleZipMove(id) {
        if(!zipDrawing || zipPath[zipPath.length - 1] === id || zipPath.includes(id)) return;
-       
-       let lastId = zipPath[zipPath.length-1]; 
-       let [r1, c1] = lastId.split(',').map(Number); 
-       let [r2, c2] = id.split(',').map(Number);
-       
+       let lastId = zipPath[zipPath.length-1]; let [r1, c1] = lastId.split(',').map(Number); let [r2, c2] = id.split(',').map(Number);
        let isAdyacent = (Math.abs(r1-r2) === 1 && c1 === c2) || (Math.abs(c1-c2) === 1 && r1 === r2);
        if(!isAdyacent) return;
+       if(zipNivelActual.puntos[id]) { if(zipNivelActual.puntos[id] !== zipNextDot) return; zipNextDot++; }
        
-       if(zipNivelActual.puntos[id]) { 
-           if(zipNivelActual.puntos[id] !== zipNextDot) return; 
-           zipNextDot++; 
-       }
-       
-       zipPath.push(id); 
-       actualizarTableroZip();
+       zipPath.push(id); actualizarTableroZip();
        
        if(zipNextDot > zipNivelActual.totalDots) {
            zipDrawing = false;
@@ -936,15 +1075,11 @@
            if(zipPath.length === 16) {
                let zipTime = (Date.now() - zipStartTime) / 1000;
                document.getElementById('zip-timer-display').innerText = zipTime.toFixed(1) + "s";
-               
                let puntosZip = 150;
-               if (zipTime <= 4) puntosZip = 150;        
-               else if (zipTime <= 8) puntosZip = 120;   
-               else if (zipTime <= 15) puntosZip = 80;   
-               else puntosZip = 50;                      
-               
+               if (zipTime <= 4) puntosZip = 150; else if (zipTime <= 8) puntosZip = 120; else if (zipTime <= 15) puntosZip = 80; else puntosZip = 50;                      
                setTimeout(() => { 
-                   showModal("¡Misión Cumplida!", "Lo completaste en " + zipTime.toFixed(1) + " segundos. ¡Sumas " + puntosZip + " puntos!", "success"); 
+                   lanzarConfeti(); // <--- EFECTO WOW
+                   showModal("¡Velocidad Extrema!", "Lo completaste en " + zipTime.toFixed(1) + " segundos. ¡Sumas " + puntosZip + " puntos!", "success"); 
                    localStorage.setItem('zip_ultimo_dia', new Date().toDateString()); 
                    enviarPuntosAJuego("Éxito ZIP", puntosZip, "Tiempo: " + zipTime.toFixed(1) + "s"); 
                    cerrarZip(); 
@@ -963,26 +1098,15 @@
         if (tableroZip) {
             tableroZip.addEventListener('pointerdown', (e) => {
                 let cell = e.target.closest('.zip-cell'); if(!cell) return; let id = cell.dataset.id;
-                
                 if(zipNivelActual.puntos[id] === 1 && zipPath.length === 0) { 
-                    zipDrawing = true; zipPath = [id]; zipNextDot = 2; 
-                    
-                    zipStartTime = Date.now(); 
+                    zipDrawing = true; zipPath = [id]; zipNextDot = 2; zipStartTime = Date.now(); 
                     if (zipTimerInterval) clearInterval(zipTimerInterval);
                     zipTimerInterval = setInterval(() => {
-                        let current = (Date.now() - zipStartTime) / 1000;
-                        let timerEl = document.getElementById('zip-timer-display');
-                        timerEl.innerText = current.toFixed(1) + "s";
-                        
-                        if(current > 10) timerEl.style.color = "var(--error-text)"; 
-                        else if(current > 6) timerEl.style.color = "#ff9800"; 
-                        else if(current > 3) timerEl.style.color = "var(--success)"; 
-                        else timerEl.style.color = "var(--primary)"; 
+                        let current = (Date.now() - zipStartTime) / 1000; let timerEl = document.getElementById('zip-timer-display'); timerEl.innerText = current.toFixed(1) + "s";
+                        if(current > 10) timerEl.style.color = "var(--error-text)"; else if(current > 6) timerEl.style.color = "#ff9800"; else if(current > 3) timerEl.style.color = "var(--success)"; else timerEl.style.color = "var(--primary)"; 
                     }, 100);
-
                     actualizarTableroZip(); 
-                } 
-                else if (zipPath.includes(id) && id === zipPath[zipPath.length - 1]) { zipDrawing = true; }
+                } else if (zipPath.includes(id) && id === zipPath[zipPath.length - 1]) { zipDrawing = true; }
             });
             window.addEventListener('pointerup', () => { if (zipDrawing) { zipDrawing = false; if(zipTimerInterval) clearInterval(zipTimerInterval); } });
             tableroZip.addEventListener('touchmove', (e) => { if(!zipDrawing) return; e.preventDefault(); let touch = e.touches[0]; let element = document.elementFromPoint(touch.clientX, touch.clientY); if(element && element.closest('.zip-cell')) handleZipMove(element.closest('.zip-cell').dataset.id); }, {passive: false});
@@ -1022,6 +1146,7 @@
                 enviarPuntosAJuego("Ruleta", puntosNetos, "Salió: " + premioFinal.texto); 
                 
                 setTimeout(() => { 
+                    if(premioFinal.valor >= 200) lanzarConfeti();
                     showModal("Resultado del Giro", `Inversión: ${costeNumerico} pts.\nPremio: ${premioFinal.texto}.\nBalance final: ${puntosNetos} pts.`, premioFinal.valor >= 0 ? "success" : "error"); 
                     box.style.backgroundColor = "#f1f3f4"; 
                     actualizarInterfazRuleta(); 
@@ -1088,6 +1213,7 @@
               localStorage.setItem('wordle_ultimo_dia', new Date().toDateString()); 
               let intentosSobrantes = 5 - intentos; let puntosGanados = (intentosSobrantes + 1) * 20; 
               setTimeout(() => { 
+                  lanzarConfeti(); // <--- EFECTO WOW
                   showModal("¡Reto Descifrado!", "Has adivinado la palabra. Sumas " + puntosGanados + " puntos.", "success"); 
                   enviarPuntosAJuego("Éxito Wordle", puntosGanados, palabraAdivinada); 
                   cerrarWordle(); 
@@ -1116,17 +1242,14 @@
       let miNombre = localStorage.getItem('jugador_nombre').toLowerCase().trim();
       
       for (let i = 0; i < inputs.length; i++) {
-          let votoEscrito = inputs[i].value.trim(); 
-          let categoria = inputs[i].getAttribute('data-cat');
+          let votoEscrito = inputs[i].value.trim(); let categoria = inputs[i].getAttribute('data-cat');
           if (!votoEscrito) { showModal("Atención", `Rellena el campo: "${categoria}"`, "warning"); return; }
           if (votoEscrito.toLowerCase() === miNombre) { showModal("Trampa", `No puedes votarte a ti mismo en "${categoria}".`, "error"); return; }
           votos.push({ categoria: categoria, voto: votoEscrito });
       }
 
       const btnEnviar = document.getElementById('btn-enviar-votos');
-      btnEnviar.disabled = true;
-      btnEnviar.innerText = "ENVIANDO...";
-
+      btnEnviar.disabled = true; btnEnviar.innerText = "ENVIANDO...";
       const datosVoto = { nombre: localStorage.getItem('jugador_nombre'), departamento: localStorage.getItem('jugador_dep'), accion: "VotarMultiple", puntos: 0, palabra: JSON.stringify(votos) };
 
       fetch(URL_GOOGLE + "?token=candado_pescanova_26", { method: 'POST', body: JSON.stringify(datosVoto) })
@@ -1136,16 +1259,10 @@
               showModal("¡Gracias!", "Tus votos han quedado registrados.", "success");
               document.getElementById('caja-votaciones-form').innerHTML = "<h3 style='color:var(--success);'>✅ Votos Registrados</h3><p>¡Gracias por participar!</p>"; 
           } else {
-              showModal("Error", data.mensaje, "error");
-              btnEnviar.disabled = false;
-              btnEnviar.innerText = "ENVIAR MIS VOTOS";
+              showModal("Error", data.mensaje, "error"); btnEnviar.disabled = false; btnEnviar.innerText = "ENVIAR MIS VOTOS";
           }
       })
-      .catch(err => { 
-          showModal("Fallo de conexión", "Hubo un error al enviar tus votos. Inténtalo de nuevo.", "error");
-          btnEnviar.disabled = false;
-          btnEnviar.innerText = "ENVIAR MIS VOTOS";
-      });
+      .catch(err => { showModal("Fallo de conexión", "Hubo un error al enviar tus votos. Inténtalo de nuevo.", "error"); btnEnviar.disabled = false; btnEnviar.innerText = "ENVIAR MIS VOTOS"; });
     }
   </script>
 </body>

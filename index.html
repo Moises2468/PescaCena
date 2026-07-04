@@ -11,7 +11,7 @@
       --error-text: #d93025; --success: #538d4e; --mission: #8c52ff;
     }
 
-    body { margin: 0; font-family: 'Segoe UI', Roboto, Arial, sans-serif; background-color: var(--bg); color: var(--text); text-align: center; padding-bottom: 80px; }
+    body { margin: 0; font-family: 'Segoe UI', Roboto, Arial, sans-serif; background-color: var(--bg); color: var(--text); text-align: center; padding-bottom: 80px; user-select: none; }
     .screen { display: none; padding: 20px; min-height: 100vh; box-sizing: border-box; }
     .active { display: flex; flex-direction: column; justify-content: flex-start; align-items: center; }
     .seccion-lobby { display: none; width: 100%; flex-direction: column; align-items: center; animation: fadeIn 0.3s; }
@@ -98,7 +98,7 @@
     .zip-dot { background: var(--primary); color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; z-index: 2; pointer-events: none; font-weight: bold; font-size: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);}
     #zip-timer-display { font-size: 32px; font-family: monospace; font-weight: bold; color: var(--primary); margin: 5px 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); transition: color 0.3s; }
 
-    /* ESTILOS PAREJAS (NUEVO) */
+    /* ESTILOS PAREJAS */
     .parejas-stats { display: flex; justify-content: space-between; width: 100%; max-width: 320px; font-size: 15px; font-weight: bold; color: var(--text-muted); margin-bottom: 10px; background: #f1f3f4; padding: 10px; border-radius: 8px; box-sizing: border-box;}
     .parejas-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px auto; width: 100%; max-width: 320px; perspective: 1000px; }
     .parejas-card { aspect-ratio: 1; position: relative; cursor: pointer; transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1); }
@@ -126,11 +126,28 @@
     /* PUNTOS EN LA ESQUINA */
     #puntos-esquina { position: fixed; top: 55px; right: 15px; background: var(--surface); color: var(--primary); padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 999; display: none; border: 2px solid var(--accent); align-items: center; gap: 5px; transition: transform 0.3s; }
     
-    /* ANIMACIÓN CONFETI (NUEVO) */
+    /* ANIMACIÓN CONFETI */
     .confetti-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 10001; overflow: hidden; }
     .confetti { position: absolute; top: -10px; width: 12px; height: 12px; opacity: 0.9; animation: fall linear forwards; }
     @keyframes fall { 0% { transform: translateY(-10vh) rotate(0deg); } 100% { transform: translateY(110vh) rotate(720deg); } }
     @keyframes ticker { 0% { transform: translate(100%, 0); } 100% { transform: translate(-100%, 0); } }
+
+    /* ========================================================
+       ESTILOS DEL CLICKER BOSS
+       ======================================================== */
+    .boss-alerta { position: fixed; top: 55px; left: 15px; background-color: var(--error-text); color: white; padding: 8px 15px; border-radius: 25px; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 8px; z-index: 999; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3); animation: pulse-alerta 1s infinite; border: 2px solid white; display: none; }
+    @keyframes pulse-alerta { 0% { transform: scale(1); } 50% { transform: scale(1.1); box-shadow: 0 6px 15px rgba(217,48,37,0.6); } 100% { transform: scale(1); } }
+    
+    .breathe-boss { animation: breathe-boss 2.5s ease-in-out infinite; }
+    @keyframes breathe-boss { 0% { transform: scale(1) translateY(0); } 50% { transform: scale(1.04) translateY(-8px); } 100% { transform: scale(1) translateY(0); } }
+    
+    .shake-boss { animation: shake-boss 0.15s cubic-bezier(.36,.07,.19,.97) both; }
+    @keyframes shake-boss { 0% { transform: translate(0,0) rotate(0deg); } 25% { transform: translate(-5px, 3px) rotate(-2deg); } 50% { transform: translate(5px, -3px) rotate(2deg); } 75% { transform: translate(-3px, -2px) rotate(-1deg); } 100% { transform: translate(0,0) rotate(0deg); } }
+    
+    .float-dmg { position: fixed; color: var(--error-text); font-weight: 900; font-size: 18px; pointer-events: none; z-index: 10002; text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff; animation: floatUpDmg 0.8s ease-out forwards; white-space: nowrap; }
+    @keyframes floatUpDmg { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-60px) scale(1.3); } }
+
+    .tienda-fila { display: flex; justify-content: space-between; align-items: center; background: #f1f3f4; padding: 10px; border-radius: 8px; margin-bottom: 8px; }
   </style>
 </head>
 <body>
@@ -151,6 +168,11 @@
 
   <!-- PUNTOS EN LA ESQUINA -->
   <div id="puntos-esquina">🏆 <span id="puntos-esquina-num">0</span> pts</div>
+
+  <!-- ALERTA BOSS -->
+  <div id="alerta-boss" class="boss-alerta" onclick="abrirBoss()">
+      <span style="font-size:18px;">⚠️</span> <span id="alerta-boss-txt">¡HACKEO EN CURSO!</span>
+  </div>
 
   <div id="pantalla-registro" class="screen active">
     <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;">
@@ -343,7 +365,7 @@
     </div>
   </div>
 
-  <!-- PANTALLA ZIPm -->
+  <!-- PANTALLA ZIP -->
   <div id="pantalla-zip" class="screen">
     <div class="wordle-header"><button class="btn-volver" onclick="cerrarZip()">⬅️ VOLVER</button><h2 style="margin:0; color:var(--primary);">PESCA-ZIP</h2><div style="width: 70px;"></div></div>
     
@@ -355,7 +377,7 @@
     <button class="btn-codigo" onclick="resetZip()">REINICIAR TRAZO</button>
   </div>
 
-  <!-- PANTALLA PAREJAS (NUEVO) -->
+  <!-- PANTALLA PAREJAS -->
   <div id="pantalla-parejas" class="screen">
     <div class="wordle-header"><button class="btn-volver" onclick="cerrarParejas()">⬅️ VOLVER</button><h2 style="margin:0; color:var(--primary);">PAREJAS</h2><div style="width: 70px;"></div></div>
     
@@ -378,10 +400,49 @@
     </div>
   </div>
 
-  <script>
-    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycby1fRrnO6o-NSldhnVIveySmi1HM9us2yWidrfHkQ0AJVLXtLcQ6lUe0AUSDFyYSXklpQ/exec"; 
+  <!-- PANTALLA BOSS (EL CLICKER) -->
+  <div id="pantalla-boss" class="screen">
+    <div class="wordle-header"><button class="btn-volver" onclick="cerrarBoss()">⬅️ VOLVER</button><h2 style="margin:0; color:var(--error-text);">COMBATE</h2><div style="width: 70px;"></div></div>
+    
+    <h3 id="boss-fase-titulo" style="color:var(--primary); margin-top: 0; margin-bottom: 10px; font-size: 22px;">Fase 1</h3>
+    
+    <!-- BARRA DE VIDA -->
+    <div style="width: 100%; max-width: 320px; background: #dadce0; border-radius: 12px; height: 30px; position: relative; margin-bottom: 20px; overflow: hidden; border: 3px solid #202124;">
+        <div id="boss-vida-fill" style="height: 100%; background: #d93025; width: 100%; transition: width 0.2s;"></div>
+        <div id="boss-vida-txt" style="position: absolute; width: 100%; top: 5px; left: 0; text-align: center; color: white; font-size: 16px; font-weight: 900; text-shadow: 1px 1px 3px black; pointer-events: none;">0 / 0</div>
+    </div>
+    
+    <!-- IMAGEN DEL BOSS -->
+    <div id="boss-img-container" style="position: relative; margin: 10px auto; width: 280px; height: 280px; cursor: crosshair; display: flex; justify-content: center; align-items: center;">
+        <img id="boss-img" src="etapa1.png" style="width:100%; height:100%; object-fit: contain; pointer-events: none;" class="breathe-boss">
+    </div>
 
-    // VARIABLES GLOBALES
+    <!-- TIENDA DE MEJORAS -->
+    <div class="card-container" style="width: 100%; max-width: 320px; padding: 15px; margin-top: 20px;">
+        <h4 style="margin:0 0 15px 0; color:var(--primary); text-transform: uppercase;">Mejoras de Agente</h4>
+        
+        <div class="tienda-fila">
+            <div style="text-align:left; font-size:14px; line-height: 1.2;">
+                <strong>💪 Fuerza de Toque (Lvl <span id="lvl-fuerza-txt">1</span>)</strong><br>
+                <span style="color:var(--text-muted); font-size: 12px;">Daño por click: <strong id="dano-click-txt" style="color:var(--text)">1</strong></span>
+            </div>
+            <button id="btn-upg-fuerza" class="btn-juego" style="width:auto; margin:0; padding:10px 15px; font-size:12px; background:#457b9d;" onclick="comprarMejora('fuerza')">Mejorar (<span id="coste-fuerza">50</span> pts)</button>
+        </div>
+        
+        <div class="tienda-fila">
+            <div style="text-align:left; font-size:14px; line-height: 1.2;">
+                <strong>🤖 Auto-Becario (Lvl <span id="lvl-auto-txt">0</span>)</strong><br>
+                <span style="color:var(--text-muted); font-size: 12px;">Daño por segundo: <strong id="dano-auto-txt" style="color:var(--text)">0</strong></span>
+            </div>
+            <button id="btn-upg-auto" class="btn-juego" style="width:auto; margin:0; padding:10px 15px; font-size:12px; background:#e63946;" onclick="comprarMejora('auto')">Mejorar (<span id="coste-auto">100</span> pts)</button>
+        </div>
+    </div>
+  </div>
+
+  <script>
+    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbxLmoMTAji2YWglTOs902_U6nyhq5ekbYsDoc_iXCvYOyiW5qXYPfkshlMISCN3dEPW0A/exec"; 
+
+    // VARIABLES GLOBALES GENERALES
     let palabraSecretaDelDia = ""; let cargandoInicial = false; let misPuntosActuales = 0; let trivialActual = { pregunta: "", a: "", b: "", c: "", d: "", respuesta: "" }; let juegoTerminado = false; let intentos = 0; let letrasActuales = []; let diccionarioLocal = [];
     let controladorFetch = null; 
     let miMisionActual = "Esperando sincronización..."; 
@@ -395,6 +456,22 @@
     // Variables de Parejas
     let parejasIconos = ['🐟', '🚢', '🏭', '🌊', '⚓', '🧊', '🎣', '🦞'];
     let parejasCartas = []; let cartasVolteadas = []; let parejasAcertadas = 0; let parejasMovimientos = 0; let parejasBloqueado = false;
+
+    // --- VARIABLES DEL BOSS ---
+    let bossActivo = false;
+    let bossEtapaActual = 1;
+    let bossVidaMaxima = 1000000;
+    let bossVidaActual = 1000000;
+    let miLvlFuerza = 1;
+    let miLvlAuto = 0;
+    let danoAcumuladoSinEnviar = 0;
+    let autoClickerInterval = null;
+    let sincroBossInterval = null;
+    
+    const frasesBoss = [
+        "¡Ups, otra vez!", "¿Quién ha sido el becario?", "¡Menos mal que no es un cliente!", 
+        "¡Error 404!", "¡Reinicia el router!", "¡No hay trazabilidad!", "¡Etiquetado como Foli0 A4!"
+    ];
 
     // =========================================================================
     // SISTEMA DE CONFETI (Efecto WOW)
@@ -414,13 +491,11 @@
             conf.style.animationDuration = (Math.random() * 2 + 2) + 's';
             conf.style.animationDelay = (Math.random() * 0.5) + 's';
             
-            // Variar formas (algunos círculos, otros cuadrados)
             if(Math.random() > 0.5) conf.style.borderRadius = "50%";
             
             container.appendChild(conf);
         }
         
-        // Limpiar el DOM después de la animación
         setTimeout(() => { if (container.parentNode) container.parentNode.removeChild(container); }, 4000);
     }
 
@@ -487,13 +562,8 @@
     }
 
     function mostrarLobby() {
-      document.getElementById('pantalla-registro').classList.remove('active');
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById('pantalla-lobby').classList.add('active');
-      document.getElementById('pantalla-wordle').classList.remove('active');
-      document.getElementById('pantalla-trivial').classList.remove('active');
-      document.getElementById('pantalla-zip').classList.remove('active');
-      document.getElementById('pantalla-parejas').classList.remove('active');
-      document.getElementById('pantalla-votaciones').classList.remove('active');
       document.getElementById('nombre-usuario').innerText = localStorage.getItem('jugador_nombre');
       document.getElementById('dep-usuario').innerText = localStorage.getItem('jugador_dep');
       document.getElementById('puntos-esquina').style.display = 'flex'; 
@@ -536,7 +606,6 @@
 
     function abrirParejas() { if (localStorage.getItem('parejas_ultimo_dia') === new Date().toDateString()) { showModal("Atención", "Ya has encontrado todas las parejas por hoy. ¡Mañana más!", "info"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-parejas').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; window.scrollTo(0,0); iniciarParejas(); }
     function cerrarParejas() { document.getElementById('pantalla-parejas').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; window.scrollTo(0,0); }
-
 
     function getSemanaActual() {
         let fechaActual = new Date();
@@ -614,6 +683,38 @@
             const text = document.getElementById('ticker-text');
             if(text) text.innerText = datos.noticiaGlobal;
             if(container) container.style.display = 'block'; 
+        }
+
+        // LECTURA DEL BOSS (Preparado para cuando lo metas en el GS)
+        if (datos.boss) {
+            bossActivo = (datos.boss.activo === "SI");
+            if (bossActivo) {
+                document.getElementById('alerta-boss').style.display = 'flex';
+                document.getElementById('alerta-boss-txt').innerText = datos.boss.texto || "¡HACKEO EN CURSO!";
+                
+                bossEtapaActual = datos.boss.etapa || 1;
+                bossVidaActual = datos.boss.vidaActual || 0;
+                bossVidaMaxima = datos.boss.vidaMaxima || 1000000;
+                let nomJugador = localStorage.getItem('jugador_nombre');
+                if (datos.boss.jugadores && nomJugador && datos.boss.jugadores[nomJugador]) {
+                    miLvlFuerza = datos.boss.jugadores[nomJugador].fuerza;
+                    miLvlAuto = datos.boss.jugadores[nomJugador].auto;
+                } else {
+                    miLvlFuerza = 1; 
+                    miLvlAuto = 0;
+                }
+
+                // Dinamismo de imagen basado en la etapa
+                document.getElementById('boss-img').src = 'etapa' + bossEtapaActual + '.png';
+                document.getElementById('boss-fase-titulo').innerText = 'Fase ' + bossEtapaActual;
+                
+                // Actualiza UI
+                document.getElementById('boss-vida-fill').style.width = (bossVidaActual / bossVidaMaxima * 100) + "%";
+                document.getElementById('boss-vida-txt').innerText = bossVidaActual + " / " + bossVidaMaxima;
+                actualizarTiendaUI();
+            } else {
+                document.getElementById('alerta-boss').style.display = 'none';
+            }
         }
 
         const deps = datos.departamentos || {};
@@ -730,12 +831,11 @@
                 rankingCompleto.sort((a, b) => b.valor - a.valor);
             }
         } 
-        // LÓGICA NUEVA: Ranking de Parejas
         else if (filtro === "parejas") {
             etiquetaColumna = "Movimientos"; sufijoValor = " movs";
             if (ultimosDatosServidor.rankingParejas) {
                 rankingCompleto = ultimosDatosServidor.rankingParejas;
-                rankingCompleto.sort((a, b) => a.valor - b.valor); // Aquí gana el que menos movimientos tenga
+                rankingCompleto.sort((a, b) => a.valor - b.valor);
             } else {
                 tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Estamos procesando las jugadas de Parejas...</td></tr>"; return;
             }
@@ -836,7 +936,7 @@
         .then(res => res.json())
         .then(data => {
             if(data.mensaje.includes("Enhorabuena")) {
-                lanzarConfeti(); // <--- EFECTO WOW
+                lanzarConfeti();
                 showModal("¡Código Validado!", data.mensaje, "success");
             } else {
                 showModal("Aviso", data.mensaje, "warning");
@@ -923,7 +1023,7 @@
     }
 
     // =========================================================================
-    // MINIJUEGO: PESCA-PAREJAS (NUEVO)
+    // MINIJUEGO: PESCA-PAREJAS
     // =========================================================================
     function barajarArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
@@ -1004,7 +1104,7 @@
 
     function comprobarVictoriaParejas() {
         if (parejasAcertadas === 8) {
-            let pts = 20; // Consuelo
+            let pts = 20; 
             if (parejasMovimientos <= 12) pts = 150;
             else if (parejasMovimientos <= 18) pts = 100;
             else if (parejasMovimientos <= 24) pts = 50;
@@ -1089,7 +1189,7 @@
                let puntosZip = 150;
                if (zipTime <= 4) puntosZip = 150; else if (zipTime <= 8) puntosZip = 120; else if (zipTime <= 15) puntosZip = 80; else puntosZip = 50;                      
                setTimeout(() => { 
-                   lanzarConfeti(); // <--- EFECTO WOW
+                   lanzarConfeti(); 
                    showModal("¡Velocidad Extrema!", "Lo completaste en " + zipTime.toFixed(1) + " segundos. ¡Sumas " + puntosZip + " puntos!", "success"); 
                    localStorage.setItem('zip_ultimo_dia', new Date().toDateString()); 
                    enviarPuntosAJuego("Éxito ZIP", puntosZip, "Tiempo: " + zipTime.toFixed(1) + "s"); 
@@ -1224,7 +1324,7 @@
               localStorage.setItem('wordle_ultimo_dia', new Date().toDateString()); 
               let intentosSobrantes = 5 - intentos; let puntosGanados = (intentosSobrantes + 1) * 20; 
               setTimeout(() => { 
-                  lanzarConfeti(); // <--- EFECTO WOW
+                  lanzarConfeti(); 
                   showModal("¡Reto Descifrado!", "Has adivinado la palabra. Sumas " + puntosGanados + " puntos.", "success"); 
                   enviarPuntosAJuego("Éxito Wordle", puntosGanados, palabraAdivinada); 
                   cerrarWordle(); 
@@ -1275,6 +1375,113 @@
       })
       .catch(err => { showModal("Fallo de conexión", "Hubo un error al enviar tus votos. Inténtalo de nuevo.", "error"); btnEnviar.disabled = false; btnEnviar.innerText = "ENVIAR MIS VOTOS"; });
     }
+
+    // =========================================================================
+    // LÓGICA DEL CLICKER BOSS
+    // =========================================================================
+    function abrirBoss() {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('pantalla-boss').classList.add('active');
+        document.getElementById('alerta-boss').style.display = 'none';
+
+        if (miLvlAuto > 0) {
+            autoClickerInterval = setInterval(() => {
+                if(bossVidaActual > 0) hacerDano(miLvlAuto, false, 0, 0);
+            }, 1000);
+        }
+
+        sincroBossInterval = setInterval(enviarDanoAlServidor, 5000);
+    }
+
+    function cerrarBoss() {
+        document.getElementById('pantalla-boss').classList.remove('active');
+        document.getElementById('pantalla-lobby').classList.add('active');
+        if(bossActivo) document.getElementById('alerta-boss').style.display = 'flex';
+        
+        clearInterval(autoClickerInterval);
+        clearInterval(sincroBossInterval);
+        enviarDanoAlServidor(); 
+    }
+
+    document.getElementById('boss-img-container').addEventListener('pointerdown', (e) => {
+        if (!bossActivo || bossVidaActual <= 0) return;
+        hacerDano(miLvlFuerza, true, e.clientX, e.clientY);
+    });
+
+    function hacerDano(cantidad, esManual, x, y) {
+        bossVidaActual -= cantidad;
+        danoAcumuladoSinEnviar += cantidad;
+        
+        if (bossVidaActual < 0) bossVidaActual = 0;
+        
+        document.getElementById('boss-vida-fill').style.width = (bossVidaActual / bossVidaMaxima * 100) + "%";
+        document.getElementById('boss-vida-txt').innerText = bossVidaActual + " / " + bossVidaMaxima;
+
+        if (esManual) {
+            let img = document.getElementById('boss-img');
+            img.classList.remove('shake-boss');
+            void img.offsetWidth; 
+            img.classList.add('shake-boss');
+
+            let txt = document.createElement('div');
+            txt.className = 'float-dmg';
+            let offsetX = (Math.random() - 0.5) * 40; 
+            txt.style.left = (x - 20 + offsetX) + 'px';
+            txt.style.top = (y - 30) + 'px';
+            txt.innerText = frasesBoss[Math.floor(Math.random() * frasesBoss.length)];
+            document.body.appendChild(txt);
+            
+            setTimeout(() => txt.remove(), 800);
+        }
+    }
+
+    function enviarDanoAlServidor() {
+        if (danoAcumuladoSinEnviar === 0) return;
+        
+        let danoAEnviar = danoAcumuladoSinEnviar;
+        danoAcumuladoSinEnviar = 0; 
+
+        // Cuando la lógica del GS esté lista, esto lo restará a la salud global y se lo sumará a Ranking_Boss
+        enviarPuntosAJuego("DanoBoss", danoAEnviar, "Fase: " + bossEtapaActual);
+    }
+
+    function calcularCosteFuerza() { return miLvlFuerza * 50; }
+    function calcularCosteAuto() { return (miLvlAuto + 1) * 100; }
+
+    function actualizarTiendaUI() {
+        document.getElementById('lvl-fuerza-txt').innerText = miLvlFuerza;
+        document.getElementById('dano-click-txt').innerText = miLvlFuerza;
+        document.getElementById('coste-fuerza').innerText = calcularCosteFuerza();
+
+        document.getElementById('lvl-auto-txt').innerText = miLvlAuto;
+        document.getElementById('dano-auto-txt').innerText = miLvlAuto;
+        document.getElementById('coste-auto').innerText = calcularCosteAuto();
+    }
+
+    function comprarMejora(tipo) {
+        let coste = tipo === 'fuerza' ? calcularCosteFuerza() : calcularCosteAuto();
+
+        if (misPuntosActuales < coste) {
+            showModal("Sin saldo", "No tienes puntos suficientes para esta mejora.", "error");
+            return;
+        }
+
+        if (tipo === 'fuerza') miLvlFuerza++;
+        if (tipo === 'auto') {
+            miLvlAuto++;
+            clearInterval(autoClickerInterval);
+            autoClickerInterval = setInterval(() => {
+                if(bossVidaActual > 0) hacerDano(miLvlAuto, false, 0, 0);
+            }, 1000);
+        }
+
+        // Se envía la petición al backend para restar puntos (como con la Ruleta) y subir el nivel en la BBDD
+        enviarPuntosAJuego("ComprarMejoraBoss", -coste, "Tipo: " + tipo);
+        
+        actualizarTiendaUI();
+        lanzarConfeti();
+    }
+
   </script>
 </body>
 </html>

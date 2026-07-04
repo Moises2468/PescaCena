@@ -146,8 +146,8 @@
       </div>
 
       <div class="card-container" id="card-mision" style="border: 2px solid var(--mission); margin-top: 15px; text-align: left;">
-        <h3 style="color: var(--mission); margin-top:0; font-size: 16px;">🎯 Tu Misión Secreta</h3>
-        <p id="texto-mision" style="font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 0;">Sincronizando misión del día...</p>
+        <h3 style="color: var(--mission); margin-top:0; font-size: 16px;">🎯 Tu Misión Secreta (Semanal)</h3>
+        <p id="texto-mision" style="font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 0;">Sincronizando misión...</p>
       </div>
 
       <button id="btn-abrir-votaciones" class="btn-juego" style="background-color: #ff9800; max-width: 320px;" onclick="abrirVotaciones()">🏆 VOTAR PREMIOS</button>
@@ -176,7 +176,6 @@
         </div>
         
         <div id="vista-agentes" style="display: none;">
-          <!-- SELECTOR DE RANKING DINÁMICO -->
           <select id="filtro-ranking" onchange="actualizarTablaRanking()">
             <option value="global">🌍 Top 10 Global (Puntos Totales)</option>
             <option value="zip">⚡ Top 10 más Rápidos (Pesca-Zip)</option>
@@ -218,7 +217,7 @@
       </div>
 
       <div class="card-container">
-        <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🧩 Pesca-Zip (NUEVO)</h3>
+        <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🧩 Pesca-Zip</h3>
         <p style="font-size: 13px; color:var(--text-muted);">Conecta los puntos numéricos arrastrando el dedo hasta rellenar toda la cuadrícula. ¡Cuanto más rápido, más puntos!</p>
         <button class="btn-juego" style="background-color: #8c52ff;" onclick="abrirZip()">JUGAR ZIP</button>
       </div>
@@ -300,7 +299,7 @@
     </div>
   </div>
 
-  <!-- PANTALLA ZIPa -->
+  <!-- PANTALLA ZIP -->
   <div id="pantalla-zip" class="screen">
     <div class="wordle-header"><button class="btn-volver" onclick="cerrarZip()">⬅️ VOLVER</button><h2 style="margin:0; color:var(--primary);">PESCA-ZIP</h2><div style="width: 70px;"></div></div>
     
@@ -326,13 +325,13 @@
   <script>
     const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbxWkqVDmHnYLU5gpa39J3oyMKK2hVKo5GZDofBGajm5a4JWH-9DzGm7QuBR9a2-FtCf4g/exec"; 
 
-    // VARIABLES GLOBALES (Limpiadas y unificadas)
+    // VARIABLES GLOBALES
     let palabraSecretaDelDia = ""; let cargandoInicial = false; let misPuntosActuales = 0; let trivialActual = { pregunta: "", a: "", b: "", c: "", d: "", respuesta: "" }; let juegoTerminado = false; let intentos = 0; let letrasActuales = []; let diccionarioLocal = [];
     let controladorFetch = null; 
     let miMisionActual = "Esperando sincronización..."; 
     let ultimosDatosServidor = null; 
     
-    // Variables de Zip reparadas
+    // Variables de Zip
     let zipPath = []; let zipDrawing = false; let zipNextDot = 2;
     let zipStartTime = 0; let zipTimerInterval = null;
     let zipNivelActual = { puntos: {}, totalDots: 5 };
@@ -420,6 +419,43 @@
     
     function abrirWordle() { if (localStorage.getItem('wordle_ultimo_dia') === new Date().toDateString()) { alert("Ya completaste el Wordle hoy."); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-wordle').classList.add('active'); window.scrollTo(0,0); juegoTerminado = false; intentos = 0; letrasActuales = []; for (let i=0; i<6; i++) for (let j=0; j<5; j++) { document.getElementById(`casilla-${i}-${j}`).innerText = ""; document.getElementById(`casilla-${i}-${j}`).className = "casilla"; } }
     function cerrarWordle() { document.getElementById('pantalla-wordle').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); window.scrollTo(0,0); }
+
+    // Función auxiliar para saber en qué semana estamos
+    function getSemanaActual() {
+        let fechaActual = new Date();
+        let inicioAno = new Date(fechaActual.getFullYear(), 0, 1);
+        let diasTranscurridos = Math.floor((fechaActual - inicioAno) / (24 * 60 * 60 * 1000));
+        return Math.ceil((diasTranscurridos + 1) / 7);
+    }
+
+    // Actualizar Textos y Botones de la Misión
+    function actualizarInterfazMision() {
+        let numeroSemana = getSemanaActual();
+        let txtMision = document.getElementById('texto-mision');
+        let checkboxMision = document.getElementById('checkbox-mision');
+        let labelMision = document.querySelector('label[for="checkbox-mision"]');
+        
+        // Si la misión de esta semana ya está completada
+        if (localStorage.getItem('mision_semana_completada') == numeroSemana) {
+            if (txtMision) txtMision.innerHTML = `<span style="color:var(--success); font-weight:bold;">✅ Misión semanal completada</span>`;
+            if (checkboxMision) {
+                checkboxMision.checked = false;
+                checkboxMision.disabled = true;
+            }
+            if (labelMision) {
+                labelMision.innerText = "✅ Misión semanal completada";
+                labelMision.style.color = "var(--success)";
+            }
+        } else {
+            if (txtMision) txtMision.innerText = miMisionActual;
+            if (checkboxMision) checkboxMision.disabled = false;
+            if (labelMision) {
+                labelMision.innerText = "¡Es la foto de mi Misión!";
+                labelMision.style.color = "var(--primary)";
+            }
+        }
+        actualizarBotonFoto();
+    }
 
     // =========================================================================
     // LÓGICA DE CARGA PROTEGIDA 
@@ -563,12 +599,16 @@
             console.error("Error al pintar nominados:", e);
         }
 
+        // --- NUEVA LÓGICA DE MISIONES SEMANALES ---
         if (datos.listaMisiones && Array.isArray(datos.listaMisiones) && datos.listaMisiones.length > 0) {
             let nom = localStorage.getItem('jugador_nombre') || "agente";
-            let indice = (new Date().getDate() + nom.length) % datos.listaMisiones.length;
+            let numeroSemana = getSemanaActual();
+            
+            // Usamos la semana para seleccionar la misión
+            let indice = (numeroSemana + nom.length) % datos.listaMisiones.length;
             miMisionActual = datos.listaMisiones[indice];
-            let txtMision = document.getElementById('texto-mision');
-            if (txtMision) txtMision.innerText = miMisionActual;
+            
+            actualizarInterfazMision(); // Valida si ya se ha completado
         } else {
             miMisionActual = "Sácate una foto divertida con un compañero.";
             let txtMision = document.getElementById('texto-mision');
@@ -680,7 +720,8 @@
     }
 
     function actualizarBotonFoto() {
-        const isChecked = document.getElementById('checkbox-mision').checked;
+        const checkbox = document.getElementById('checkbox-mision');
+        const isChecked = checkbox ? checkbox.checked : false;
         const btn = document.getElementById('btn-subir-foto');
         if (isChecked) {
             btn.style.backgroundColor = "var(--mission)";
@@ -696,7 +737,8 @@
       const file = fileInput.files[0];
       if (!file) { alert("Por favor, selecciona una foto primero."); return; }
       
-      const esMision = document.getElementById('checkbox-mision').checked;
+      const checkbox = document.getElementById('checkbox-mision');
+      const esMision = checkbox ? checkbox.checked : false;
       const puntosAsignados = esMision ? 50 : 10;
       const detallePalabra = esMision ? "Misión: " + miMisionActual : "Foto Libre";
 
@@ -728,8 +770,14 @@
             document.getElementById('btn-subir-foto').disabled = false; 
             fileInput.value = ""; 
             
-            document.getElementById('checkbox-mision').checked = false;
-            actualizarBotonFoto();
+            // Si acabamos de completar la misión, la bloqueamos
+            if (esMision) {
+                localStorage.setItem('mision_semana_completada', getSemanaActual());
+                actualizarInterfazMision();
+            } else {
+                if (checkbox) checkbox.checked = false;
+                actualizarBotonFoto();
+            }
         })
         .catch(err => { 
             alert("Error al conectar con el servidor."); 
@@ -741,12 +789,10 @@
     }
 
     // =========================================================================
-    // JUEGO ZIP (CON CRONÓMETRO VISUAL) Y GENERADOR DIARIO
+    // JUEGO ZIP 
     // =========================================================================
 
     function getZipNivelDiario() {
-        // Mapas 100% validados matemáticamente.
-        // El único camino posible para unirlos ocupa exactamente las 16 casillas.
         const rutas = [
             ["0,0", "0,3", "1,0", "2,3", "3,0"], 
             ["3,3", "3,0", "0,0", "0,3", "1,2"],
@@ -811,19 +857,17 @@
        if(!isAdyacent) return;
        
        if(zipNivelActual.puntos[id]) { 
-           if(zipNivelActual.puntos[id] !== zipNextDot) return; // Choca contra número incorrecto
+           if(zipNivelActual.puntos[id] !== zipNextDot) return; 
            zipNextDot++; 
        }
        
        zipPath.push(id); 
        actualizarTableroZip();
        
-       // Validación al tocar el número 5
        if(zipNextDot > zipNivelActual.totalDots) {
            zipDrawing = false;
            if(zipTimerInterval) clearInterval(zipTimerInterval); 
            
-           // NUEVA REGLA ESTRICTA: El trazo debe tener exactamente 16 casillas
            if(zipPath.length === 16) {
                let zipTime = (Date.now() - zipStartTime) / 1000;
                document.getElementById('zip-timer-display').innerText = zipTime.toFixed(1) + "s";
@@ -841,7 +885,6 @@
                    cerrarZip(); 
                }, 300);
            } else {
-               // Si llega al 5 pero sobran casillas grises vacías, pierde el intento actual
                setTimeout(() => {
                    alert("¡Ups! Has llegado al 5, pero te faltan cuadrados grises por rellenar. ¡Inténtalo de nuevo!");
                    resetZip();
@@ -855,7 +898,7 @@
         if (tableroZip) {
             tableroZip.addEventListener('pointerdown', (e) => {
                 let cell = e.target.closest('.zip-cell'); if(!cell) return; let id = cell.dataset.id;
-                // CORRECCIÓN: Aquí es donde fallaba, estaba leyendo la variable vieja
+                
                 if(zipNivelActual.puntos[id] === 1 && zipPath.length === 0) { 
                     zipDrawing = true; zipPath = [id]; zipNextDot = 2; 
                     

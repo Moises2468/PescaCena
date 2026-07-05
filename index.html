@@ -174,13 +174,13 @@
 
   <!-- ALERTA BOSS -->
   <div id="alerta-boss" class="boss-alerta" onclick="abrirBoss()">
-      <span style="font-size:18px;">⚠️</span> <span id="alerta-boss-txt">¡HACKEO EN CURSO!</span>
+      <span style="font-size:18px;">⚠️</span> <span id="alerta-boss-txt">¡UN BOSS NOS ATACA!</span>
   </div>
 
   <div id="pantalla-registro" class="screen active">
     <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;">
       <img src="logo.png" class="logo-corporativo" alt="PROYECTO ENERO">
-      <h1>PROYECTO ENERO</h1>
+      <h1>PROYECTO CENA</h1>
       <p class="subtitulo">Indica tus datos</p>
       <input type="text" id="nombre" placeholder="Nombre/Apodo" required>
       <select id="departamento">
@@ -204,7 +204,7 @@
       
       <div class="card-container" style="text-align: left;">
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">👋 ¡Bienvenido!</h3>
-        <p style="font-size: 14px; color:var(--text-muted); margin-bottom: 0;">Navega por el menú inferior para jugar, consultar tus puntos y los de tu equipo, o canjear códigos QR.</p>
+        <p style="font-size: 14px; color:var(--text-muted); margin-bottom: 0;">Vota en los Pesca-Oscars, haz puntos para ti y tu equipo, envia fotos... y mas!</p>
       </div>
 
       <div class="card-container" id="card-mision" style="border: 2px solid var(--mission); margin-top: 15px; text-align: left;">
@@ -212,11 +212,11 @@
         <p id="texto-mision" style="font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 0;">Sincronizando misión...</p>
       </div>
 
-      <button id="btn-abrir-votaciones" class="btn-juego" style="background-color: #ff9800; max-width: 320px;" onclick="abrirVotaciones()">🏆 VOTAR PREMIOS</button>
+      <button id="btn-abrir-votaciones" class="btn-juego" style="background-color: #ff9800; max-width: 320px;" onclick="abrirVotaciones()">🏆 VOTAR PESCA-OSCARS</button>
 
       <div class="card-container" id="caja-nominados" style="display: none; margin-top: 15px; text-align: left;">
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🌟 Nominados Finales</h3>
-        <p style="font-size: 13px; color:var(--text-muted);">Las votaciones han finalizado. Estos son los nominados a los premios en cada categoría:</p>
+        <p style="font-size: 13px; color:var(--text-muted);">Las votaciones han finalizado. Estos son vuestos nominados a los premios en cada categoría:</p>
         <div id="lista-nominados-contenido" style="margin-top: 15px;"></div>
       </div>
     </div>
@@ -232,9 +232,9 @@
         <div id="loading-text">Sincronizando información...</div>
         
         <div id="vista-equipos">
-          <div class="equipo-row"><div class="equipo-nombre">Producción</div><div class="barra-bg"><div id="barra-prod" class="barra-fill bg-prod"></div><span id="pts-prod" class="puntos-text">0 pts</span></div></div>
+          <div class="equipo-row"><div class="equipo-nombre">Produc.</div><div class="barra-bg"><div id="barra-prod" class="barra-fill bg-prod"></div><span id="pts-prod" class="puntos-text">0 pts</span></div></div>
           <div class="equipo-row"><div class="equipo-nombre">Mantenim.</div><div class="barra-bg"><div id="barra-mant" class="barra-fill bg-mant"></div><span id="pts-mant" class="puntos-text">0 pts</span></div></div>
-          <div class="equipo-row"><div class="equipo-nombre">Oficinas</div><div class="barra-bg"><div id="barra-ofic" class="barra-fill bg-ofic"></div><span id="pts-ofic" class="puntos-text">0 pts</span></div></div>
+          <div class="equipo-row"><div class="equipo-nombre">Ofi.</div><div class="barra-bg"><div id="barra-ofic" class="barra-fill bg-ofic"></div><span id="pts-ofic" class="puntos-text">0 pts</span></div></div>
         </div>
         
         <div id="vista-agentes" style="display: none;">
@@ -272,7 +272,7 @@
       
       <div class="card-container" style="margin-top: 0;">
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🎡 Ruleta de la Suerte</h3>
-        <p style="font-size: 13px; color:var(--text-muted);">El primer tiro del día es GRATIS. Los siguientes cuestan puntos de tu marcador. ¡Prohibido bajar de 0 puntos!</p>
+        <p style="font-size: 13px; color:var(--text-muted);">El primer tiro del día es GRATIS. Los siguientes cuestan puntos de tu marcador.</p>
         <div id="ruleta-box">❓❓❓</div>
         <p id="coste-ruleta-txt" style="font-size: 13px; font-weight: bold; color: var(--text); margin-bottom:5px;">Cargando...</p>
         <p id="mis-puntos-txt" style="font-size: 11px; color: var(--text-muted); margin-top:0;">Tus puntos actuales: <span id="mis-puntos-num">0</span></p>
@@ -287,7 +287,7 @@
 
       <div class="card-container">
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🧩 Pesca-Zip</h3>
-        <p style="font-size: 13px; color:var(--text-muted);">Conecta los puntos arrastrando el dedo hasta rellenar toda la cuadrícula. ¡Sé rápido!</p>
+        <p style="font-size: 13px; color:var(--text-muted);">Conecta los puntos por orden arrastrando el dedo hasta rellenar toda la cuadrícula. ¡Sé rápido!</p>
         <button class="btn-juego" style="background-color: #8c52ff;" onclick="abrirZip()">JUGAR ZIP</button>
       </div>
 
@@ -347,6 +347,8 @@
       <button class="btn-volver" onclick="cerrarWordle()">⬅️ VOLVER</button>
       <h2 style="margin:0; color:var(--primary);">PESCA-WORDLE</h2>
       <div style="width: 70px;"></div> 
+      <p style="font-size: 13px; color:var(--text-muted); margin-bottom: 5px;">Usa palabras de 5 letras para adivinar la palabra del dia.</p>
+      <p style="font-size: 12px; color:var(--text-muted); margin-top: 0; font-weight: bold;">Letra en Verde, esta en su posicion. Letra Naranja, no esta en su posicion. Letra gris, no esta en la palabra.</p>
     </div>
     <div class="tablero" id="tablero"></div>
     <div class="teclado">

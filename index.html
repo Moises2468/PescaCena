@@ -242,7 +242,7 @@
             <option value="wordle">🧠 Top 10 más Eficientes (Pesca-Wordle)</option>
           </select>
           <table class="tabla-top" id="tabla-agentes-body">
-              <!-- Se rellena por JS (Top 10 + Tú) -->
+              <!-- Se rellena por JS -->
           </table>
         </div>
   
@@ -729,10 +729,9 @@
             document.getElementById('boss-vida-txt').innerText = bossVidaActual + " / " + bossVidaMaxima;
             actualizarTiendaUI();
             
-            // Si el jugador está dentro de la pestaña y el boss está muerto
+            // LÓGICA DE BOTÍN AL ENTRAR Y VERLO MUERTO
             if (bossVidaActual <= 0 && document.getElementById('pantalla-boss').classList.contains('active')) {
-                lanzarConfeti();
-                showModal("¡BOSS DERROTADO!", `¡El Boss de la Fase ${bossEtapaActual} FUE VENCIDO CON LA AYUDA DE TODOS LOS DEPARTAMENTOS!\n\nReclama tu parte del botín.`, "success");
+                reclamarBotinBoss();
                 cerrarBoss();
             }
         }
@@ -1426,7 +1425,6 @@
         let ranking = [];
         for (let nombre in ultimosDatosServidor.boss.jugadores) {
             let j = ultimosDatosServidor.boss.jugadores[nombre];
-            // Lee el daño del array. (Importante configurar en GS)
             if (j.dano > 0) ranking.push({ nombre: nombre, dano: j.dano });
         }
 
@@ -1448,14 +1446,48 @@
         }
     }
 
+    // --- FUNCIÓN PARA REPARTIR EL BOTÍN AUTOMÁTICAMENTE ---
+    function reclamarBotinBoss() {
+        let botinReclamadoKey = 'botin_reclamado_fase_' + bossEtapaActual;
+        if (localStorage.getItem(botinReclamadoKey)) return; // Ya reclamado
+
+        let miDano = 0;
+        let danoTotal = (ultimosDatosServidor && ultimosDatosServidor.boss && ultimosDatosServidor.boss.danoTotal) ? ultimosDatosServidor.boss.danoTotal : 1; 
+        let botinTotal = (ultimosDatosServidor && ultimosDatosServidor.boss && ultimosDatosServidor.boss.botin) ? ultimosDatosServidor.boss.botin : 0;
+        let miNombre = localStorage.getItem('jugador_nombre');
+        
+        // Sumamos el daño registrado en servidor + el que tenemos local pendiente por enviar
+        if (ultimosDatosServidor && ultimosDatosServidor.boss && ultimosDatosServidor.boss.jugadores && ultimosDatosServidor.boss.jugadores[miNombre]) {
+            miDano = ultimosDatosServidor.boss.jugadores[miNombre].dano + danoAcumuladoSinEnviar;
+        } else {
+            miDano = danoAcumuladoSinEnviar;
+        }
+
+        danoTotal += danoAcumuladoSinEnviar; // Ajustar el total con nuestro último daño
+        
+        if (miDano <= 0) {
+            showModal("¡BOSS DERROTADO!", `¡El Boss de la Fase ${bossEtapaActual} FUE VENCIDO!\n\nLamentablemente no participaste en esta batalla, ¡prepárate para la próxima!`, "info");
+            localStorage.setItem(botinReclamadoKey, 'true');
+            return;
+        }
+
+        let miPorcentaje = miDano / danoTotal;
+        let miRecompensa = Math.floor(botinTotal * miPorcentaje);
+
+        lanzarConfeti();
+        showModal("¡BOSS DERROTADO!", `¡El Boss de la Fase ${bossEtapaActual} FUE VENCIDO con el apoyo de todos!\n\nTu daño total: ${miDano} (${(miPorcentaje*100).toFixed(1)}%)\n\nTu botín proporcional: ¡+${miRecompensa} pts!`, "success");
+        
+        localStorage.setItem(botinReclamadoKey, 'true');
+        enviarPuntosAJuego("Botín Boss", miRecompensa, "Recompensa Fase: " + bossEtapaActual);
+    }
+
     function abrirBoss() {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById('pantalla-boss').classList.add('active');
         document.getElementById('alerta-boss').style.display = 'none';
 
         if (bossVidaActual <= 0) {
-            lanzarConfeti();
-            showModal("¡BOSS DERROTADO!", `¡El Boss de la Fase ${bossEtapaActual} FUE VENCIDO CON LA AYUDA DE TODOS LOS DEPARTAMENTOS!\n\nReclama tu parte del botín.`, "success");
+            reclamarBotinBoss();
             return; // No arrancar intervalos si ya está muerto
         }
 
@@ -1534,10 +1566,9 @@
 
         // Si el daño actual acaba de matarlo
         if (bossVidaActual === 0) {
-            lanzarConfeti();
-            showModal("¡BOSS DERROTADO!", `¡El Boss de la Fase ${bossEtapaActual} FUE VENCIDO CON LA AYUDA DE TODOS LOS DEPARTAMENTOS!\n\nReclama tu parte del botín.`, "success");
             document.getElementById('alerta-boss').style.display = 'none';
             clearInterval(autoClickerInterval);
+            reclamarBotinBoss(); // Calcula el botín en vivo
             enviarDanoAlServidor(); 
         }
     }
@@ -1569,12 +1600,27 @@
             return;
         }
 
+        let btnToDisable = document.getElementById(tipo === 'fuerza' ? 'btn-upg-fuerza' : 'btn-upg-auto');
+        if (btnToDisable.disabled) return;
+
         let coste = tipo === 'fuerza' ? calcularCosteFuerza() : calcularCosteAuto();
 
         if (misPuntosActuales < coste) {
             showModal("Sin saldo", "No tienes puntos suficientes para esta mejora.", "error");
             return;
         }
+
+        // REDUCCIÓN LOCAL INMEDIATA DE PUNTOS Y BLOQUEO DE BOTÓN
+        misPuntosActuales -= coste;
+        document.getElementById('mis-puntos-num').innerText = misPuntosActuales;
+        if(document.getElementById('puntos-esquina-num')) document.getElementById('puntos-esquina-num').innerText = misPuntosActuales;
+        
+        document.getElementById('btn-upg-fuerza').disabled = true;
+        document.getElementById('btn-upg-auto').disabled = true;
+        setTimeout(() => {
+            document.getElementById('btn-upg-fuerza').disabled = false;
+            document.getElementById('btn-upg-auto').disabled = false;
+        }, 1500);
 
         if (tipo === 'fuerza') miLvlFuerza++;
         if (tipo === 'auto') {

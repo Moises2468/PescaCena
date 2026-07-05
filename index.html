@@ -119,6 +119,10 @@
 
     #puntos-esquina { position: fixed; top: 55px; right: 15px; background: var(--surface); color: var(--primary); padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 999; display: none; border: 2px solid var(--accent); align-items: center; gap: 5px; transition: transform 0.3s; }
     
+    #racha-dias { position: fixed; top: 95px; right: 15px; background: var(--surface); color: var(--success); padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 13px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 999; display: none; border: 2px solid var(--success); align-items: center; gap: 5px; cursor: pointer; transition: transform 0.2s; }
+    #racha-dias:hover { transform: scale(1.05); }
+    #racha-dias:active { transform: scale(0.95); }
+
     .confetti-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 10001; overflow: hidden; }
     .confetti { position: absolute; top: -10px; width: 12px; height: 12px; opacity: 0.9; animation: fall linear forwards; }
     @keyframes fall { 0% { transform: translateY(-10vh) rotate(0deg); } 100% { transform: translateY(110vh) rotate(720deg); } }
@@ -171,6 +175,11 @@
 
   <!-- PUNTOS EN LA ESQUINA -->
   <div id="puntos-esquina">🏆 <span id="puntos-esquina-num">0</span> pts</div>
+
+  <!-- RACHA DE DÍAS (DAILY LOGIN) -->
+  <div id="racha-dias" onclick="reclamarRacha()">
+    📅 Racha: <span id="racha-dias-num">0</span>
+  </div>
 
   <!-- ALERTA BOSS -->
   <div id="alerta-boss" class="boss-alerta" onclick="abrirBoss()">
@@ -436,11 +445,11 @@
 
     <!-- TIENDA DE MEJORAS -->
     <div class="card-container" id="boss-tienda" style="width: 100%; max-width: 320px; padding: 15px; margin-top: 10px;">
-        <h4 style="margin:0 0 15px 0; color:var(--primary); text-transform: uppercase;">Mejoras de Agente</h4>
+        <h4 style="margin:0 0 15px 0; color:var(--primary); text-transform: uppercase;">Mejoras de Daño</h4>
         
         <div class="tienda-fila">
             <div style="text-align:left; font-size:14px; line-height: 1.2;">
-                <strong>💪 Fuerza de Toque (Lvl <span id="lvl-fuerza-txt">1</span>)</strong><br>
+                <strong>💪 Fuerza de Click (Lvl <span id="lvl-fuerza-txt">1</span>)</strong><br>
                 <span style="color:var(--text-muted); font-size: 12px;">Daño base: <strong id="dano-click-txt" style="color:var(--text)">1</strong></span>
             </div>
             <button id="btn-upg-fuerza" class="btn-juego" style="width:auto; margin:0; padding:10px 15px; font-size:12px; background:#457b9d;" onclick="comprarMejora('fuerza')">Mejorar (<span id="coste-fuerza">50</span> pts)</button>
@@ -448,7 +457,7 @@
         
         <div class="tienda-fila">
             <div style="text-align:left; font-size:14px; line-height: 1.2;">
-                <strong>🤖 Auto-Becario (Lvl <span id="lvl-auto-txt">0</span>)</strong><br>
+                <strong>🤖 Auto-Click (Lvl <span id="lvl-auto-txt">0</span>)</strong><br>
                 <span style="color:var(--text-muted); font-size: 12px;">Daño/seg: <strong id="dano-auto-txt" style="color:var(--text)">0</strong></span>
             </div>
             <button id="btn-upg-auto" class="btn-juego" style="width:auto; margin:0; padding:10px 15px; font-size:12px; background:#e63946;" onclick="comprarMejora('auto')">Mejorar (<span id="coste-auto">100</span> pts)</button>
@@ -456,7 +465,7 @@
 
         <div class="tienda-fila" style="background-color: #fce8e6; border: 1px solid #ff5252; margin-top: 15px;">
             <div style="text-align:left; font-size:14px; line-height: 1.2;">
-                <strong style="color: #d93025;">🔥 FRENESÍ CORPORATIVO</strong><br>
+                <strong style="color: #d93025;">🔥 FRENESÍ COOPERATIVO</strong><br>
                 <span style="color:var(--text-muted); font-size: 11px;">Daño Global X2 (30 segs)</span>
             </div>
             <button id="btn-upg-frenesi" class="btn-juego" style="width:auto; margin:0; padding:10px 15px; font-size:12px; background:#d93025; border:1px solid white;" onclick="comprarFrenesi()">Activar (2500 pts)</button>
@@ -554,7 +563,7 @@
     function cerrarModal() { document.getElementById('modal-overlay').classList.remove('show'); }
 
     // =========================================================================
-    // INICIO
+    // INICIO Y RACHA DE DÍAS (DAILY LOGIN)
     // =========================================================================
     window.onload = function() {
       if(localStorage.getItem('jugador_nombre') && localStorage.getItem('jugador_dep')) {
@@ -562,6 +571,37 @@
           cargarMarcadores(); 
       }
       iniciarEscuchadoresZip();
+    }
+
+    function reclamarRacha() {
+        let hoy = new Date().toDateString();
+        let ultimoDia = localStorage.getItem('racha_ultimo_dia');
+        
+        if (ultimoDia === hoy) {
+            showModal("¡Ya reclamado!", "Ya has reclamado tu recompensa diaria por conectarte hoy. ¡Vuelve mañana para seguir la racha!", "info");
+            return;
+        }
+        
+        let rachaActual = parseInt(localStorage.getItem('racha_contador')) || 0;
+        let ayer = new Date(Date.now() - 86400000).toDateString();
+        
+        if (ultimoDia === ayer) {
+            rachaActual++;
+        } else {
+            rachaActual = 1; // Se resetea si pasó más de un día
+        }
+        
+        localStorage.setItem('racha_ultimo_dia', hoy);
+        localStorage.setItem('racha_contador', rachaActual);
+        document.getElementById('racha-dias-num').innerText = rachaActual;
+        
+        // Calcular puntos (Escala simple, tope máximo de 200)
+        let puntosGanados = 50 + (rachaActual * 10);
+        if (puntosGanados > 200) puntosGanados = 200;
+        
+        lanzarConfeti();
+        showModal("¡Recompensa Diaria!", `Has reclamado tus puntos por entrar al evento hoy.\n\n🔥 Racha: ${rachaActual} días seguidos\n🎁 Premio: +${puntosGanados} pts`, "success");
+        enviarPuntosAJuego("Racha Diaria", puntosGanados, "Día " + rachaActual);
     }
 
     function entrar() {
@@ -601,6 +641,8 @@
       document.getElementById('nombre-usuario').innerText = localStorage.getItem('jugador_nombre');
       document.getElementById('dep-usuario').innerText = localStorage.getItem('jugador_dep');
       document.getElementById('puntos-esquina').style.display = 'flex'; 
+      document.getElementById('racha-dias').style.display = 'flex';
+      document.getElementById('racha-dias-num').innerText = parseInt(localStorage.getItem('racha_contador')) || 0;
     }
 
     function cambiarSeccionLobby(seccionId, elementoNav) {
@@ -626,20 +668,20 @@
     }
 
     // NAVEGACIÓN JUEGOS
-    function abrirVotaciones() { document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-votaciones').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; window.scrollTo(0,0); }
-    function cerrarVotaciones() { document.getElementById('pantalla-votaciones').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; window.scrollTo(0,0); }
+    function abrirVotaciones() { document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-votaciones').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; document.getElementById('racha-dias').style.display = 'none'; document.getElementById('alerta-boss').style.display = 'none'; window.scrollTo(0,0); }
+    function cerrarVotaciones() { document.getElementById('pantalla-votaciones').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; document.getElementById('racha-dias').style.display = 'flex'; if (bossActivo && bossVidaActual > 0) document.getElementById('alerta-boss').style.display = 'flex'; window.scrollTo(0,0); }
     
-    function abrirZip() { if (localStorage.getItem('zip_ultimo_dia') === new Date().toDateString()) { showModal("Atención", "Ya has resuelto el ZIP de hoy. ¡Vuelve mañana!", "info"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-zip').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; window.scrollTo(0,0); inicializarTableroZip(); }
-    function cerrarZip() { document.getElementById('pantalla-zip').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; window.scrollTo(0,0); }
+    function abrirZip() { if (localStorage.getItem('zip_ultimo_dia') === new Date().toDateString()) { showModal("Atención", "Ya has resuelto el ZIP de hoy. ¡Vuelve mañana!", "info"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-zip').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; document.getElementById('racha-dias').style.display = 'none'; document.getElementById('alerta-boss').style.display = 'none'; window.scrollTo(0,0); inicializarTableroZip(); }
+    function cerrarZip() { document.getElementById('pantalla-zip').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; document.getElementById('racha-dias').style.display = 'flex'; if (bossActivo && bossVidaActual > 0) document.getElementById('alerta-boss').style.display = 'flex'; window.scrollTo(0,0); }
     
-    function abrirTrivial() { if (localStorage.getItem('trivial_ultimo_dia') === new Date().toDateString()) { showModal("Atención", "Ya has respondido al Trivial de hoy.", "info"); return; } if (!trivialActual.pregunta) { showModal("Aviso", "Aún no se ha configurado la pregunta.", "warning"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-trivial').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; window.scrollTo(0,0); document.getElementById('trivial-pregunta').innerText = trivialActual.pregunta; ['a','b','c','d'].forEach(letra => { let btn = document.getElementById('btn-triv-' + letra); btn.innerText = letra.toUpperCase() + ") " + trivialActual[letra]; btn.className = "btn-opcion"; btn.disabled = false; }); }
-    function cerrarTrivial() { document.getElementById('pantalla-trivial').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; window.scrollTo(0,0); }
+    function abrirTrivial() { if (localStorage.getItem('trivial_ultimo_dia') === new Date().toDateString()) { showModal("Atención", "Ya has respondido al Trivial de hoy.", "info"); return; } if (!trivialActual.pregunta) { showModal("Aviso", "Aún no se ha configurado la pregunta.", "warning"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-trivial').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; document.getElementById('racha-dias').style.display = 'none'; document.getElementById('alerta-boss').style.display = 'none'; window.scrollTo(0,0); document.getElementById('trivial-pregunta').innerText = trivialActual.pregunta; ['a','b','c','d'].forEach(letra => { let btn = document.getElementById('btn-triv-' + letra); btn.innerText = letra.toUpperCase() + ") " + trivialActual[letra]; btn.className = "btn-opcion"; btn.disabled = false; }); }
+    function cerrarTrivial() { document.getElementById('pantalla-trivial').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; document.getElementById('racha-dias').style.display = 'flex'; if (bossActivo && bossVidaActual > 0) document.getElementById('alerta-boss').style.display = 'flex'; window.scrollTo(0,0); }
     
-    function abrirWordle() { if (localStorage.getItem('wordle_ultimo_dia') === new Date().toDateString()) { showModal("Atención", "Ya completaste el Wordle hoy. ¡Descansa esa cabeza!", "info"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-wordle').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; window.scrollTo(0,0); juegoTerminado = false; intentos = 0; letrasActuales = []; for (let i=0; i<6; i++) for (let j=0; j<5; j++) { document.getElementById(`casilla-${i}-${j}`).innerText = ""; document.getElementById(`casilla-${i}-${j}`).className = "casilla"; } }
-    function cerrarWordle() { document.getElementById('pantalla-wordle').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; window.scrollTo(0,0); }
+    function abrirWordle() { if (localStorage.getItem('wordle_ultimo_dia') === new Date().toDateString()) { showModal("Atención", "Ya completaste el Wordle hoy. ¡Descansa esa cabeza!", "info"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-wordle').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; document.getElementById('racha-dias').style.display = 'none'; document.getElementById('alerta-boss').style.display = 'none'; window.scrollTo(0,0); juegoTerminado = false; intentos = 0; letrasActuales = []; for (let i=0; i<6; i++) for (let j=0; j<5; j++) { document.getElementById(`casilla-${i}-${j}`).innerText = ""; document.getElementById(`casilla-${i}-${j}`).className = "casilla"; } }
+    function cerrarWordle() { document.getElementById('pantalla-wordle').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; document.getElementById('racha-dias').style.display = 'flex'; if (bossActivo && bossVidaActual > 0) document.getElementById('alerta-boss').style.display = 'flex'; window.scrollTo(0,0); }
 
-    function abrirParejas() { if (localStorage.getItem('parejas_ultimo_dia') === new Date().toDateString()) { showModal("Atención", "Ya has encontrado todas las parejas por hoy. ¡Mañana más!", "info"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-parejas').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; window.scrollTo(0,0); iniciarParejas(); }
-    function cerrarParejas() { document.getElementById('pantalla-parejas').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; window.scrollTo(0,0); }
+    function abrirParejas() { if (localStorage.getItem('parejas_ultimo_dia') === new Date().toDateString()) { showModal("Atención", "Ya has encontrado todas las parejas por hoy. ¡Mañana más!", "info"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-parejas').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; document.getElementById('racha-dias').style.display = 'none'; document.getElementById('alerta-boss').style.display = 'none'; window.scrollTo(0,0); iniciarParejas(); }
+    function cerrarParejas() { document.getElementById('pantalla-parejas').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; document.getElementById('racha-dias').style.display = 'flex'; if (bossActivo && bossVidaActual > 0) document.getElementById('alerta-boss').style.display = 'flex'; window.scrollTo(0,0); }
 
     function getSemanaActual() {
         let fechaActual = new Date();
@@ -735,7 +777,7 @@
                 clearInterval(frenesiTimerLocal);
             }
 
-            if (bossActivo && bossVidaActual > 0 && !document.getElementById('pantalla-boss').classList.contains('active')) {
+            if (bossActivo && bossVidaActual > 0 && document.getElementById('pantalla-lobby').classList.contains('active')) {
                 document.getElementById('alerta-boss').style.display = 'flex';
                 document.getElementById('alerta-boss-txt').innerText = datos.boss.texto || "¡HACKEO EN CURSO!";
             } else {
@@ -752,7 +794,14 @@
             }
 
             document.getElementById('boss-img').src = 'etapa' + bossEtapaActual + '.png';
-            document.getElementById('boss-fase-titulo').innerText = 'Fase ' + bossEtapaActual;
+            
+            // NOMBRES DEL BOSS
+            let nomBoss = "Fase " + bossEtapaActual;
+            if(bossEtapaActual == 1) nomBoss = "EL H4CK3R";
+            else if(bossEtapaActual == 2) nomBoss = "AUDITORÍA IFS";
+            else if(bossEtapaActual == 3) nomBoss = "CRISIS DE ETIQUETADO";
+            
+            document.getElementById('boss-fase-titulo').innerText = nomBoss;
             
             let anchoVida = bossVidaMaxima > 0 ? (bossVidaActual / bossVidaMaxima * 100) : 0;
             document.getElementById('boss-vida-fill').style.width = anchoVida + "%";
@@ -1236,7 +1285,7 @@
                let zipTime = (Date.now() - zipStartTime) / 1000;
                document.getElementById('zip-timer-display').innerText = zipTime.toFixed(1) + "s";
                let puntosZip = 150;
-               if (zipTime <= 4) puntosZip = 150; else if (zipTime <= 8) puntosZip = 120; else if (zipTime <= 15) puntosZip = 80; else puntosZip = 50;                      
+               if (zipTime <= 4) puntosZip = 150; else if (zipTime <= 8) puntosZip = 120; else if (zipTime <= 15) puntosZip = 80; else puntosZip = 50;                     
                setTimeout(() => { 
                    lanzarConfeti(); 
                    showModal("¡Velocidad Extrema!", "Lo completaste en " + zipTime.toFixed(1) + " segundos. ¡Sumas " + puntosZip + " puntos!", "success"); 
@@ -1493,8 +1542,10 @@
 
         danoTotal += danoAcumuladoSinEnviar; 
         
+        let nomBoss = bossEtapaActual == 1 ? "EL H4CK3R" : (bossEtapaActual == 2 ? "AUDITORÍA IFS" : "CRISIS DE ETIQUETADO");
+
         if (miDano <= 0) {
-            showModal("¡BOSS DERROTADO!", `¡El Boss de la Fase ${bossEtapaActual} FUE VENCIDO!\n\nLamentablemente no participaste en esta batalla, ¡prepárate para la próxima!`, "info");
+            showModal("¡BOSS DERROTADO!", `¡${nomBoss} FUE VENCIDO!\n\nLamentablemente no participaste en esta batalla, ¡prepárate para la próxima!`, "info");
             localStorage.setItem(botinReclamadoKey, 'true');
             return;
         }
@@ -1503,7 +1554,7 @@
         let miRecompensa = Math.floor(botinTotal * miPorcentaje);
 
         lanzarConfeti();
-        showModal("¡BOSS DERROTADO!", `¡El Boss de la Fase ${bossEtapaActual} FUE VENCIDO con el apoyo de todos!\n\nTu daño total: ${miDano} (${(miPorcentaje*100).toFixed(1)}%)\n\nTu botín proporcional: ¡+${miRecompensa} pts!`, "success");
+        showModal("¡BOSS DERROTADO!", `¡${nomBoss} FUE VENCIDO con el apoyo de todos!\n\nTu daño total: ${miDano} (${(miPorcentaje*100).toFixed(1)}%)\n\nTu botín proporcional: ¡+${miRecompensa} pts!`, "success");
         
         localStorage.setItem(botinReclamadoKey, 'true');
         enviarPuntosAJuego("Botín Boss", miRecompensa, "Recompensa Fase: " + bossEtapaActual);
@@ -1549,6 +1600,8 @@
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById('pantalla-boss').classList.add('active');
         document.getElementById('alerta-boss').style.display = 'none';
+        document.getElementById('puntos-esquina').style.display = 'none';
+        document.getElementById('racha-dias').style.display = 'none';
 
         if (bossVidaActual <= 0) {
             reclamarBotinBoss();
@@ -1575,6 +1628,8 @@
     function cerrarBoss() {
         document.getElementById('pantalla-boss').classList.remove('active');
         document.getElementById('pantalla-lobby').classList.add('active');
+        document.getElementById('puntos-esquina').style.display = 'flex';
+        document.getElementById('racha-dias').style.display = 'flex';
         if(bossActivo && bossVidaActual > 0) { document.getElementById('alerta-boss').style.display = 'flex'; }
         
         clearInterval(autoClickerInterval);
@@ -1662,9 +1717,9 @@
             txt.innerText = "-" + cantidad;
         } else {
             let frases = [];
-            if (bossEtapaActual == 1) frases = ["¡Ups, otra vez!", "¿Quién ha sido el becario?", "¡Menos mal que no es un cliente!", "¡Error 404!", "¡Reinicia el router!", "¡No hay trazabilidad!"];
-            else if (bossEtapaActual == 2) frases = ["¡El servidor quema!", "¡Sobrecarga térmica!", "¡Llama a sistemas!", "¡Fuga de datos masiva!", "¡Cables pelados!", "¡Apaga y enciende!"];
-            else frases = ["¡CÓDIGO ROJO!", "¡Caída del sistema!", "¡Sálvese quien pueda!", "¡Núcleo expuesto!", "¡Formateando discos!", "¡Mayday, Mayday!"];
+            if (bossEtapaActual == 1) frases = ["¡Ups, otra vez!", "Culpa de mantenimiento", "¡Llama a sistemas!", "¡Error 404!", "¡Reinicia el router!", "¡No hay trazabilidad!", "¡Formateando discos!", "¡A hacer señales de humo!", "¡Apaga y enciende!", "¡Todo culpa de sistemas!", "¡Los de oficinas de vacaciones!", "¡No llegamos a campaña!", "¡No llegamos a campaña!"];
+            else if (bossEtapaActual == 2) frases = ["¡Ya es la cuerta vez este año!", "¡Lavate las manos!", "¡Culpa de mantenimiento, otra vez!", "¡¿El uniformr se lava?!", "¡Los de calidad son insoportables!", "¡Pinta ese oxido!", "¡Vamos a hacer como que producimos!", "¡Vamos a hacer como que producimos!", "¡No llegamos a campaña!", "¡No llegamos a campaña!"];
+            else frases = ["¡Que alguien llame a Ana!", "¡¿Cuantas toneladas?!", "¡Horas extra para todos!", "¡Seguro que es culpa de mantenimiento!", "¡¿De quien es la culpa?!", "¡Mayday, Mayday!", "¡Me sangran los dedos!", "¡¿800 toneladas?!", "¡¿Incluso los jefes ayudan?!", "¡No llegamos a campaña!", "¡No llegamos a campaña!", "¡No llegamos a campaña!"];
             txt.innerText = (Math.random() > 0.7) ? frases[Math.floor(Math.random() * frases.length)] : "-" + cantidad;
         }
 

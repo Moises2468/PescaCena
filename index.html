@@ -70,7 +70,6 @@
     .wordle-header { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 320px; margin-bottom: 20px; }
     .btn-volver { background-color: #f1f3f4; color: var(--text); width: auto; padding: 10px 15px; margin: 0; font-size: 12px; box-shadow: none; font-weight: bold; }
     
-    /* ESTILOS WORDLE */
     .tablero { display: grid; grid-template-rows: repeat(6, 1fr); grid-gap: 5px; margin-bottom: 20px; }
     .fila { display: grid; grid-template-columns: repeat(5, 1fr); grid-gap: 5px; }
     .casilla { width: 50px; height: 50px; border: 2px solid #dadce0; border-radius: 4px; font-size: 30px; font-weight: bold; text-transform: uppercase; display: flex; justify-content: center; align-items: center; color: var(--text); background: white; transition: background-color 0.3s, border-color 0.3s;}
@@ -82,7 +81,6 @@
     .amarillo { background-color: #b59f3b !important; border-color: #b59f3b !important; color: white !important;}
     .gris { background-color: #787c7e !important; border-color: #787c7e !important; color: white !important;}
 
-    /* ESTILOS TRIVIAL */
     .btn-opcion { background-color: var(--surface); color: var(--primary); border: 2px solid var(--primary); margin: 8px 0; text-transform: none; font-size: 15px; padding: 15px; font-weight: 500;}
     .btn-opcion:disabled { cursor: not-allowed; opacity: 0.8; }
     .btn-opcion.correct { background-color: var(--success); border-color: var(--success); color: white; }
@@ -90,7 +88,6 @@
 
     #ruleta-box { background: #f1f3f4; padding: 20px; border-radius: 10px; font-size: 22px; font-weight: bold; margin: 15px 0; border: 3px solid #dadce0; transition: background-color 0.3s; }
 
-    /* ESTILOS ZIP */
     #tablero-zip { display: grid; gap: 4px; margin: 15px auto; width: 100%; max-width: 320px; background: #dadce0; padding: 4px; border-radius: 8px; touch-action: none; user-select: none; }
     .zip-cell { background: white; border-radius: 6px; aspect-ratio: 1; display: flex; justify-content: center; align-items: center; position: relative; cursor: pointer; }
     .zip-cell.path { background: #ffcc00; transition: background 0.1s ease;}
@@ -98,7 +95,6 @@
     .zip-dot { background: var(--primary); color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; z-index: 2; pointer-events: none; font-weight: bold; font-size: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);}
     #zip-timer-display { font-size: 32px; font-family: monospace; font-weight: bold; color: var(--primary); margin: 5px 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); transition: color 0.3s; }
 
-    /* ESTILOS PAREJAS */
     .parejas-stats { display: flex; justify-content: space-between; width: 100%; max-width: 320px; font-size: 15px; font-weight: bold; color: var(--text-muted); margin-bottom: 10px; background: #f1f3f4; padding: 10px; border-radius: 8px; box-sizing: border-box;}
     .parejas-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px auto; width: 100%; max-width: 320px; perspective: 1000px; }
     .parejas-card { aspect-ratio: 1; position: relative; cursor: pointer; transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1); }
@@ -110,10 +106,8 @@
     .parejas-back { background: white; transform: rotateY(180deg); }
     .parejas-back.matched { background: #d4edda; border-color: var(--success); }
 
-    /* SELECTOR RANKING */
     #filtro-ranking { background-color: #f1f3f4; color: var(--primary); border: 2px solid #dadce0; border-radius: 8px; padding: 8px; font-weight: bold; font-size: 13px; margin-top: 0; margin-bottom: 15px; width: 100%; max-width: 100%; cursor: pointer; outline: none; }
 
-    /* MODAL CUSTOM */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,34,68,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px); }
     .modal-overlay.show { opacity: 1; pointer-events: auto; }
     .modal-box { background: var(--surface); border-radius: 16px; padding: 25px 20px; text-align: center; max-width: 320px; width: 100%; transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
@@ -123,17 +117,15 @@
     .modal-text { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; font-weight: 500; }
     .modal-btn { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 25px; font-weight: bold; width: 100%; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 
-    /* PUNTOS EN LA ESQUINA */
     #puntos-esquina { position: fixed; top: 55px; right: 15px; background: var(--surface); color: var(--primary); padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 999; display: none; border: 2px solid var(--accent); align-items: center; gap: 5px; transition: transform 0.3s; }
     
-    /* ANIMACIÓN CONFETI */
     .confetti-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 10001; overflow: hidden; }
     .confetti { position: absolute; top: -10px; width: 12px; height: 12px; opacity: 0.9; animation: fall linear forwards; }
     @keyframes fall { 0% { transform: translateY(-10vh) rotate(0deg); } 100% { transform: translateY(110vh) rotate(720deg); } }
     @keyframes ticker { 0% { transform: translate(100%, 0); } 100% { transform: translate(-100%, 0); } }
 
     /* ========================================================
-       ESTILOS DEL CLICKER BOSS
+       ESTILOS DEL CLICKER BOSS Y EFECTOS NUEVOS
        ======================================================== */
     .boss-alerta { position: fixed; top: 55px; left: 15px; background-color: var(--error-text); color: white; padding: 8px 15px; border-radius: 25px; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 8px; z-index: 999; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3); animation: pulse-alerta 1s infinite; border: 2px solid white; display: none; }
     @keyframes pulse-alerta { 0% { transform: scale(1); } 50% { transform: scale(1.1); box-shadow: 0 6px 15px rgba(217,48,37,0.6); } 100% { transform: scale(1); } }
@@ -145,9 +137,20 @@
     @keyframes shake-boss { 0% { transform: translate(0,0) rotate(0deg); } 25% { transform: translate(-5px, 3px) rotate(-2deg); } 50% { transform: translate(5px, -3px) rotate(2deg); } 75% { transform: translate(-3px, -2px) rotate(-1deg); } 100% { transform: translate(0,0) rotate(0deg); } }
     
     .float-dmg { position: fixed; color: var(--error-text); font-weight: 900; font-size: 18px; pointer-events: none; z-index: 10002; text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff; animation: floatUpDmg 0.8s ease-out forwards; white-space: nowrap; }
+    
+    /* Efecto Crítico y Efecto Multijugador */
+    .float-dmg.crit { color: #ffcc00; font-size: 28px; text-shadow: 0 0 5px #d93025, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; z-index: 10003; animation: floatCrit 0.8s ease-out forwards; }
+    .float-dmg.ajeno { color: #9aa0a6; font-size: 14px; opacity: 0.6; z-index: 10001; }
+    
     @keyframes floatUpDmg { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-60px) scale(1.3); } }
+    @keyframes floatCrit { 0% { opacity: 1; transform: translateY(0) scale(1.5); } 100% { opacity: 0; transform: translateY(-80px) scale(2); } }
 
     .tienda-fila { display: flex; justify-content: space-between; align-items: center; background: #f1f3f4; padding: 10px; border-radius: 8px; margin-bottom: 8px; }
+
+    /* ESTILO FRENESÍ (MODO BUFF GLOBAL) */
+    .frenesi-banner { background: #d93025; color: white; padding: 10px; font-weight: 900; width: 100%; box-sizing: border-box; text-transform: uppercase; letter-spacing: 2px; animation: flash-rojo 0.5s infinite alternate; border-radius: 8px; margin-bottom: 10px; display: none; box-shadow: 0 0 15px rgba(217, 48, 37, 0.8); }
+    @keyframes flash-rojo { from { background-color: #d93025; transform: scale(1); } to { background-color: #ff5252; transform: scale(1.02); } }
+    
   </style>
 </head>
 <body>
@@ -277,7 +280,7 @@
       </div>
 
       <div class="card-container">
-        <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🃏 Pesca-Parejas <span style="color:var(--error-text); font-size:12px;">NUEVO</span></h3>
+        <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🃏 Pesca-Parejas</h3>
         <p style="font-size: 13px; color:var(--text-muted);">Encuentra las parejas ocultas. Cuantos menos movimientos necesites, más puntos ganarás.</p>
         <button class="btn-juego btn-parejas-start" onclick="abrirParejas()">JUGAR PAREJAS</button>
       </div>
@@ -404,8 +407,11 @@
   <div id="pantalla-boss" class="screen">
     <div class="wordle-header"><button class="btn-volver" onclick="cerrarBoss()">⬅️ VOLVER</button><h2 style="margin:0; color:var(--error-text);">COMBATE</h2><div style="width: 70px;"></div></div>
     
-    <h3 id="boss-fase-titulo" style="color:var(--primary); margin-top: 0; margin-bottom: 10px; font-size: 22px;">Fase 1</h3>
+    <h3 id="boss-fase-titulo" style="color:var(--primary); margin-top: 0; margin-bottom: 5px; font-size: 22px;">Fase 1</h3>
     
+    <!-- BANNER FRENESÍ -->
+    <div id="frenesi-banner" class="frenesi-banner">🔥 FRENESÍ ACTIVO X2 (<span id="frenesi-secs">30</span>s) 🔥</div>
+
     <!-- BARRA DE VIDA -->
     <div style="width: 100%; max-width: 320px; background: #dadce0; border-radius: 12px; height: 30px; position: relative; margin-bottom: 20px; overflow: hidden; border: 3px solid #202124;">
         <div id="boss-vida-fill" style="height: 100%; background: #d93025; width: 100%; transition: width 0.2s;"></div>
@@ -430,7 +436,7 @@
         <div class="tienda-fila">
             <div style="text-align:left; font-size:14px; line-height: 1.2;">
                 <strong>💪 Fuerza de Toque (Lvl <span id="lvl-fuerza-txt">1</span>)</strong><br>
-                <span style="color:var(--text-muted); font-size: 12px;">Daño por click: <strong id="dano-click-txt" style="color:var(--text)">1</strong></span>
+                <span style="color:var(--text-muted); font-size: 12px;">Daño base: <strong id="dano-click-txt" style="color:var(--text)">1</strong></span>
             </div>
             <button id="btn-upg-fuerza" class="btn-juego" style="width:auto; margin:0; padding:10px 15px; font-size:12px; background:#457b9d;" onclick="comprarMejora('fuerza')">Mejorar (<span id="coste-fuerza">50</span> pts)</button>
         </div>
@@ -438,9 +444,17 @@
         <div class="tienda-fila">
             <div style="text-align:left; font-size:14px; line-height: 1.2;">
                 <strong>🤖 Auto-Becario (Lvl <span id="lvl-auto-txt">0</span>)</strong><br>
-                <span style="color:var(--text-muted); font-size: 12px;">Daño por segundo: <strong id="dano-auto-txt" style="color:var(--text)">0</strong></span>
+                <span style="color:var(--text-muted); font-size: 12px;">Daño/seg: <strong id="dano-auto-txt" style="color:var(--text)">0</strong></span>
             </div>
             <button id="btn-upg-auto" class="btn-juego" style="width:auto; margin:0; padding:10px 15px; font-size:12px; background:#e63946;" onclick="comprarMejora('auto')">Mejorar (<span id="coste-auto">100</span> pts)</button>
+        </div>
+
+        <div class="tienda-fila" style="background-color: #fce8e6; border: 1px solid #ff5252; margin-top: 15px;">
+            <div style="text-align:left; font-size:14px; line-height: 1.2;">
+                <strong style="color: #d93025;">🔥 FRENESÍ CORPORATIVO</strong><br>
+                <span style="color:var(--text-muted); font-size: 11px;">Daño Global X2 (30 segs)</span>
+            </div>
+            <button id="btn-upg-frenesi" class="btn-juego" style="width:auto; margin:0; padding:10px 15px; font-size:12px; background:#d93025; border:1px solid white;" onclick="comprarFrenesi()">Activar (2500 pts)</button>
         </div>
     </div>
 
@@ -455,7 +469,7 @@
   </div>
 
   <script>
-    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbyeug3J493l3FS4CYENO_0qSqE9469sfTQoKo-eQMvMebHRE03jBZUPyZRJ3VRV5qy3eA/exec"; 
+    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbyrIU929RayINbPHf1yjxGAHytwTZg6sxNMcQIbqM-rFrrenRBKd3EP5nnVtWNvSt-tXw/exec"; 
 
     // VARIABLES GLOBALES GENERALES
     let palabraSecretaDelDia = ""; let cargandoInicial = false; let misPuntosActuales = 0; let trivialActual = { pregunta: "", a: "", b: "", c: "", d: "", respuesta: "" }; let juegoTerminado = false; let intentos = 0; let letrasActuales = []; let diccionarioLocal = [];
@@ -482,6 +496,11 @@
     let danoAcumuladoSinEnviar = 0;
     let autoClickerInterval = null;
     let sincroBossInterval = null;
+    let ilusionMultijugadorInterval = null;
+
+    // FRENESÍ
+    let frenesiActivo = false;
+    let frenesiTimerLocal = null;
     
     // =========================================================================
     // SISTEMA DE CONFETI (Efecto WOW)
@@ -702,7 +721,15 @@
             bossVidaActual = datos.boss.vidaActual || 0;
             bossVidaMaxima = datos.boss.vidaMaxima || 1000000;
             
-            // Lógica de alerta protegida: no se muestra si estás dentro de la batalla
+            // FRENESÍ (BUFF DE EMPRESA)
+            if (datos.boss.frenesiRestante > 0) {
+                activarFrenesiLocal(datos.boss.frenesiRestante);
+            } else {
+                frenesiActivo = false;
+                document.getElementById('frenesi-banner').style.display = 'none';
+                clearInterval(frenesiTimerLocal);
+            }
+
             if (bossActivo && bossVidaActual > 0 && !document.getElementById('pantalla-boss').classList.contains('active')) {
                 document.getElementById('alerta-boss').style.display = 'flex';
                 document.getElementById('alerta-boss-txt').innerText = datos.boss.texto || "¡HACKEO EN CURSO!";
@@ -719,17 +746,14 @@
                 miLvlAuto = 0;
             }
 
-            // Dinamismo de imagen basado en la etapa
             document.getElementById('boss-img').src = 'etapa' + bossEtapaActual + '.png';
             document.getElementById('boss-fase-titulo').innerText = 'Fase ' + bossEtapaActual;
             
-            // Actualiza UI de vida
             let anchoVida = bossVidaMaxima > 0 ? (bossVidaActual / bossVidaMaxima * 100) : 0;
             document.getElementById('boss-vida-fill').style.width = anchoVida + "%";
             document.getElementById('boss-vida-txt').innerText = bossVidaActual + " / " + bossVidaMaxima;
             actualizarTiendaUI();
             
-            // LÓGICA DE BOTÍN AL ENTRAR Y VERLO MUERTO
             if (bossVidaActual <= 0 && document.getElementById('pantalla-boss').classList.contains('active')) {
                 reclamarBotinBoss();
                 cerrarBoss();
@@ -1397,7 +1421,7 @@
     }
 
     // =========================================================================
-    // LÓGICA DEL CLICKER BOSS Y PESTAÑAS
+    // LÓGICA DEL CLICKER BOSS (ACTUALIZADO CON HAPTICS, CRÍTICOS Y FRENESÍ)
     // =========================================================================
     function cambiarTabBoss(tab) {
         document.getElementById('boss-tienda').style.display = 'none';
@@ -1446,24 +1470,23 @@
         }
     }
 
-    // --- FUNCIÓN PARA REPARTIR EL BOTÍN AUTOMÁTICAMENTE ---
+    // --- FUNCIÓN PARA REPARTIR EL BOTÍN ---
     function reclamarBotinBoss() {
         let botinReclamadoKey = 'botin_reclamado_fase_' + bossEtapaActual;
-        if (localStorage.getItem(botinReclamadoKey)) return; // Ya reclamado
+        if (localStorage.getItem(botinReclamadoKey)) return; 
 
         let miDano = 0;
         let danoTotal = (ultimosDatosServidor && ultimosDatosServidor.boss && ultimosDatosServidor.boss.danoTotal) ? ultimosDatosServidor.boss.danoTotal : 1; 
         let botinTotal = (ultimosDatosServidor && ultimosDatosServidor.boss && ultimosDatosServidor.boss.botin) ? ultimosDatosServidor.boss.botin : 0;
         let miNombre = localStorage.getItem('jugador_nombre');
         
-        // Sumamos el daño registrado en servidor + el que tenemos local pendiente por enviar
         if (ultimosDatosServidor && ultimosDatosServidor.boss && ultimosDatosServidor.boss.jugadores && ultimosDatosServidor.boss.jugadores[miNombre]) {
             miDano = ultimosDatosServidor.boss.jugadores[miNombre].dano + danoAcumuladoSinEnviar;
         } else {
             miDano = danoAcumuladoSinEnviar;
         }
 
-        danoTotal += danoAcumuladoSinEnviar; // Ajustar el total con nuestro último daño
+        danoTotal += danoAcumuladoSinEnviar; 
         
         if (miDano <= 0) {
             showModal("¡BOSS DERROTADO!", `¡El Boss de la Fase ${bossEtapaActual} FUE VENCIDO!\n\nLamentablemente no participaste en esta batalla, ¡prepárate para la próxima!`, "info");
@@ -1481,6 +1504,42 @@
         enviarPuntosAJuego("Botín Boss", miRecompensa, "Recompensa Fase: " + bossEtapaActual);
     }
 
+    // --- ACTIVAR FRENESÍ VISUAL ---
+    function activarFrenesiLocal(segundosRestantes) {
+        if (segundosRestantes <= 0) return;
+        frenesiActivo = true;
+        document.getElementById('frenesi-banner').style.display = 'block';
+        
+        let sec = segundosRestantes;
+        document.getElementById('frenesi-secs').innerText = sec;
+        
+        clearInterval(frenesiTimerLocal);
+        frenesiTimerLocal = setInterval(() => {
+            sec--;
+            document.getElementById('frenesi-secs').innerText = sec;
+            if (sec <= 0) {
+                clearInterval(frenesiTimerLocal);
+                document.getElementById('frenesi-banner').style.display = 'none';
+                frenesiActivo = false;
+            }
+        }, 1000);
+    }
+
+    function comprarFrenesi() {
+        if (frenesiActivo) { showModal("Atención", "¡El Frenesí ya está activo!", "info"); return; }
+        if (bossVidaActual <= 0) { showModal("Combate terminado", "El boss ya ha sido derrotado.", "info"); return; }
+        if (misPuntosActuales < 2500) { showModal("Saldo insuficiente", "Cuesta 2500 puntos activar el buff global.", "error"); return; }
+
+        misPuntosActuales -= 2500;
+        document.getElementById('mis-puntos-num').innerText = misPuntosActuales;
+        if(document.getElementById('puntos-esquina-num')) document.getElementById('puntos-esquina-num').innerText = misPuntosActuales;
+
+        document.getElementById('btn-upg-frenesi').disabled = true;
+        enviarPuntosAJuego("ComprarFrenesi", -2500, "Buff Global");
+        activarFrenesiLocal(30); // Activamos 30 seg localmente al instante
+        lanzarConfeti();
+    }
+
     function abrirBoss() {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById('pantalla-boss').classList.add('active');
@@ -1488,7 +1547,7 @@
 
         if (bossVidaActual <= 0) {
             reclamarBotinBoss();
-            return; // No arrancar intervalos si ya está muerto
+            return; 
         }
 
         if (miLvlAuto > 0) {
@@ -1496,6 +1555,14 @@
                 if(bossVidaActual > 0) hacerDano(miLvlAuto, false, 0, 0);
             }, 1000);
         }
+
+        // Bucle de la "Ilusión Multijugador"
+        ilusionMultijugadorInterval = setInterval(() => {
+            if (bossVidaActual > 0 && Math.random() > 0.4) {
+                // Genera 1 o 2 golpes falsos aleatorios
+                mostrarGolpeVisual(Math.floor(Math.random() * 50) + 10, false, true, 0, 0);
+            }
+        }, 600);
 
         sincroBossInterval = setInterval(enviarDanoAlServidor, 5000);
     }
@@ -1507,6 +1574,7 @@
         
         clearInterval(autoClickerInterval);
         clearInterval(sincroBossInterval);
+        clearInterval(ilusionMultijugadorInterval);
         enviarDanoAlServidor(); 
     }
 
@@ -1515,62 +1583,88 @@
         hacerDano(miLvlFuerza, true, e.clientX, e.clientY);
     });
 
-    function hacerDano(cantidad, esManual, x, y) {
+    function hacerDano(cantidadBase, esManual, x, y) {
         if (bossVidaActual <= 0) return; 
 
-        bossVidaActual -= cantidad;
-        danoAcumuladoSinEnviar += cantidad;
+        let cantidadFinal = cantidadBase;
+        let esCritico = false;
+
+        // 1. Modificador: Buff Global FRENESÍ (x2)
+        if (frenesiActivo) cantidadFinal *= 2;
+
+        // 2. Modificador: Crítico y Vibración
+        if (esManual) {
+            // 10% de posibilidad de crítico
+            if (Math.random() < 0.10) {
+                esCritico = true;
+                cantidadFinal *= 2; // Crítico duplica
+                if (navigator.vibrate) navigator.vibrate([30, 50, 30]); // Vibración fuerte/doble
+            } else {
+                if (navigator.vibrate) navigator.vibrate(20); // Vibración normal
+            }
+        }
+
+        bossVidaActual -= cantidadFinal;
+        danoAcumuladoSinEnviar += cantidadFinal;
         
         if (bossVidaActual < 0) bossVidaActual = 0;
         
         document.getElementById('boss-vida-fill').style.width = (bossVidaActual / bossVidaMaxima * 100) + "%";
         document.getElementById('boss-vida-txt').innerText = bossVidaActual + " / " + bossVidaMaxima;
 
-        // Efectos visuales para manual y automático
         let img = document.getElementById('boss-img');
         img.classList.remove('shake-boss');
         void img.offsetWidth; 
         img.classList.add('shake-boss');
 
+        // Muestra el número visualmente
+        mostrarGolpeVisual(cantidadFinal, esCritico, false, x, y);
+
+        if (bossVidaActual === 0) {
+            document.getElementById('alerta-boss').style.display = 'none';
+            clearInterval(autoClickerInterval);
+            clearInterval(ilusionMultijugadorInterval);
+            reclamarBotinBoss(); 
+            enviarDanoAlServidor(); 
+        }
+    }
+
+    // Función separada para renderizar los números flotantes (para manual, auto y multijugador)
+    function mostrarGolpeVisual(cantidad, esCritico, esAjeno, x, y) {
+        let img = document.getElementById('boss-img');
         let txt = document.createElement('div');
         txt.className = 'float-dmg';
+        
+        if (esCritico) txt.classList.add('crit');
+        if (esAjeno) txt.classList.add('ajeno');
         
         let realX = x;
         let realY = y;
 
-        // Si es automático, generamos coordenadas aleatorias sobre la imagen
-        if (!esManual || (x === 0 && y === 0)) {
+        if (x === 0 && y === 0) {
             let rect = img.getBoundingClientRect();
-            realX = rect.left + (rect.width / 2) + ((Math.random() - 0.5) * 120);
-            realY = rect.top + (rect.height / 2) + ((Math.random() - 0.5) * 120);
+            realX = rect.left + (rect.width / 2) + ((Math.random() - 0.5) * 150);
+            realY = rect.top + (rect.height / 2) + ((Math.random() - 0.5) * 150);
         }
 
         let offsetX = (Math.random() - 0.5) * 40; 
         txt.style.left = (realX - 20 + offsetX) + 'px';
         txt.style.top = (realY - 30) + 'px';
         
-        // --- FRASES SEGÚN LA ETAPA ---
-        let frases = [];
-        if (bossEtapaActual == 1) {
-            frases = ["¡Ups, otra vez!", "¿Quién ha sido el becario?", "¡Menos mal que no es un cliente!", "¡Error 404!", "¡Reinicia el router!", "¡No hay trazabilidad!", "¡Etiquetado como Folio A4!"];
-        } else if (bossEtapaActual == 2) {
-            frases = ["¡El servidor quema!", "¡Sobrecarga térmica!", "¡Llama a sistemas!", "¡Fuga de datos masiva!", "¡Cables pelados!", "¡Apaga y enciende!"];
+        if (esCritico) {
+            txt.innerText = "¡CRÍTICO! " + cantidad;
+        } else if (esAjeno) {
+            txt.innerText = "-" + cantidad;
         } else {
-            frases = ["¡CÓDIGO ROJO!", "¡Caída del sistema!", "¡Sálvese quien pueda!", "¡Núcleo expuesto!", "¡Formateando discos!", "¡Mayday, Mayday!"];
+            let frases = [];
+            if (bossEtapaActual == 1) frases = ["¡Ups, otra vez!", "¿Quién ha sido el becario?", "¡Menos mal que no es un cliente!", "¡Error 404!", "¡Reinicia el router!", "¡No hay trazabilidad!"];
+            else if (bossEtapaActual == 2) frases = ["¡El servidor quema!", "¡Sobrecarga térmica!", "¡Llama a sistemas!", "¡Fuga de datos masiva!", "¡Cables pelados!", "¡Apaga y enciende!"];
+            else frases = ["¡CÓDIGO ROJO!", "¡Caída del sistema!", "¡Sálvese quien pueda!", "¡Núcleo expuesto!", "¡Formateando discos!", "¡Mayday, Mayday!"];
+            txt.innerText = (Math.random() > 0.7) ? frases[Math.floor(Math.random() * frases.length)] : "-" + cantidad;
         }
 
-        txt.innerText = frases[Math.floor(Math.random() * frases.length)];
         document.body.appendChild(txt);
-        
-        setTimeout(() => txt.remove(), 800);
-
-        // Si el daño actual acaba de matarlo
-        if (bossVidaActual === 0) {
-            document.getElementById('alerta-boss').style.display = 'none';
-            clearInterval(autoClickerInterval);
-            reclamarBotinBoss(); // Calcula el botín en vivo
-            enviarDanoAlServidor(); 
-        }
+        setTimeout(() => txt.remove(), esCritico ? 1000 : 800);
     }
 
     function enviarDanoAlServidor() {
@@ -1610,7 +1704,6 @@
             return;
         }
 
-        // REDUCCIÓN LOCAL INMEDIATA DE PUNTOS Y BLOQUEO DE BOTÓN
         misPuntosActuales -= coste;
         document.getElementById('mis-puntos-num').innerText = misPuntosActuales;
         if(document.getElementById('puntos-esquina-num')) document.getElementById('puntos-esquina-num').innerText = misPuntosActuales;

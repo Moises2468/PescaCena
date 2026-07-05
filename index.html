@@ -242,7 +242,7 @@
             <option value="wordle">🧠 Top 10 más Eficientes (Pesca-Wordle)</option>
           </select>
           <table class="tabla-top" id="tabla-agentes-body">
-             <!-- Se rellena por JS (Top 10 + Tú) -->
+              <!-- Se rellena por JS (Top 10 + Tú) -->
           </table>
         </div>
   
@@ -417,8 +417,14 @@
         <img id="boss-img" src="etapa1.png" style="width:100%; height:100%; object-fit: contain; pointer-events: none;" class="breathe-boss">
     </div>
 
+    <!-- PESTAÑAS BOSS -->
+    <div class="tabs" style="width: 100%; max-width: 320px; margin-top: 20px; margin-bottom: 0;">
+        <button class="tab-btn active-tab" id="btn-boss-tienda" onclick="cambiarTabBoss('tienda')" style="width: 48%;">🛒 Tienda</button>
+        <button class="tab-btn" id="btn-boss-ranking" onclick="cambiarTabBoss('ranking')" style="width: 48%;">🏆 Estadísticas</button>
+    </div>
+
     <!-- TIENDA DE MEJORAS -->
-    <div class="card-container" style="width: 100%; max-width: 320px; padding: 15px; margin-top: 20px;">
+    <div class="card-container" id="boss-tienda" style="width: 100%; max-width: 320px; padding: 15px; margin-top: 10px;">
         <h4 style="margin:0 0 15px 0; color:var(--primary); text-transform: uppercase;">Mejoras de Agente</h4>
         
         <div class="tienda-fila">
@@ -437,10 +443,19 @@
             <button id="btn-upg-auto" class="btn-juego" style="width:auto; margin:0; padding:10px 15px; font-size:12px; background:#e63946;" onclick="comprarMejora('auto')">Mejorar (<span id="coste-auto">100</span> pts)</button>
         </div>
     </div>
+
+    <!-- RANKING BOSS -->
+    <div class="card-container" id="boss-ranking" style="display: none; width: 100%; max-width: 320px; padding: 15px; margin-top: 10px;">
+        <h4 style="margin:0 0 15px 0; color:var(--primary); text-transform: uppercase;">Top Daño al Boss</h4>
+        <table class="tabla-top" id="tabla-boss-dano">
+            <!-- Se rellena dinámicamente -->
+        </table>
+    </div>
+
   </div>
 
   <script>
-    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbxLmoMTAji2YWglTOs902_U6nyhq5ekbYsDoc_iXCvYOyiW5qXYPfkshlMISCN3dEPW0A/exec"; 
+    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbwL4D423MXFdPjKsQ8YVwWgG1DuxaZy6iSwe_rfNmMF17ExkiULhWX9SnlI4cWTFBiXgQ/exec"; 
 
     // VARIABLES GLOBALES GENERALES
     let palabraSecretaDelDia = ""; let cargandoInicial = false; let misPuntosActuales = 0; let trivialActual = { pregunta: "", a: "", b: "", c: "", d: "", respuesta: "" }; let juegoTerminado = false; let intentos = 0; let letrasActuales = []; let diccionarioLocal = [];
@@ -468,11 +483,6 @@
     let autoClickerInterval = null;
     let sincroBossInterval = null;
     
-    const frasesBoss = [
-        "¡Ups, otra vez!", "¿Quién ha sido el becario?", "¡Menos mal que no es un cliente!", 
-        "¡Error 404!", "¡Reinicia el router!", "¡No hay trazabilidad!", "¡Etiquetado como Foli0 A4!"
-    ];
-
     // =========================================================================
     // SISTEMA DE CONFETI (Efecto WOW)
     // =========================================================================
@@ -685,35 +695,45 @@
             if(container) container.style.display = 'block'; 
         }
 
-        // LECTURA DEL BOSS (Preparado para cuando lo metas en el GS)
+        // LECTURA DEL BOSS
         if (datos.boss) {
             bossActivo = (datos.boss.activo === "SI");
-            if (bossActivo) {
+            bossEtapaActual = datos.boss.etapa || 1;
+            bossVidaActual = datos.boss.vidaActual || 0;
+            bossVidaMaxima = datos.boss.vidaMaxima || 1000000;
+            
+            // Lógica de alerta protegida: no se muestra si estás dentro de la batalla
+            if (bossActivo && bossVidaActual > 0 && !document.getElementById('pantalla-boss').classList.contains('active')) {
                 document.getElementById('alerta-boss').style.display = 'flex';
                 document.getElementById('alerta-boss-txt').innerText = datos.boss.texto || "¡HACKEO EN CURSO!";
-                
-                bossEtapaActual = datos.boss.etapa || 1;
-                bossVidaActual = datos.boss.vidaActual || 0;
-                bossVidaMaxima = datos.boss.vidaMaxima || 1000000;
-                let nomJugador = localStorage.getItem('jugador_nombre');
-                if (datos.boss.jugadores && nomJugador && datos.boss.jugadores[nomJugador]) {
-                    miLvlFuerza = datos.boss.jugadores[nomJugador].fuerza;
-                    miLvlAuto = datos.boss.jugadores[nomJugador].auto;
-                } else {
-                    miLvlFuerza = 1; 
-                    miLvlAuto = 0;
-                }
-
-                // Dinamismo de imagen basado en la etapa
-                document.getElementById('boss-img').src = 'etapa' + bossEtapaActual + '.png';
-                document.getElementById('boss-fase-titulo').innerText = 'Fase ' + bossEtapaActual;
-                
-                // Actualiza UI
-                document.getElementById('boss-vida-fill').style.width = (bossVidaActual / bossVidaMaxima * 100) + "%";
-                document.getElementById('boss-vida-txt').innerText = bossVidaActual + " / " + bossVidaMaxima;
-                actualizarTiendaUI();
             } else {
                 document.getElementById('alerta-boss').style.display = 'none';
+            }
+                
+            let nomJugador = localStorage.getItem('jugador_nombre');
+            if (datos.boss.jugadores && nomJugador && datos.boss.jugadores[nomJugador]) {
+                miLvlFuerza = datos.boss.jugadores[nomJugador].fuerza;
+                miLvlAuto = datos.boss.jugadores[nomJugador].auto;
+            } else {
+                miLvlFuerza = 1; 
+                miLvlAuto = 0;
+            }
+
+            // Dinamismo de imagen basado en la etapa
+            document.getElementById('boss-img').src = 'etapa' + bossEtapaActual + '.png';
+            document.getElementById('boss-fase-titulo').innerText = 'Fase ' + bossEtapaActual;
+            
+            // Actualiza UI de vida
+            let anchoVida = bossVidaMaxima > 0 ? (bossVidaActual / bossVidaMaxima * 100) : 0;
+            document.getElementById('boss-vida-fill').style.width = anchoVida + "%";
+            document.getElementById('boss-vida-txt').innerText = bossVidaActual + " / " + bossVidaMaxima;
+            actualizarTiendaUI();
+            
+            // Si el jugador está dentro de la pestaña y el boss está muerto
+            if (bossVidaActual <= 0 && document.getElementById('pantalla-boss').classList.contains('active')) {
+                lanzarConfeti();
+                showModal("¡BOSS DERROTADO!", `¡El Boss de la Fase ${bossEtapaActual} FUE VENCIDO CON LA AYUDA DE TODOS LOS DEPARTAMENTOS!\n\nReclama tu parte del botín.`, "success");
+                cerrarBoss();
             }
         }
 
@@ -742,6 +762,7 @@
 
         actualizarInterfazRuleta();
         actualizarTablaRanking();
+        if (document.getElementById('boss-ranking').style.display === 'block') { renderizarRankingBoss(); }
 
         const contenedorLogros = document.getElementById('lista-logros');
         if (contenedorLogros && datos.logros && Array.isArray(datos.logros)) {
@@ -1377,12 +1398,66 @@
     }
 
     // =========================================================================
-    // LÓGICA DEL CLICKER BOSS
+    // LÓGICA DEL CLICKER BOSS Y PESTAÑAS
     // =========================================================================
+    function cambiarTabBoss(tab) {
+        document.getElementById('boss-tienda').style.display = 'none';
+        document.getElementById('boss-ranking').style.display = 'none';
+        document.getElementById('btn-boss-tienda').classList.remove('active-tab');
+        document.getElementById('btn-boss-ranking').classList.remove('active-tab');
+
+        if (tab === 'tienda') {
+            document.getElementById('boss-tienda').style.display = 'block';
+            document.getElementById('btn-boss-tienda').classList.add('active-tab');
+        } else {
+            document.getElementById('boss-ranking').style.display = 'block';
+            document.getElementById('btn-boss-ranking').classList.add('active-tab');
+            renderizarRankingBoss();
+        }
+    }
+
+    function renderizarRankingBoss() {
+        const tabla = document.getElementById('tabla-boss-dano');
+        if (!ultimosDatosServidor || !ultimosDatosServidor.boss || !ultimosDatosServidor.boss.jugadores) {
+            tabla.innerHTML = "<tr><td colspan='3' style='color:var(--text-muted); padding:10px;'>Sin datos de daño aún...</td></tr>";
+            return;
+        }
+
+        let ranking = [];
+        for (let nombre in ultimosDatosServidor.boss.jugadores) {
+            let j = ultimosDatosServidor.boss.jugadores[nombre];
+            // Lee el daño del array. (Importante configurar en GS)
+            if (j.dano > 0) ranking.push({ nombre: nombre, dano: j.dano });
+        }
+
+        ranking.sort((a,b) => b.dano - a.dano);
+
+        if(ranking.length === 0) {
+            tabla.innerHTML = "<tr><td colspan='3' style='color:var(--text-muted); padding:10px;'>Aún no hay daño registrado.</td></tr>";
+            return;
+        }
+
+        tabla.innerHTML = `<tr><th>Pos</th><th>Agente</th><th>Daño Acum.</th></tr>`;
+        for(let i=0; i<Math.min(10, ranking.length); i++) {
+             let r = ranking[i];
+             let icono = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i+1) + 'º';
+             let txtNombre = r.nombre === localStorage.getItem('jugador_nombre') ? r.nombre + " (TÚ)" : r.nombre;
+             let filaMia = r.nombre === localStorage.getItem('jugador_nombre') ? 'style="background:#fff3cd; font-weight:bold;"' : '';
+             
+             tabla.innerHTML += `<tr ${filaMia}><td style="font-weight:bold; color:var(--primary);">${icono}</td><td>${txtNombre}</td><td>${r.dano}</td></tr>`;
+        }
+    }
+
     function abrirBoss() {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById('pantalla-boss').classList.add('active');
         document.getElementById('alerta-boss').style.display = 'none';
+
+        if (bossVidaActual <= 0) {
+            lanzarConfeti();
+            showModal("¡BOSS DERROTADO!", `¡El Boss de la Fase ${bossEtapaActual} FUE VENCIDO CON LA AYUDA DE TODOS LOS DEPARTAMENTOS!\n\nReclama tu parte del botín.`, "success");
+            return; // No arrancar intervalos si ya está muerto
+        }
 
         if (miLvlAuto > 0) {
             autoClickerInterval = setInterval(() => {
@@ -1396,7 +1471,7 @@
     function cerrarBoss() {
         document.getElementById('pantalla-boss').classList.remove('active');
         document.getElementById('pantalla-lobby').classList.add('active');
-        if(bossActivo) document.getElementById('alerta-boss').style.display = 'flex';
+        if(bossActivo && bossVidaActual > 0) { document.getElementById('alerta-boss').style.display = 'flex'; }
         
         clearInterval(autoClickerInterval);
         clearInterval(sincroBossInterval);
@@ -1409,6 +1484,8 @@
     });
 
     function hacerDano(cantidad, esManual, x, y) {
+        if (bossVidaActual <= 0) return; 
+
         bossVidaActual -= cantidad;
         danoAcumuladoSinEnviar += cantidad;
         
@@ -1417,21 +1494,51 @@
         document.getElementById('boss-vida-fill').style.width = (bossVidaActual / bossVidaMaxima * 100) + "%";
         document.getElementById('boss-vida-txt').innerText = bossVidaActual + " / " + bossVidaMaxima;
 
-        if (esManual) {
-            let img = document.getElementById('boss-img');
-            img.classList.remove('shake-boss');
-            void img.offsetWidth; 
-            img.classList.add('shake-boss');
+        // Efectos visuales para manual y automático
+        let img = document.getElementById('boss-img');
+        img.classList.remove('shake-boss');
+        void img.offsetWidth; 
+        img.classList.add('shake-boss');
 
-            let txt = document.createElement('div');
-            txt.className = 'float-dmg';
-            let offsetX = (Math.random() - 0.5) * 40; 
-            txt.style.left = (x - 20 + offsetX) + 'px';
-            txt.style.top = (y - 30) + 'px';
-            txt.innerText = frasesBoss[Math.floor(Math.random() * frasesBoss.length)];
-            document.body.appendChild(txt);
-            
-            setTimeout(() => txt.remove(), 800);
+        let txt = document.createElement('div');
+        txt.className = 'float-dmg';
+        
+        let realX = x;
+        let realY = y;
+
+        // Si es automático, generamos coordenadas aleatorias sobre la imagen
+        if (!esManual || (x === 0 && y === 0)) {
+            let rect = img.getBoundingClientRect();
+            realX = rect.left + (rect.width / 2) + ((Math.random() - 0.5) * 120);
+            realY = rect.top + (rect.height / 2) + ((Math.random() - 0.5) * 120);
+        }
+
+        let offsetX = (Math.random() - 0.5) * 40; 
+        txt.style.left = (realX - 20 + offsetX) + 'px';
+        txt.style.top = (realY - 30) + 'px';
+        
+        // --- FRASES SEGÚN LA ETAPA ---
+        let frases = [];
+        if (bossEtapaActual == 1) {
+            frases = ["¡Ups, otra vez!", "¿Quién ha sido el becario?", "¡Menos mal que no es un cliente!", "¡Error 404!", "¡Reinicia el router!", "¡No hay trazabilidad!", "¡Etiquetado como Folio A4!"];
+        } else if (bossEtapaActual == 2) {
+            frases = ["¡El servidor quema!", "¡Sobrecarga térmica!", "¡Llama a sistemas!", "¡Fuga de datos masiva!", "¡Cables pelados!", "¡Apaga y enciende!"];
+        } else {
+            frases = ["¡CÓDIGO ROJO!", "¡Caída del sistema!", "¡Sálvese quien pueda!", "¡Núcleo expuesto!", "¡Formateando discos!", "¡Mayday, Mayday!"];
+        }
+
+        txt.innerText = frases[Math.floor(Math.random() * frases.length)];
+        document.body.appendChild(txt);
+        
+        setTimeout(() => txt.remove(), 800);
+
+        // Si el daño actual acaba de matarlo
+        if (bossVidaActual === 0) {
+            lanzarConfeti();
+            showModal("¡BOSS DERROTADO!", `¡El Boss de la Fase ${bossEtapaActual} FUE VENCIDO CON LA AYUDA DE TODOS LOS DEPARTAMENTOS!\n\nReclama tu parte del botín.`, "success");
+            document.getElementById('alerta-boss').style.display = 'none';
+            clearInterval(autoClickerInterval);
+            enviarDanoAlServidor(); 
         }
     }
 
@@ -1440,8 +1547,6 @@
         
         let danoAEnviar = danoAcumuladoSinEnviar;
         danoAcumuladoSinEnviar = 0; 
-
-        // Cuando la lógica del GS esté lista, esto lo restará a la salud global y se lo sumará a Ranking_Boss
         enviarPuntosAJuego("DanoBoss", danoAEnviar, "Fase: " + bossEtapaActual);
     }
 
@@ -1459,6 +1564,11 @@
     }
 
     function comprarMejora(tipo) {
+        if (bossVidaActual <= 0) {
+            showModal("Combate terminado", "El boss ya ha sido derrotado, no necesitas mejoras ahora.", "info");
+            return;
+        }
+
         let coste = tipo === 'fuerza' ? calcularCosteFuerza() : calcularCosteAuto();
 
         if (misPuntosActuales < coste) {
@@ -1475,9 +1585,7 @@
             }, 1000);
         }
 
-        // Se envía la petición al backend para restar puntos (como con la Ruleta) y subir el nivel en la BBDD
         enviarPuntosAJuego("ComprarMejoraBoss", -coste, "Tipo: " + tipo);
-        
         actualizarTiendaUI();
         lanzarConfeti();
     }

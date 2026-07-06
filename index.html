@@ -1467,13 +1467,11 @@ class Block {
 
 // Función de bucle de animación 3D
 function animate3D() {
-    if(!torreJugando) return;
+    if (!torreJugando) return; // Se detiene al perder
     
-    // Mover bloque activo
     if (window.activeBlock) {
         window.activeBlock.mesh.position.x += window.activeBlock.speed * window.activeBlock.dir;
         
-        // Rebote en paredes
         if (window.activeBlock.mesh.position.x > 1.5 || window.activeBlock.mesh.position.x < -1.5) {
             window.activeBlock.dir *= -1;
         }
@@ -1483,22 +1481,57 @@ function animate3D() {
     requestAnimationFrame(animate3D);
 }
 
-    function clickTorre(e) {
-    if(!torreJugando || !window.activeBlock) return;
-    
-    // Fijar posición actual
+    function clickTorre() {
+    if (!torreJugando || !window.activeBlock) return;
+
+    let active = window.activeBlock.mesh;
+    let prev = window.bloques[window.bloques.length - 1].mesh;
+
+    // Calcular cuánto se solapan
+    let overlap = 2 - Math.abs(active.position.x - prev.position.x);
+
+    // Si el overlap es menor a 0.2 (casi no se tocan), pierdes
+    if (overlap <= 0.2) {
+        finalizarJuego();
+        return;
+    }
+
+    // Si acertaste, ajustamos el tamaño para el siguiente bloque (haciéndolo más difícil)
+    active.scale.x = overlap / 2;
+    active.position.x = prev.position.x + (active.position.x - prev.position.x) / 2;
+
     torreNivel++;
     document.getElementById('torre-score-txt').innerText = torreNivel;
-    
-    // Mover cámara
     window.stage.camera.position.y += 0.5;
-    
-    // Crear nuevo bloque
-    let nextY = torreNivel * 0.5;
-    window.activeBlock = new Block(0, nextY, 0, 2, 0.5, 2);
+
+    // Crear el siguiente bloque
+    window.activeBlock = new Block(0, torreNivel * 0.5, 0, overlap, 0.5, 2);
     window.activeBlock.dir = (Math.random() > 0.5) ? 1 : -1;
-    window.activeBlock.speed = 0.1 + (torreNivel * 0.01); // Se acelera
+    window.activeBlock.speed = 0.1 + (torreNivel * 0.01);
     window.stage.scene.add(window.activeBlock.mesh);
+    window.bloques.push(window.activeBlock);
+}
+
+    function finalizarJuego() {
+    torreJugando = false;
+    let puntosGanados = torreNivel * 10;
+    
+    // Guardar récord local
+    if (torreNivel > torreRecordPersonal) {
+        localStorage.setItem('torre_record', torreNivel);
+        document.getElementById('torre-record-txt').innerText = torreNivel;
+    }
+
+    // Avisar al jugador
+    showModal("¡GAME OVER!", "Has alcanzado el nivel " + torreNivel + ". Has ganado " + puntosGanados + " puntos.", "error");
+
+    // ENVIAR PUNTOS AL SERVIDOR (Esto es lo que te faltaba)
+    enviarPuntosAJuego("Éxito Torre", puntosGanados, "Nivel alcanzado: " + torreNivel);
+    
+    // Limpiar escena 3D
+    while(window.stage.scene.children.length > 0){ 
+        window.stage.scene.remove(window.stage.scene.children[0]); 
+    }
 }
     // =========================================================================
     // RULETA, WORDLE Y TRIVIAL (Mantenidos)

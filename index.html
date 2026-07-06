@@ -1406,25 +1406,28 @@ class Block {
     let torreRecordPersonal = parseInt(localStorage.getItem('torre_record')) || 0;
 
     function abrirTorre() {
-        document.getElementById('pantalla-lobby').classList.remove('active');
-        document.getElementById('pantalla-torre').classList.add('active');
-        document.getElementById('puntos-esquina').style.display = 'none';
-        document.getElementById('racha-dias').style.display = 'none';
-        document.getElementById('alerta-boss').style.display = 'none';
-        window.scrollTo(0,0);
+    document.getElementById('pantalla-lobby').classList.remove('active');
+    document.getElementById('pantalla-torre').classList.add('active');
+    document.getElementById('puntos-esquina').style.display = 'none';
+    document.getElementById('racha-dias').style.display = 'none';
+    document.getElementById('alerta-boss').style.display = 'none';
+    window.scrollTo(0,0);
 
-        torreRecordPersonal = parseInt(localStorage.getItem('torre_record')) || 0;
-        document.getElementById('torre-record-txt').innerText = torreRecordPersonal;
-        document.getElementById('torre-score-txt').innerText = 0;
-        
-        // Setup listener once
-        if(!torreCanvas.hasAttribute('data-listened')) {
-            torreCanvas.addEventListener('pointerdown', clickTorre);
-            torreCanvas.setAttribute('data-listened', 'true');
-        }
+    torreRecordPersonal = parseInt(localStorage.getItem('torre_record')) || 0;
+    document.getElementById('torre-record-txt').innerText = torreRecordPersonal;
+    document.getElementById('torre-score-txt').innerText = 0;
+    
+    // CORRECCIÓN: Obtenemos el elemento, pero NO llamamos al context 2D
+    torreCanvas = document.getElementById('canvas-torre');
 
-        document.getElementById('btn-iniciar-torre').style.display = 'block';
+    // Setup del listener: solo si no se ha añadido antes
+    if(torreCanvas && !torreCanvas.hasAttribute('data-listened')) {
+        torreCanvas.addEventListener('pointerdown', clickTorre);
+        torreCanvas.setAttribute('data-listened', 'true');
     }
+    
+    document.getElementById('btn-iniciar-torre').style.display = 'block';
+}
 
     function cerrarTorre() {
         torreJugando = false;

@@ -159,6 +159,9 @@
     .torre-info span strong { color: var(--primary); font-size: 20px; }
     #torre-record-txt { color: var(--success); }
   </style>
+  <!-- Añadir esto antes de </head> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script>
 </head>
 <body>
 
@@ -546,7 +549,31 @@
     // FRENESÍ
     let frenesiActivo = false;
     let frenesiTimerLocal = null;
-    
+    // --- CLASES DEL JUEGO 3D ---
+class Stage {
+    constructor() {
+        this.container = document.getElementById("canvas-torre");
+        this.renderer = new THREE.WebGLRenderer({ canvas: this.container, antialias: true });
+        this.renderer.setSize(300, 400);
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.OrthographicCamera(-5, 5, 6.6, -6.6, 0, 100);
+        this.camera.position.set(2, 2, 2);
+        this.camera.lookAt(0, 0, 0);
+        this.light = new THREE.DirectionalLight(0xffffff, 0.5);
+        this.light.position.set(0, 10, 0);
+        this.scene.add(this.light);
+        this.scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+    }
+}
+
+class Block {
+    constructor(x, y, z, w, d, h) {
+        this.geometry = new THREE.BoxGeometry(w, h, d);
+        this.material = new THREE.MeshLambertMaterial({ color: 0x003366 });
+        this.mesh = new THREE.Mesh(this.geometry, this.material);
+        this.mesh.position.set(x, y, z);
+    }
+}
     // =========================================================================
     // SISTEMA DE CONFETI (Efecto WOW)
     // =========================================================================
@@ -1415,177 +1442,64 @@
     }
 
     function arrancarPartidaTorre() {
-        document.getElementById('btn-iniciar-torre').style.display = 'none';
-        torreNivel = 0;
-        torreVelocidad = 3;
-        torreBloques = [{ x: 50, y: 350, w: 200, h: 30, color: '#003366' }]; // Base
-        torreRestos = [];
+    document.getElementById('btn-iniciar-torre').style.display = 'none';
+    torreNivel = 0;
+    document.getElementById('torre-score-txt').innerText = "0";
+    
+    // Inicializar Motor 3D
+    window.stage = new Stage();
+    window.bloques = [];
+    
+    // Crear base fija
+    let base = new Block(0, 0, 0, 2, 0.5, 2); 
+    window.stage.scene.add(base.mesh);
+    window.bloques.push(base);
+
+    // Crear primer bloque que se mueve
+    window.activeBlock = new Block(0, 0.5, 0, 2, 0.5, 2);
+    window.stage.scene.add(window.activeBlock.mesh);
+    window.activeBlock.dir = 1;
+    window.activeBlock.speed = 0.1;
+
+    torreJugando = true;
+    animate3D();
+}
+
+// Función de bucle de animación 3D
+function animate3D() {
+    if(!torreJugando) return;
+    
+    // Mover bloque activo
+    if (window.activeBlock) {
+        window.activeBlock.mesh.position.x += window.activeBlock.speed * window.activeBlock.dir;
         
-        document.getElementById('torre-score-txt').innerText = 0;
-        crearBloqueTorre(200, 50);
-        
-        torreJugando = true;
-        if(torreAnimId) cancelAnimationFrame(torreAnimId);
-        loopTorre();
+        // Rebote en paredes
+        if (window.activeBlock.mesh.position.x > 1.5 || window.activeBlock.mesh.position.x < -1.5) {
+            window.activeBlock.dir *= -1;
+        }
     }
 
-    function crearBloqueTorre(width, lastX) {
-        // Aumentar velocidad progresivamente
-        torreVelocidad += 0.15;
-        torreDir = Math.random() > 0.5 ? 1 : -1;
-        let startX = torreDir === 1 ? 0 : torreCanvas.width - width;
-        let colorBloque = `hsl(${(torreNivel * 15) % 360}, 70%, 50%)`;
-        
-        torreBloqueActivo = {
-            x: startX,
-            y: 350 - ((torreNivel + 1) * 30),
-            w: width,
-            h: 30,
-            color: colorBloque
-        };
-    }
-
-    function loopTorre() {
-        if(!torreJugando) return;
-
-        // Movimiento
-        torreBloqueActivo.x += (torreVelocidad * torreDir);
-        if (torreBloqueActivo.x <= 0) {
-            torreBloqueActivo.x = 0;
-            torreDir = 1;
-        } else if (torreBloqueActivo.x + torreBloqueActivo.w >= torreCanvas.width) {
-            torreBloqueActivo.x = torreCanvas.width - torreBloqueActivo.w;
-            torreDir = -1;
-        }
-
-        // Físicas de los restos que caen
-        for(let i=torreRestos.length-1; i>=0; i--) {
-            let r = torreRestos[i];
-            r.vy += 0.5; // Gravedad
-            r.y += r.vy;
-            r.x += r.vx;
-            // Eliminar si sale de pantalla para no saturar memoria
-            if(r.y > torreCanvas.height + 200) torreRestos.splice(i, 1);
-        }
-
-        dibujarTorre();
-        torreAnimId = requestAnimationFrame(loopTorre);
-    }
-
-    function dibujarTorre() {
-        torreCtx.clearRect(0,0, torreCanvas.width, torreCanvas.height);
-        
-        // Offset de cámara
-        let cameraY = Math.max(0, (torreNivel - 7) * 30);
-
-        // Dibujar pila
-        for (let b of torreBloques) {
-            torreCtx.fillStyle = b.color;
-            torreCtx.fillRect(b.x, b.y + cameraY, b.w, b.h);
-            torreCtx.strokeStyle = 'rgba(0,0,0,0.2)';
-            torreCtx.strokeRect(b.x, b.y + cameraY, b.w, b.h);
-        }
-
-        // Dibujar restos cayendo
-        for (let r of torreRestos) {
-            torreCtx.fillStyle = r.color;
-            torreCtx.globalAlpha = 0.7;
-            torreCtx.fillRect(r.x, r.y + cameraY, r.w, r.h);
-            torreCtx.globalAlpha = 1.0;
-        }
-
-        // Dibujar bloque activo
-        torreCtx.fillStyle = torreBloqueActivo.color;
-        torreCtx.fillRect(torreBloqueActivo.x, torreBloqueActivo.y + cameraY, torreBloqueActivo.w, torreBloqueActivo.h);
-        torreCtx.strokeStyle = 'rgba(0,0,0,0.2)';
-        torreCtx.strokeRect(torreBloqueActivo.x, torreBloqueActivo.y + cameraY, torreBloqueActivo.w, torreBloqueActivo.h);
-    }
+    window.stage.renderer.render(window.stage.scene, window.stage.camera);
+    requestAnimationFrame(animate3D);
+}
 
     function clickTorre(e) {
-        if(!torreJugando) return;
-        
-        let anterior = torreBloques[torreBloques.length - 1];
-        let actual = torreBloqueActivo;
-
-        let left = Math.max(anterior.x, actual.x);
-        let right = Math.min(anterior.x + anterior.w, actual.x + actual.w);
-        let overlap = right - left;
-
-        if (overlap <= 0) {
-            // Game Over
-            torreJugando = false;
-            
-            // Añadir el bloque entero como resto que cae para efecto visual
-            torreRestos.push({
-                x: actual.x, y: actual.y, w: actual.w, h: actual.h,
-                vx: 0, vy: 0, color: actual.color
-            });
-            torreBloqueActivo = null;
-            dibujarTorre(); // Dibujar el frame final cayendo
-            
-            setTimeout(procesarFinTorre, 1000); // Esperar un segundo de drama
-            return;
-        }
-
-        // Cortar y guardar
-        let restoAncho = actual.w - overlap;
-        if (restoAncho > 0) {
-            let restoX = actual.x < anterior.x ? actual.x : right;
-            let velX = actual.x < anterior.x ? -2 : 2; // Salta un poco hacia el lado que sobra
-            torreRestos.push({
-                x: restoX, y: actual.y, w: restoAncho, h: actual.h,
-                vx: velX, vy: -3, color: actual.color
-            });
-        }
-
-        torreBloques.push({
-            x: left, y: actual.y, w: overlap, h: actual.h, color: actual.color
-        });
-
-        torreNivel++;
-        document.getElementById('torre-score-txt').innerText = torreNivel;
-        
-        crearBloqueTorre(overlap, left);
-    }
-
-    function procesarFinTorre() {
-        let globalRecord = 0;
-        if (ultimosDatosServidor && ultimosDatosServidor.rankingTorre && ultimosDatosServidor.rankingTorre.length > 0) {
-            globalRecord = ultimosDatosServidor.rankingTorre[0].valor;
-        }
-
-        if (torreNivel > torreRecordPersonal) {
-            let nivelesExtra = torreNivel - torreRecordPersonal;
-            let ptsGanados = nivelesExtra * 10;
-            let esMundial = false;
-
-            if (torreNivel > globalRecord && globalRecord > 0 && torreRecordPersonal <= globalRecord) {
-                ptsGanados += 100;
-                esMundial = true;
-            }
-
-            torreRecordPersonal = torreNivel;
-            localStorage.setItem('torre_record', torreRecordPersonal);
-            document.getElementById('torre-record-txt').innerText = torreRecordPersonal;
-
-            let msg = esMundial 
-                ? `¡NUEVO RÉCORD MUNDIAL!\nSuperaste tu marca en ${nivelesExtra} niveles (+${nivelesExtra*10}pts) y rompiste el récord histórico (+100pts extra).`
-                : `¡Has mejorado tu récord personal en ${nivelesExtra} niveles!\nSumas ${ptsGanados} puntos a tu marcador.`;
-
-            setTimeout(() => {
-                lanzarConfeti();
-                showModal("¡Arquitecto Maestro!", msg, "success");
-                enviarPuntosAJuego("Récord Torre", ptsGanados, torreNivel.toString());
-            }, 300);
-
-        } else {
-            showModal("Torre Caída", `Has llegado al nivel ${torreNivel}.\nNo has superado tu récord personal de ${torreRecordPersonal}.\n¡Inténtalo otra vez!`, "info");
-        }
-
-        document.getElementById('btn-iniciar-torre').style.display = 'block';
-        document.getElementById('btn-iniciar-torre').innerText = "REINTENTAR";
-    }
-
+    if(!torreJugando || !window.activeBlock) return;
+    
+    // Fijar posición actual
+    torreNivel++;
+    document.getElementById('torre-score-txt').innerText = torreNivel;
+    
+    // Mover cámara
+    window.stage.camera.position.y += 0.5;
+    
+    // Crear nuevo bloque
+    let nextY = torreNivel * 0.5;
+    window.activeBlock = new Block(0, nextY, 0, 2, 0.5, 2);
+    window.activeBlock.dir = (Math.random() > 0.5) ? 1 : -1;
+    window.activeBlock.speed = 0.1 + (torreNivel * 0.01); // Se acelera
+    window.stage.scene.add(window.activeBlock.mesh);
+}
     // =========================================================================
     // RULETA, WORDLE Y TRIVIAL (Mantenidos)
     // =========================================================================

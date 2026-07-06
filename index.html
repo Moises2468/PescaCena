@@ -1417,10 +1417,6 @@ class Block {
         document.getElementById('torre-record-txt').innerText = torreRecordPersonal;
         document.getElementById('torre-score-txt').innerText = 0;
         
-        torreCanvas = document.getElementById('canvas-torre');
-        torreCtx = torreCanvas.getContext('2d');
-        torreCtx.clearRect(0,0, torreCanvas.width, torreCanvas.height);
-        
         // Setup listener once
         if(!torreCanvas.hasAttribute('data-listened')) {
             torreCanvas.addEventListener('pointerdown', clickTorre);

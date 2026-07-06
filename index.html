@@ -140,29 +140,24 @@
     .shake-boss { animation: shake-boss 0.15s cubic-bezier(.36,.07,.19,.97) both; }
     @keyframes shake-boss { 0% { transform: translate(0,0) rotate(0deg); } 25% { transform: translate(-5px, 3px) rotate(-2deg); } 50% { transform: translate(5px, -3px) rotate(2deg); } 75% { transform: translate(-3px, -2px) rotate(-1deg); } 100% { transform: translate(0,0) rotate(0deg); } }
     
-    /* Efecto Crítico y Efecto Multijugador */
     .float-dmg.crit { color: #ffcc00; font-size: 28px; text-shadow: 0 0 5px #d93025, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; z-index: 10003; animation: floatCrit 1.8s ease-out forwards; }
     .float-dmg.ajeno { color: #9aa0a6; font-size: 14px; opacity: 0.6; z-index: 10001; }
-    
     .float-dmg { position: fixed; color: var(--error-text); font-weight: 900; font-size: 18px; pointer-events: none; z-index: 10002; text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff; animation: floatUpDmg 1.8s ease-out forwards; white-space: nowrap; }
 
-    @keyframes floatUpDmg { 
-        0% { opacity: 1; transform: translateY(0) scale(1); } 
-        70% { opacity: 1; transform: translateY(-40px) scale(1.2); } 
-        100% { opacity: 0; transform: translateY(-60px) scale(1.3); } 
-    }
-    @keyframes floatCrit { 
-        0% { opacity: 1; transform: translateY(0) scale(1.5); } 
-        70% { opacity: 1; transform: translateY(-50px) scale(1.8); } 
-        100% { opacity: 0; transform: translateY(-80px) scale(2); } 
-    }
+    @keyframes floatUpDmg { 0% { opacity: 1; transform: translateY(0) scale(1); } 70% { opacity: 1; transform: translateY(-40px) scale(1.2); } 100% { opacity: 0; transform: translateY(-60px) scale(1.3); } }
+    @keyframes floatCrit { 0% { opacity: 1; transform: translateY(0) scale(1.5); } 70% { opacity: 1; transform: translateY(-50px) scale(1.8); } 100% { opacity: 0; transform: translateY(-80px) scale(2); } }
 
     .tienda-fila { display: flex; justify-content: space-between; align-items: center; background: #f1f3f4; padding: 10px; border-radius: 8px; margin-bottom: 8px; }
-
-    /* ESTILO FRENESÍ (MODO BUFF GLOBAL) */
     .frenesi-banner { background: #d93025; color: white; padding: 10px; font-weight: 900; width: 100%; box-sizing: border-box; text-transform: uppercase; letter-spacing: 2px; animation: flash-rojo 0.5s infinite alternate; border-radius: 8px; margin-bottom: 10px; display: none; box-shadow: 0 0 15px rgba(217, 48, 37, 0.8); }
     @keyframes flash-rojo { from { background-color: #d93025; transform: scale(1); } to { background-color: #ff5252; transform: scale(1.02); } }
-    
+
+    /* ========================================================
+       ESTILOS DE LA TORRE (STACK)
+       ======================================================== */
+    #canvas-torre { background-color: #e8eaed; border-radius: 8px; border: 2px solid #dadce0; max-width: 100%; box-shadow: inset 0 2px 10px rgba(0,0,0,0.1); cursor: pointer; touch-action: none; }
+    .torre-info { display: flex; justify-content: space-between; width: 100%; max-width: 320px; font-size: 16px; font-weight: bold; color: var(--text-muted); margin-bottom: 10px; background: #f1f3f4; padding: 10px 15px; border-radius: 8px; box-sizing: border-box; }
+    .torre-info span strong { color: var(--primary); font-size: 20px; }
+    #torre-record-txt { color: var(--success); }
   </style>
 </head>
 <body>
@@ -257,6 +252,7 @@
         <div id="vista-agentes" style="display: none;">
           <select id="filtro-ranking" onchange="actualizarTablaRanking()">
             <option value="global">🌍 Top 10 Global (Puntos Totales)</option>
+            <option value="torre">🏢 Top 10 Constructores (Pesca-Tower)</option>
             <option value="parejas">🃏 Top 10 Memoria (Pesca-Parejas)</option>
             <option value="zip">⚡ Top 10 más Rápidos (Pesca-Zip)</option>
             <option value="wordle">🧠 Top 10 más Eficientes (Pesca-Wordle)</option>
@@ -286,8 +282,15 @@
 
     <div id="sec-juegos" class="seccion-lobby">
       <h2>Retos Activos</h2>
+
+      <!-- NUEVO JUEGO: TOWER -->
+      <div class="card-container" style="margin-top: 0; border: 2px solid var(--primary);">
+        <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🏢 Pesca-Tower (NUEVO)</h3>
+        <p style="font-size: 13px; color:var(--text-muted);">Apila los bloques lo más alto posible. Solo ganas puntos si superas tu propio récord histórico (+10pts por nivel). ¿Podrás batir el récord mundial?</p>
+        <button class="btn-juego" style="background-color: var(--primary);" onclick="abrirTorre()">JUGAR PESCA-TOWER</button>
+      </div>
       
-      <div class="card-container" style="margin-top: 0;">
+      <div class="card-container">
         <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🎡 Ruleta de la Suerte</h3>
         <p style="font-size: 13px; color:var(--text-muted);">El primer tiro del día es GRATIS. Los siguientes cuestan puntos de tu marcador.</p>
         <div id="ruleta-box">❓❓❓</div>
@@ -358,13 +361,33 @@
     </nav>
   </div>
 
+  <!-- PANTALLA TORRE (STACK) -->
+  <div id="pantalla-torre" class="screen">
+    <div class="wordle-header">
+        <button class="btn-volver" onclick="cerrarTorre()">⬅️ VOLVER</button>
+        <h2 style="margin:0; color:var(--primary);">PESCA-TOWER</h2>
+        <div style="width: 70px;"></div>
+    </div>
+    
+    <div class="torre-info">
+        <span>Nivel: <strong id="torre-score-txt">0</strong></span>
+        <span>Récord: <strong id="torre-record-txt">0</strong></span>
+    </div>
+
+    <p style="font-size: 13px; color:var(--text-muted); margin-top:0; margin-bottom: 10px;">Toca el área de juego para soltar el bloque. Pierdes lo que quede fuera.</p>
+
+    <!-- EL LIENZO DEL JUEGO -->
+    <canvas id="canvas-torre" width="300" height="400"></canvas>
+    
+    <button id="btn-iniciar-torre" class="btn-juego" style="margin-top: 20px; background-color: var(--success);" onclick="arrancarPartidaTorre()">▶️ EMPEZAR PARTIDA</button>
+  </div>
+
   <!-- PANTALLA WORDLE -->
   <div id="pantalla-wordle" class="screen">
     <div class="wordle-header">
       <button class="btn-volver" onclick="cerrarWordle()">⬅️ VOLVER</button>
       <h2 style="margin:0; color:var(--primary);">PESCA-WORDLE</h2>
       <div style="width: 70px;"></div> 
-      
     </div>
     <p style="font-size: 13px; color:var(--text-muted); margin-bottom: 5px;">Usa palabras de 5 letras para adivinar la palabra del dia.</p>
     <p style="font-size: 12px; color:var(--text-muted); margin-top: 0; font-weight: bold;">Letra en Verde, esta en su posicion. Letra Naranja, no esta en su posicion. Letra gris, no esta en la palabra.</p>
@@ -596,14 +619,13 @@
         if (ultimoDia === ayer) {
             rachaActual++;
         } else {
-            rachaActual = 1; // Se resetea si pasó más de un día
+            rachaActual = 1; 
         }
         
         localStorage.setItem('racha_ultimo_dia', hoy);
         localStorage.setItem('racha_contador', rachaActual);
         document.getElementById('racha-dias-num').innerText = rachaActual;
         
-        // Calcular puntos (Escala simple, tope máximo de 200)
         let puntosGanados = 50 + (rachaActual * 10);
         if (puntosGanados > 200) puntosGanados = 200;
         
@@ -652,7 +674,6 @@
       document.getElementById('racha-dias').style.display = 'flex';
       document.getElementById('racha-dias-num').innerText = parseInt(localStorage.getItem('racha_contador')) || 0;
       
-      // FIX: Asegurar que la alerta se muestra al cambiar al lobby si el Boss está vivo
       if (typeof bossActivo !== 'undefined' && bossActivo && bossVidaActual > 0) {
           document.getElementById('alerta-boss').style.display = 'flex';
       }
@@ -780,11 +801,9 @@
             bossEtapaActual = parseInt(datos.boss.etapa) || 1;
             bossVidaMaxima = parseInt(datos.boss.vidaMaxima) || 1000000;
             
-            // FIX: Evitar que una celda vacía o nula asigne 0 y esconda al Boss (Falsa Muerte)
             let vidaRecibida = parseInt(datos.boss.vidaActual);
             bossVidaActual = isNaN(vidaRecibida) ? bossVidaMaxima : vidaRecibida;
             
-            // FRENESÍ (BUFF DE EMPRESA)
             if (datos.boss.frenesiRestante > 0) {
                 activarFrenesiLocal(datos.boss.frenesiRestante);
             } else {
@@ -793,7 +812,6 @@
                 clearInterval(frenesiTimerLocal);
             }
 
-            // FIX: Actualizamos el texto. Si estamos en el lobby, encendemos la alerta.
             document.getElementById('alerta-boss-txt').innerText = datos.boss.texto || "¡HACKEO EN CURSO!";
             if (bossActivo && bossVidaActual > 0 && document.getElementById('pantalla-lobby').classList.contains('active')) {
                 document.getElementById('alerta-boss').style.display = 'flex';
@@ -812,7 +830,6 @@
 
             document.getElementById('boss-img').src = 'etapa' + bossEtapaActual + '.png';
             
-            // NOMBRES DEL BOSS
             let nomBoss = "Fase " + bossEtapaActual;
             if(bossEtapaActual == 1) nomBoss = "EL H4CK3R";
             else if(bossEtapaActual == 2) nomBoss = "AUDITORÍA IFS";
@@ -928,7 +945,7 @@
     }
 
     // =========================================================================
-    // RANKING CON TENDENCIAS
+    // RANKING CON TENDENCIAS (NUEVO FILTRO TORRE AÑADIDO)
     // =========================================================================
     function actualizarTablaRanking() {
         const tablaBody = document.getElementById('tabla-agentes-body');
@@ -946,6 +963,15 @@
                 rankingCompleto.sort((a, b) => b.valor - a.valor);
             }
         } 
+        else if (filtro === "torre") {
+            etiquetaColumna = "Nivel"; sufijoValor = " blq";
+            if (ultimosDatosServidor.rankingTorre) {
+                rankingCompleto = ultimosDatosServidor.rankingTorre;
+                rankingCompleto.sort((a, b) => b.valor - a.valor);
+            } else {
+                tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Esperando sincronización de constructores...</td></tr>"; return;
+            }
+        }
         else if (filtro === "parejas") {
             etiquetaColumna = "Movimientos"; sufijoValor = " movs";
             if (ultimosDatosServidor.rankingParejas) {
@@ -1195,7 +1221,6 @@
             let c2 = cartasVolteadas[1];
 
             if (c1.dataset.icono === c2.dataset.icono) {
-                // Acierto
                 setTimeout(() => {
                     c1.querySelector('.parejas-back').classList.add('matched');
                     c2.querySelector('.parejas-back').classList.add('matched');
@@ -1206,7 +1231,6 @@
                     comprobarVictoriaParejas();
                 }, 400);
             } else {
-                // Fallo
                 setTimeout(() => {
                     c1.classList.remove('flipped');
                     c2.classList.remove('flipped');
@@ -1341,7 +1365,229 @@
     }
 
     // =========================================================================
-    // RULETA, WORDLE Y TRIVIAL
+    // JUEGO PESCA-TOWER (STACK)
+    // =========================================================================
+    let torreCanvas, torreCtx;
+    let torreAnimId;
+    let torreNivel = 0;
+    let torreBloques = [];
+    let torreRestos = [];
+    let torreBloqueActivo = null;
+    let torreDir = 1;
+    let torreVelocidad = 3;
+    let torreJugando = false;
+    let torreRecordPersonal = parseInt(localStorage.getItem('torre_record')) || 0;
+
+    function abrirTorre() {
+        document.getElementById('pantalla-lobby').classList.remove('active');
+        document.getElementById('pantalla-torre').classList.add('active');
+        document.getElementById('puntos-esquina').style.display = 'none';
+        document.getElementById('racha-dias').style.display = 'none';
+        document.getElementById('alerta-boss').style.display = 'none';
+        window.scrollTo(0,0);
+
+        torreRecordPersonal = parseInt(localStorage.getItem('torre_record')) || 0;
+        document.getElementById('torre-record-txt').innerText = torreRecordPersonal;
+        document.getElementById('torre-score-txt').innerText = 0;
+        
+        torreCanvas = document.getElementById('canvas-torre');
+        torreCtx = torreCanvas.getContext('2d');
+        torreCtx.clearRect(0,0, torreCanvas.width, torreCanvas.height);
+        
+        // Setup listener once
+        if(!torreCanvas.hasAttribute('data-listened')) {
+            torreCanvas.addEventListener('pointerdown', clickTorre);
+            torreCanvas.setAttribute('data-listened', 'true');
+        }
+
+        document.getElementById('btn-iniciar-torre').style.display = 'block';
+    }
+
+    function cerrarTorre() {
+        torreJugando = false;
+        if(torreAnimId) cancelAnimationFrame(torreAnimId);
+        document.getElementById('pantalla-torre').classList.remove('active');
+        document.getElementById('pantalla-lobby').classList.add('active');
+        document.getElementById('puntos-esquina').style.display = 'flex';
+        document.getElementById('racha-dias').style.display = 'flex';
+        if (bossActivo && bossVidaActual > 0) document.getElementById('alerta-boss').style.display = 'flex';
+        window.scrollTo(0,0);
+    }
+
+    function arrancarPartidaTorre() {
+        document.getElementById('btn-iniciar-torre').style.display = 'none';
+        torreNivel = 0;
+        torreVelocidad = 3;
+        torreBloques = [{ x: 50, y: 350, w: 200, h: 30, color: '#003366' }]; // Base
+        torreRestos = [];
+        
+        document.getElementById('torre-score-txt').innerText = 0;
+        crearBloqueTorre(200, 50);
+        
+        torreJugando = true;
+        if(torreAnimId) cancelAnimationFrame(torreAnimId);
+        loopTorre();
+    }
+
+    function crearBloqueTorre(width, lastX) {
+        // Aumentar velocidad progresivamente
+        torreVelocidad += 0.15;
+        torreDir = Math.random() > 0.5 ? 1 : -1;
+        let startX = torreDir === 1 ? 0 : torreCanvas.width - width;
+        let colorBloque = `hsl(${(torreNivel * 15) % 360}, 70%, 50%)`;
+        
+        torreBloqueActivo = {
+            x: startX,
+            y: 350 - ((torreNivel + 1) * 30),
+            w: width,
+            h: 30,
+            color: colorBloque
+        };
+    }
+
+    function loopTorre() {
+        if(!torreJugando) return;
+
+        // Movimiento
+        torreBloqueActivo.x += (torreVelocidad * torreDir);
+        if (torreBloqueActivo.x <= 0) {
+            torreBloqueActivo.x = 0;
+            torreDir = 1;
+        } else if (torreBloqueActivo.x + torreBloqueActivo.w >= torreCanvas.width) {
+            torreBloqueActivo.x = torreCanvas.width - torreBloqueActivo.w;
+            torreDir = -1;
+        }
+
+        // Físicas de los restos que caen
+        for(let i=torreRestos.length-1; i>=0; i--) {
+            let r = torreRestos[i];
+            r.vy += 0.5; // Gravedad
+            r.y += r.vy;
+            r.x += r.vx;
+            // Eliminar si sale de pantalla para no saturar memoria
+            if(r.y > torreCanvas.height + 200) torreRestos.splice(i, 1);
+        }
+
+        dibujarTorre();
+        torreAnimId = requestAnimationFrame(loopTorre);
+    }
+
+    function dibujarTorre() {
+        torreCtx.clearRect(0,0, torreCanvas.width, torreCanvas.height);
+        
+        // Offset de cámara
+        let cameraY = Math.max(0, (torreNivel - 7) * 30);
+
+        // Dibujar pila
+        for (let b of torreBloques) {
+            torreCtx.fillStyle = b.color;
+            torreCtx.fillRect(b.x, b.y + cameraY, b.w, b.h);
+            torreCtx.strokeStyle = 'rgba(0,0,0,0.2)';
+            torreCtx.strokeRect(b.x, b.y + cameraY, b.w, b.h);
+        }
+
+        // Dibujar restos cayendo
+        for (let r of torreRestos) {
+            torreCtx.fillStyle = r.color;
+            torreCtx.globalAlpha = 0.7;
+            torreCtx.fillRect(r.x, r.y + cameraY, r.w, r.h);
+            torreCtx.globalAlpha = 1.0;
+        }
+
+        // Dibujar bloque activo
+        torreCtx.fillStyle = torreBloqueActivo.color;
+        torreCtx.fillRect(torreBloqueActivo.x, torreBloqueActivo.y + cameraY, torreBloqueActivo.w, torreBloqueActivo.h);
+        torreCtx.strokeStyle = 'rgba(0,0,0,0.2)';
+        torreCtx.strokeRect(torreBloqueActivo.x, torreBloqueActivo.y + cameraY, torreBloqueActivo.w, torreBloqueActivo.h);
+    }
+
+    function clickTorre(e) {
+        if(!torreJugando) return;
+        
+        let anterior = torreBloques[torreBloques.length - 1];
+        let actual = torreBloqueActivo;
+
+        let left = Math.max(anterior.x, actual.x);
+        let right = Math.min(anterior.x + anterior.w, actual.x + actual.w);
+        let overlap = right - left;
+
+        if (overlap <= 0) {
+            // Game Over
+            torreJugando = false;
+            
+            // Añadir el bloque entero como resto que cae para efecto visual
+            torreRestos.push({
+                x: actual.x, y: actual.y, w: actual.w, h: actual.h,
+                vx: 0, vy: 0, color: actual.color
+            });
+            torreBloqueActivo = null;
+            dibujarTorre(); // Dibujar el frame final cayendo
+            
+            setTimeout(procesarFinTorre, 1000); // Esperar un segundo de drama
+            return;
+        }
+
+        // Cortar y guardar
+        let restoAncho = actual.w - overlap;
+        if (restoAncho > 0) {
+            let restoX = actual.x < anterior.x ? actual.x : right;
+            let velX = actual.x < anterior.x ? -2 : 2; // Salta un poco hacia el lado que sobra
+            torreRestos.push({
+                x: restoX, y: actual.y, w: restoAncho, h: actual.h,
+                vx: velX, vy: -3, color: actual.color
+            });
+        }
+
+        torreBloques.push({
+            x: left, y: actual.y, w: overlap, h: actual.h, color: actual.color
+        });
+
+        torreNivel++;
+        document.getElementById('torre-score-txt').innerText = torreNivel;
+        
+        crearBloqueTorre(overlap, left);
+    }
+
+    function procesarFinTorre() {
+        let globalRecord = 0;
+        if (ultimosDatosServidor && ultimosDatosServidor.rankingTorre && ultimosDatosServidor.rankingTorre.length > 0) {
+            globalRecord = ultimosDatosServidor.rankingTorre[0].valor;
+        }
+
+        if (torreNivel > torreRecordPersonal) {
+            let nivelesExtra = torreNivel - torreRecordPersonal;
+            let ptsGanados = nivelesExtra * 10;
+            let esMundial = false;
+
+            if (torreNivel > globalRecord && globalRecord > 0 && torreRecordPersonal <= globalRecord) {
+                ptsGanados += 100;
+                esMundial = true;
+            }
+
+            torreRecordPersonal = torreNivel;
+            localStorage.setItem('torre_record', torreRecordPersonal);
+            document.getElementById('torre-record-txt').innerText = torreRecordPersonal;
+
+            let msg = esMundial 
+                ? `¡NUEVO RÉCORD MUNDIAL!\nSuperaste tu marca en ${nivelesExtra} niveles (+${nivelesExtra*10}pts) y rompiste el récord histórico (+100pts extra).`
+                : `¡Has mejorado tu récord personal en ${nivelesExtra} niveles!\nSumas ${ptsGanados} puntos a tu marcador.`;
+
+            setTimeout(() => {
+                lanzarConfeti();
+                showModal("¡Arquitecto Maestro!", msg, "success");
+                enviarPuntosAJuego("Récord Torre", ptsGanados, torreNivel.toString());
+            }, 300);
+
+        } else {
+            showModal("Torre Caída", `Has llegado al nivel ${torreNivel}.\nNo has superado tu récord personal de ${torreRecordPersonal}.\n¡Inténtalo otra vez!`, "info");
+        }
+
+        document.getElementById('btn-iniciar-torre').style.display = 'block';
+        document.getElementById('btn-iniciar-torre').innerText = "REINTENTAR";
+    }
+
+    // =========================================================================
+    // RULETA, WORDLE Y TRIVIAL (Mantenidos)
     // =========================================================================
     function obtenerCosteGiroActual() { let hoy = new Date().toDateString(); let ultimoDia = localStorage.getItem('ruleta_dia'); let tiradasHoy = 0; if (ultimoDia === hoy) tiradasHoy = parseInt(localStorage.getItem('ruleta_tiradas')) || 0; else localStorage.setItem('ruleta_dia', hoy); if (tiradasHoy === 0) return 0; if (tiradasHoy === 1) return 20; if (tiradasHoy === 2) return 50; return 50 * Math.pow(2, tiradasHoy - 2); }
     function actualizarInterfazRuleta() { let coste = obtenerCosteGiroActual(); let btn = document.getElementById('btn-ruleta'); let txtCoste = document.getElementById('coste-ruleta-txt'); if (coste === 0) { txtCoste.innerHTML = `Coste próximo giro: <span style="color:var(--success)">GRATIS</span>`; btn.disabled = false; } else { txtCoste.innerHTML = `Coste próximo giro: <span style="color:var(--error-text)">${coste} pts</span>`; if (misPuntosActuales < coste) { txtCoste.innerHTML += `<br><span style="color:var(--error-text); font-size:11px;">⚠️ SALDO INSUFICIENTE PARA JUGAR</span>`; btn.disabled = true; } else { btn.disabled = false; } } }
@@ -1402,8 +1648,8 @@
         }, 1500); 
     }
 
-    const tablero = document.getElementById('tablero');
-    if (tablero) { for (let i = 0; i < 6; i++) { let fila = document.createElement('div'); fila.className = 'fila'; for (let j = 0; j < 5; j++) { let casilla = document.createElement('div'); casilla.className = 'casilla'; casilla.id = `casilla-${i}-${j}`; fila.appendChild(casilla); } tablero.appendChild(fila); } }
+    const tableroWordle = document.getElementById('tablero');
+    if (tableroWordle) { for (let i = 0; i < 6; i++) { let fila = document.createElement('div'); fila.className = 'fila'; for (let j = 0; j < 5; j++) { let casilla = document.createElement('div'); casilla.className = 'casilla'; casilla.id = `casilla-${i}-${j}`; fila.appendChild(casilla); } tableroWordle.appendChild(fila); } }
 
     function presionarTecla(letra) { if (juegoTerminado || letrasActuales.length >= 5) return; letrasActuales.push(letra); actualizarFila(); }
     function borrarLetra() { if (juegoTerminado || letrasActuales.length === 0) return; letrasActuales.pop(); actualizarFila(); }
@@ -1492,7 +1738,7 @@
     }
 
     // =========================================================================
-    // LÓGICA DEL CLICKER BOSS (ACTUALIZADO CON HAPTICS, CRÍTICOS Y FRENESÍ)
+    // LÓGICA DEL CLICKER BOSS
     // =========================================================================
     function cambiarTabBoss(tab) {
         document.getElementById('boss-tienda').style.display = 'none';
@@ -1541,7 +1787,6 @@
         }
     }
 
-    // --- FUNCIÓN PARA REPARTIR EL BOTÍN ---
     function reclamarBotinBoss() {
         let botinReclamadoKey = 'botin_reclamado_fase_' + bossEtapaActual;
         if (localStorage.getItem(botinReclamadoKey)) return; 
@@ -1577,7 +1822,6 @@
         enviarPuntosAJuego("Botín Boss", miRecompensa, "Recompensa Fase: " + bossEtapaActual);
     }
 
-    // --- ACTIVAR FRENESÍ VISUAL ---
     function activarFrenesiLocal(segundosRestantes) {
         if (segundosRestantes <= 0) return;
         frenesiActivo = true;
@@ -1609,7 +1853,7 @@
 
         document.getElementById('btn-upg-frenesi').disabled = true;
         enviarPuntosAJuego("ComprarFrenesi", -2500, "Buff Global");
-        activarFrenesiLocal(30); // Activamos 30 seg localmente al instante
+        activarFrenesiLocal(30); 
         lanzarConfeti();
     }
 
@@ -1631,10 +1875,8 @@
             }, 1000);
         }
 
-        // Bucle de la "Ilusión Multijugador"
         ilusionMultijugadorInterval = setInterval(() => {
             if (bossVidaActual > 0 && Math.random() > 0.4) {
-                // Genera 1 o 2 golpes falsos aleatorios
                 mostrarGolpeVisual(Math.floor(Math.random() * 50) + 10, false, true, 0, 0);
             }
         }, 600);
@@ -1666,18 +1908,15 @@
         let cantidadFinal = cantidadBase;
         let esCritico = false;
 
-        // 1. Modificador: Buff Global FRENESÍ (x2)
         if (frenesiActivo) cantidadFinal *= 2;
 
-        // 2. Modificador: Crítico y Vibración
         if (esManual) {
-            // 10% de posibilidad de crítico
             if (Math.random() < 0.10) {
                 esCritico = true;
-                cantidadFinal *= 2; // Crítico duplica
-                if (navigator.vibrate) navigator.vibrate([30, 50, 30]); // Vibración fuerte/doble
+                cantidadFinal *= 2; 
+                if (navigator.vibrate) navigator.vibrate([30, 50, 30]); 
             } else {
-                if (navigator.vibrate) navigator.vibrate(20); // Vibración normal
+                if (navigator.vibrate) navigator.vibrate(20); 
             }
         }
 
@@ -1694,7 +1933,6 @@
         void img.offsetWidth; 
         img.classList.add('shake-boss');
 
-        // Muestra el número visualmente
         mostrarGolpeVisual(cantidadFinal, esCritico, false, x, y);
 
         if (bossVidaActual === 0) {
@@ -1706,7 +1944,6 @@
         }
     }
 
-    // Función separada para renderizar los números flotantes (para manual, auto y multijugador)
     function mostrarGolpeVisual(cantidad, esCritico, esAjeno, x, y) {
         let img = document.getElementById('boss-img');
         let txt = document.createElement('div');

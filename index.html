@@ -142,7 +142,6 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 .shake-boss { animation: shake-boss 0.15s cubic-bezier(.36,.07,.19,.97) both; }
 @keyframes shake-boss { 0% { transform: translate(0,0) rotate(0deg); } 25% { transform: translate(-5px, 3px) rotate(-2deg); } 50% { transform: translate(5px, -3px) rotate(2deg); } 75% { transform: translate(-3px, -2px) rotate(-1deg); } 100% { transform: translate(0,0) rotate(0deg); } }
 
-/* Efecto Crítico y Efecto Multijugador */
 .float-dmg.crit { color: #ffcc00; font-size: 28px; text-shadow: 0 0 5px #d93025, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; z-index: 10003; animation: floatCrit 1.8s ease-out forwards; }
 .float-dmg.ajeno { color: #9aa0a6; font-size: 14px; opacity: 0.6; z-index: 10001; }
 .float-dmg { position: fixed; color: var(--error-text); font-weight: 900; font-size: 18px; pointer-events: none; z-index: 10002; text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff; animation: floatUpDmg 1.8s ease-out forwards; white-space: nowrap; }
@@ -151,12 +150,11 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 @keyframes floatCrit { 0% { opacity: 1; transform: translateY(0) scale(1.5); } 70% { opacity: 1; transform: translateY(-50px) scale(1.8); } 100% { opacity: 0; transform: translateY(-80px) scale(2); } }
 .tienda-fila { display: flex; justify-content: space-between; align-items: center; background: #f1f3f4; padding: 10px; border-radius: 8px; margin-bottom: 8px; }
 
-/* ESTILO FRENESÍ (MODO BUFF GLOBAL) */
 .frenesi-banner { background: #d93025; color: white; padding: 10px; font-weight: 900; width: 100%; box-sizing: border-box; text-transform: uppercase; letter-spacing: 2px; animation: flash-rojo 0.5s infinite alternate; border-radius: 8px; margin-bottom: 10px; display: none; box-shadow: 0 0 15px rgba(217, 48, 37, 0.8); }
 @keyframes flash-rojo { from { background-color: #d93025; transform: scale(1); } to { background-color: #ff5252; transform: scale(1.02); } }
 
 /* =========================================
-   NUEVOS ESTILOS DEL JUEGO TOWER BLOCKS
+   ESTILOS DEL JUEGO TOWER BLOCKS
    ========================================= */
 #pantalla-torre { padding: 0; background-color: #D0CBC7; overflow: hidden; position: relative; }
 #pantalla-torre .wordle-header { position: absolute; top: 20px; left: 20px; width: calc(100% - 40px); z-index: 999; margin: 0; }
@@ -269,6 +267,8 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 <option value="parejas">🃏 Top 10 Memoria (Pesca-Parejas)</option>
 <option value="zip">⚡ Top 10 más Rápidos (Pesca-Zip)</option>
 <option value="wordle">🧠 Top 10 más Eficientes (Pesca-Wordle)</option>
+<!-- AQUI ESTÁ LA OPCIÓN DE TOWER PARA EL DESPLEGABLE -->
+<option value="tower">🏢 Top 10 Arquitectos (Pesca-Tower)</option>
 </select>
 <table class="tabla-top" id="tabla-agentes-body">
 <!-- Se rellena por JSS -->
@@ -295,10 +295,9 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 <div id="sec-juegos" class="seccion-lobby">
 <h2>Retos Activos</h2>
 
-<!-- NUEVO BOTÓN TOWER BLOCKS -->
 <div class="card-container" style="margin-top: 0; border: 2px solid #8c52ff;">
 <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🏢 Pesca-Tower</h3>
-<p style="font-size: 13px; color:var(--text-muted);">Apila los bloques lo más alto posible tocando la pantalla en el momento justo.</p>
+<p style="font-size: 13px; color:var(--text-muted);">Apila los bloques lo más alto posible. Solo ganas puntos al superar tu récord personal.</p>
 <button class="btn-juego" style="background-color: #8c52ff;" onclick="abrirTorre()">JUGAR TOWER</button>
 </div>
 
@@ -373,7 +372,7 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 </div>
 
 
-<!-- PANTALLA TOWER BLOCKS (NUEVO) -->
+<!-- PANTALLA TOWER BLOCKS -->
 <div id="pantalla-torre" class="screen">
     <div class="wordle-header">
         <button class="btn-volver" onclick="cerrarTorre()">⬅️ VOLVER</button>
@@ -520,7 +519,7 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 </div>
 
 <script>
-const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbyrIU929RayINbPHf1yjxGAHytwTZg6sxNMcQIbqM-rFrrenRBKd3EP5nnVtWNvSt-tXw/exec";
+const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbwKAn6Zb3vxflfVh1L1WeVRDy0I-_Iy6YjFXSljgXolSIW-DZst8opmZEys_oEavatAGQ/exec";
 
 // VARIABLES GLOBALES GENERALES
 let palabraSecretaDelDia = ""; let cargandoInicial = false; let misPuntosActuales = 0; let trivialActual = { pregunta: "", a: "", b: "", c: "", d: "", respuesta: "" }; let juegoTerminado = false; let intentos = 0; let letrasActuales = []; let diccionarioLocal = [];
@@ -617,7 +616,6 @@ rachaActual = 1; // Se resetea si pasó más de un día
 localStorage.setItem('racha_ultimo_dia', hoy);
 localStorage.setItem('racha_contador', rachaActual);
 document.getElementById('racha-dias-num').innerText = rachaActual;
-// Calcular puntos (Escala simple, tope máximo de 200)
 let puntosGanados = 50 + (rachaActual * 10);
 if (puntosGanados > 200) puntosGanados = 200;
 lanzarConfeti();
@@ -908,7 +906,7 @@ if (txtMision) txtMision.innerText = "Sincronizando misiones, ¡hazte una foto l
 }
 
 // =========================================================================
-// RANKING CON TENDENCIAS
+// RANKING CON TENDENCIAS (Seguro contra mutaciones)
 // =========================================================================
 function actualizarTablaRanking() {
 const tablaBody = document.getElementById('tabla-agentes-body');
@@ -928,15 +926,25 @@ rankingCompleto.sort((a, b) => b.valor - a.valor);
 }
 else if (filtro === "parejas") {
 etiquetaColumna = "Movimientos"; sufijoValor = " movs";
-if (ultimosDatosServidor.rankingParejas) { rankingCompleto = ultimosDatosServidor.rankingParejas; rankingCompleto.sort((a, b) => a.valor - b.valor); } else { tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Estamos procesando las jugadas de Parejas...</td></tr>"; return; }
+if (ultimosDatosServidor.rankingParejas) { rankingCompleto = [...ultimosDatosServidor.rankingParejas]; rankingCompleto.sort((a, b) => a.valor - b.valor); } else { tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Estamos procesando las jugadas de Parejas...</td></tr>"; return; }
 }
 else if (filtro === "zip") {
 etiquetaColumna = "Tiempo"; sufijoValor = "s";
-if (ultimosDatosServidor.rankingZip) { rankingCompleto = ultimosDatosServidor.rankingZip; rankingCompleto.sort((a, b) => a.valor - b.valor); } else { tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Estamos procesando los tiempos del Zip...</td></tr>"; return; }
+if (ultimosDatosServidor.rankingZip) { rankingCompleto = [...ultimosDatosServidor.rankingZip]; rankingCompleto.sort((a, b) => a.valor - b.valor); } else { tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Estamos procesando los tiempos del Zip...</td></tr>"; return; }
 }
 else if (filtro === "wordle") {
 etiquetaColumna = "Puntos";
-if (ultimosDatosServidor.rankingWordle) { rankingCompleto = ultimosDatosServidor.rankingWordle; rankingCompleto.sort((a, b) => b.valor - a.valor); } else { tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Estamos procesando las jugadas de Wordle...</td></tr>"; return; }
+if (ultimosDatosServidor.rankingWordle) { rankingCompleto = [...ultimosDatosServidor.rankingWordle]; rankingCompleto.sort((a, b) => b.valor - a.valor); } else { tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Estamos procesando las jugadas de Wordle...</td></tr>"; return; }
+}
+else if (filtro === "tower") {
+etiquetaColumna = "Bloques"; sufijoValor = " blqs";
+if (ultimosDatosServidor.rankingTower) { 
+rankingCompleto = [...ultimosDatosServidor.rankingTower]; 
+rankingCompleto.sort((a, b) => b.valor - a.valor); 
+} else { 
+tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Estamos procesando los récords de Pesca-Tower...</td></tr>"; 
+return; 
+}
 }
 
 let hoy = new Date().toDateString();
@@ -1476,7 +1484,6 @@ var Game = /** @class */ (function () {
       if (e.keyCode == 32 && document.getElementById('pantalla-torre').classList.contains('active')) _this.onAction();
     });
     
-    // Capturar clics y toques pero evitar el botón de volver
     this.mainContainer.addEventListener("pointerdown", function (e) {
       if(e.target.tagName.toLowerCase() === 'button' || e.target.closest('.btn-volver')) return;
       e.preventDefault();
@@ -1546,20 +1553,50 @@ var Game = /** @class */ (function () {
     this.stage.setCamera(this.blocks.length * 2);
     if (this.blocks.length >= 5) this.instructions.classList.add("hide");
   };
+
   Game.prototype.endGame = function () {
     this.updateState(this.STATES.ENDED);
     
-    // SISTEMA DE PUNTOS AUTOMÁTICO (10 PTS POR BLOQUE)
     var finalScore = this.blocks.length - 1;
     if (finalScore > 0) {
-        var puntosGanados = finalScore * 10;
-        setTimeout(function() {
-            showModal("¡Juego Terminado!", "Has apilado " + finalScore + " bloques.\n\n¡Ganas " + puntosGanados + " puntos!", "success");
-            lanzarConfeti();
-            enviarPuntosAJuego("Pesca-Tower", puntosGanados, "Bloques: " + finalScore);
-        }, 1000);
+        var oldRecord = parseInt(localStorage.getItem('tower_record_personal')) || 0;
+        
+        var top1Score = 0;
+        if (ultimosDatosServidor && ultimosDatosServidor.rankingTower && ultimosDatosServidor.rankingTower.length > 0) {
+            var copyRanking = [...ultimosDatosServidor.rankingTower].sort(function(a, b) { return b.valor - a.valor; });
+            top1Score = copyRanking[0].valor;
+        }
+        
+        if (finalScore > oldRecord) {
+            var nuevosBloques = finalScore - oldRecord;
+            var puntosGanados = nuevosBloques * 10;
+            var esNuevoTop1 = false;
+            
+            var mensaje = "¡Nuevo récord personal! Has llegado a " + finalScore + " bloques.\n\nGanas " + puntosGanados + " puntos (" + nuevosBloques + " niveles nuevos).";
+            
+            if (finalScore > top1Score && oldRecord <= top1Score && top1Score > 0) {
+                puntosGanados += 100;
+                mensaje += "\n\n👑 ¡HAS SUPERADO EL TOP 1 GLOBAL! (+100 PTS EXTRA)";
+                esNuevoTop1 = true;
+            }
+            
+            localStorage.setItem('tower_record_personal', finalScore);
+            
+            setTimeout(function() {
+                lanzarConfeti(); 
+                showModal("¡Récord Superado!", mensaje, "success");
+                // AQUÍ ENVÍAMOS "finalScore" directo sin la palabra "Bloques:"
+                enviarPuntosAJuego("Éxito Tower", puntosGanados, finalScore);
+            }, 1000);
+            
+        } else {
+            setTimeout(function() {
+                showModal("Fin del Juego", "Has apilado " + finalScore + " bloques.\n\nNo has superado tu récord personal de " + oldRecord + " bloques. ¡Sigue intentándolo para ganar más puntos!", "info");
+            }, 1000);
+        }
     }
   };
+
   Game.prototype.tick = function () {
     var _this = this;
     this.blocks[this.blocks.length - 1].tick();

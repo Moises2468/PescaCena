@@ -209,7 +209,7 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;">
 <img src="logo.png" class="logo-corporativo" alt="PROYECTO ENERO">
 <h1>PROYECTO CENA</h1>
-<p class="subtitulo">Indica tus datos</p>
+<p class="subtitulo">Indica tus datos para entrar</p>
 <input type="text" id="nombre" placeholder="Nombre/Apodo" required>
 <select id="departamento">
 <option value="" disabled selected>Selecciona tu departamento...</option>
@@ -217,7 +217,13 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 <option value="Mantenimiento">Mantenimiento</option>
 <option value="Oficinas">Oficinas</option>
 </select>
-<input type="password" id="clave-acceso" placeholder="Contraseña de acceso" required style="text-align: center; font-weight: bold; letter-spacing: 1px;">
+<!-- NUEVO: DESPLEGABLE DE ASISTENCIA (SIN CONTRASEÑA) -->
+<select id="asistencia" required>
+<option value="" disabled selected>¿Vas a venir a la cena?</option>
+<option value="Sí">Sí, ¡allí estaré!</option>
+<option value="Quizá">Quizá, no lo sé aún</option>
+<option value="No">No puedo ir</option>
+</select>
 <button id="btn-entrar" onclick="entrar()">ACCEDER</button>
 </div>
 </div>
@@ -231,6 +237,21 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 <div class="card-container" style="text-align: left;">
 <h3 style="margin-top:0; color:var(--primary); font-size:16px;">👋 ¡Bienvenido!</h3>
 <p style="font-size: 14px; color:var(--text-muted); margin-bottom: 0;">Vota en los Pesca-Oscars, haz puntos para ti y tu equipo, envia fotos... y mas!</p>
+</div>
+
+<!-- NUEVO: GRÁFICO DE ASISTENCIA -->
+<div class="card-container" style="text-align: left; margin-top: 15px;">
+<h3 style="margin-top:0; color:var(--primary); font-size:16px;">📊 Asistencia a la Cena</h3>
+<div style="display:flex; justify-content:space-between; font-size:13px; font-weight:bold; margin-bottom:8px; color:var(--text-muted);">
+<span>Sí (<span id="count-si" style="color:var(--success)">0</span>)</span>
+<span>Quizá (<span id="count-quiza" style="color:#ff9800">0</span>)</span>
+<span>No (<span id="count-no" style="color:var(--error-text)">0</span>)</span>
+</div>
+<div style="width:100%; height:24px; background:#e8eaed; border-radius:12px; display:flex; overflow:hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">
+<div id="bar-si" style="height:100%; background:var(--success); width:0%; transition:width 1s ease-out; display:flex; align-items:center; justify-content:center; color:white; font-size:10px; font-weight:bold;"></div>
+<div id="bar-quiza" style="height:100%; background:#ff9800; width:0%; transition:width 1s ease-out; display:flex; align-items:center; justify-content:center; color:white; font-size:10px; font-weight:bold;"></div>
+<div id="bar-no" style="height:100%; background:var(--error-text); width:0%; transition:width 1s ease-out; display:flex; align-items:center; justify-content:center; color:white; font-size:10px; font-weight:bold;"></div>
+</div>
 </div>
 
 <div class="card-container" id="card-mision" style="border: 2px solid var(--mission); margin-top: 15px; text-align: left;">
@@ -623,31 +644,42 @@ showModal("¡Recompensa Diaria!", `Has reclamado tus puntos por entrar al evento
 enviarPuntosAJuego("Racha Diaria", puntosGanados, "Día " + rachaActual);
 }
 
+// -------------------------------------------------------------
+// CAMBIO IMPORTANTE AQUÍ: YA NO PIDE CONTRASEÑA, PIDE ASISTENCIA
+// -------------------------------------------------------------
 function entrar() {
 const nombreInput = document.getElementById('nombre').value.trim();
 const departamentoInput = document.getElementById('departamento').value;
-const claveInput = document.getElementById('clave-acceso').value.trim();
-if(!nombreInput || !departamentoInput || !claveInput) { showModal("Error", "Introduce todos tus datos para acceder.", "warning"); return; }
-if(claveInput !== "4444") { showModal("Error", "Clave incorrecta. Pide la clave a la organización.", "error"); return; }
+const asistenciaInput = document.getElementById('asistencia').value;
+
+if(!nombreInput || !departamentoInput || !asistenciaInput) { 
+    showModal("Error", "Introduce tu nombre, departamento y si vas a venir a la cena para acceder.", "warning"); 
+    return; 
+}
+
 const btnEntrar = document.getElementById('btn-entrar');
 btnEntrar.disabled = true;
 btnEntrar.innerText = "VERIFICANDO...";
 localStorage.setItem('jugador_nombre', nombreInput);
 localStorage.setItem('jugador_dep', departamentoInput);
+localStorage.setItem('jugador_asistencia', asistenciaInput);
 
 cargarMarcadores((exito) => {
 if (exito) {
-mostrarLobby();
-fetch('https://api.ipify.org?format=json')
-.then(res => res.json())
-.then(data => { enviarPuntosAJuego("Inicio de Sesión", 0, "IP: " + data.ip); })
-.catch(err => { enviarPuntosAJuego("Inicio de Sesión", 0, "IP: Oculta/Bloqueada"); });
+    mostrarLobby();
+    
+    // Solo enviamos la asistencia al Excel si han cambiado su respuesta o es nueva
+    if (localStorage.getItem('asistencia_enviada') !== asistenciaInput) {
+        enviarPuntosAJuego("Asistencia Cena", 0, asistenciaInput);
+        localStorage.setItem('asistencia_enviada', asistenciaInput);
+    }
+
 } else {
-localStorage.removeItem('jugador_nombre');
-localStorage.removeItem('jugador_dep');
-btnEntrar.disabled = false;
-btnEntrar.innerText = "ACCEDER";
-showModal("Error de conexión", "No se ha podido conectar con el servidor. Inténtalo de nuevo.", "error");
+    localStorage.removeItem('jugador_nombre');
+    localStorage.removeItem('jugador_dep');
+    btnEntrar.disabled = false;
+    btnEntrar.innerText = "ACCEDER";
+    showModal("Error de conexión", "No se ha podido conectar con el servidor. Inténtalo de nuevo.", "error");
 }
 });
 }
@@ -792,6 +824,24 @@ const text = document.getElementById('ticker-text');
 if(text) text.innerText = datos.noticiaGlobal;
 if(container) container.style.display = 'block';
 }
+
+// -----------------------------------------------------------------
+// NUEVO: ACTUALIZAR GRÁFICO DE ASISTENCIA A LA CENA
+// -----------------------------------------------------------------
+if (datos.asistenciaStats) {
+    let totalAsistencia = datos.asistenciaStats.si + datos.asistenciaStats.quiza + datos.asistenciaStats.no;
+    
+    document.getElementById('count-si').innerText = datos.asistenciaStats.si;
+    document.getElementById('count-quiza').innerText = datos.asistenciaStats.quiza;
+    document.getElementById('count-no').innerText = datos.asistenciaStats.no;
+    
+    if (totalAsistencia > 0) {
+        document.getElementById('bar-si').style.width = (datos.asistenciaStats.si / totalAsistencia * 100) + '%';
+        document.getElementById('bar-quiza').style.width = (datos.asistenciaStats.quiza / totalAsistencia * 100) + '%';
+        document.getElementById('bar-no').style.width = (datos.asistenciaStats.no / totalAsistencia * 100) + '%';
+    }
+}
+
 
 if (datos.boss) {
 bossActivo = (datos.boss.activo === "SI");
@@ -1585,7 +1635,6 @@ var Game = /** @class */ (function () {
             setTimeout(function() {
                 lanzarConfeti(); 
                 showModal("¡Récord Superado!", mensaje, "success");
-                // AQUÍ ENVÍAMOS "finalScore" directo sin la palabra "Bloques:"
                 enviarPuntosAJuego("Éxito Tower", puntosGanados, finalScore);
             }, 1000);
             

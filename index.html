@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, ">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Proyecto Enero - Pescanova</title>
 
 <!-- Librerías para Pesca-Tower (Tower Blocks) -->
@@ -10,6 +10,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script>
 
 <style>
+.acciones-evento { position:sticky; top:52px; z-index:900; width:100%; max-width:420px; background:#fff8e1; padding:10px 12px; box-sizing:border-box; border:1px solid #ffd166; border-radius:16px; box-shadow:0 5px 18px rgba(0,0,0,.12); margin:0 0 10px; }
+#btn-abrir-votaciones { background:#ffcc00; color:#17324d; width:100%; max-width:none; margin:0; min-height:52px; font-size:16px; box-shadow:none; }
+.voto-ayuda { display:block; color:#6b531b; font-size:12px; line-height:1.35; margin-top:6px; }
+.votaciones-visibles #puntos-esquina, .votaciones-visibles #racha-dias { top:auto; bottom:calc(85px + env(safe-area-inset-bottom, 0px)); }
+.equipo-insignia { display:inline-flex; align-items:center; gap:6px; border-radius:20px; padding:4px 9px; font-size:12px; font-weight:700; background:#eef4fb; }
+.equipo-azul { color:#1252a7; background:#e8f1ff; } .equipo-rojo { color:#a92222; background:#fff0f0; } .equipo-amarillo { color:#6c5200; background:#fff5c8; }
+.perfil-cambiar { background:none; box-shadow:none; color:#003366; width:auto; margin:5px 0 0; padding:4px; font-size:12px; text-transform:none; text-decoration:underline; }
+#perfil-equipo { width:100%; max-width:320px; }
+@media(max-width:480px) { .acciones-evento { top:48px; } .contador { font-size:clamp(23px,7.6vw,38px); letter-spacing:0; } #fecha-cena-info { font-size:13px; } }
+
 [hidden] { display: none !important; }
 .nav-item { flex: 1; min-width: 0; }
 :root {
@@ -59,7 +69,8 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 .barra-bg { width: 65%; background-color: #f1f3f4; border-radius: 10px; overflow: hidden; height: 22px; position: relative; }
 .barra-fill { height: 100%; position: absolute; left: 0; top: 0; border-radius: 10px; transition: width 1s ease-in-out; width: 0%; }
 .puntos-text { position: absolute; right: 8px; top: 3px; font-size: 12px; font-weight: bold; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
-.bg-prod { background-color: #e63946; } .bg-mant { background-color: #457b9d; } .bg-ofic { background-color: #2a9d8f; }
+.bg-azul { background-color: #1769cf; } .bg-rojo { background-color: #c62828; } .bg-amarillo { background-color: #f9c80e; }
+.bg-amarillo + .puntos-text { color:#342b00; text-shadow:none; }
 
 .tabla-top { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
 .tabla-top th, .tabla-top td { padding: 8px 5px; border-bottom: 1px solid #f1f3f4; }
@@ -213,11 +224,11 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 <h1>PROYECTO CENA</h1>
 <p class="subtitulo">Indica tus datos para entrar</p>
 <input type="text" id="nombre" placeholder="Nombre/Apodo" required>
-<select id="departamento">
-<option value="" disabled selected>Selecciona tu departamento...</option>
-<option value="Producción">Producción</option>
-<option value="Mantenimiento">Mantenimiento</option>
-<option value="Oficinas">Oficinas</option>
+<select id="equipo">
+<option value="" disabled selected>Elige el color de tu equipo...</option>
+<option value="Azul">🔵 Equipo Azul</option>
+<option value="Rojo">🔴 Equipo Rojo</option>
+<option value="Amarillo">🟡 Equipo Amarillo</option>
 </select>
 <!-- NUEVO: DESPLEGABLE DE ASISTENCIA (SIN CONTRASEÑA) -->
 <select id="asistencia" required>
@@ -231,11 +242,12 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 </div>
 
 <div id="pantalla-lobby" class="screen">
+<div class="acciones-evento" data-feature="votaciones" hidden><button id="btn-abrir-votaciones" data-feature="votaciones" hidden class="btn-juego" aria-describedby="voto-ayuda" onclick="abrirVotaciones()">🏆 VOTAR PESCA-OSCARS</button><span class="voto-ayuda" id="voto-ayuda">Tu voto cuenta: elige a tus compañeros favoritos</span></div>
 <img src="logo.png" class="logo-corporativo" alt="PROYECTO ENERO" style="width: 120px; margin-top: 5px;">
 <div id="sec-inicio" class="seccion-lobby active-sec">
 <p style="margin:20px 0 0 0; color:var(--text-muted); font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Tiempo para el evento:</p>
 <div class="contador" id="contador-cena">XX:XX</div><p id="fecha-cena-info">Fecha de la cena pendiente de confirmar</p>
-<div class="info-jugador">Usuario: <strong id="nombre-usuario"></strong><br>Área: <strong id="dep-usuario"></strong></div>
+<div class="info-jugador">Usuario: <strong id="nombre-usuario"></strong><br>Equipo: <strong id="equipo-usuario"></strong><br><button class="perfil-cambiar" onclick="document.getElementById('perfil-equipo').hidden=false">Cambiar equipo</button></div><div class="card-container" id="perfil-equipo" hidden><label for="nuevo-equipo">Elige tu equipo</label><select id="nuevo-equipo"><option value="Azul">🔵 Equipo Azul</option><option value="Rojo">🔴 Equipo Rojo</option><option value="Amarillo">🟡 Equipo Amarillo</option></select><button id="btn-equipo" onclick="guardarEquipo()">GUARDAR EQUIPO</button></div>
 <div class="card-container"><h3>Tu asistencia</h3><p id="asistencia-confirmada">Pendiente de guardar</p><select id="cambiar-asistencia" aria-label="Cambiar mi asistencia"><option value="Sí">Sí, asistiré</option><option value="Quizá">Aún no lo sé</option><option value="No">No puedo ir</option></select><button id="btn-asistencia" onclick="guardarAsistencia()">GUARDAR RESPUESTA</button></div><div class="card-container" style="text-align: left;">
 <h3 style="margin-top:0; color:var(--primary); font-size:16px;">👋 ¡Bienvenido!</h3>
 <p style="font-size: 14px; color:var(--text-muted); margin-bottom: 0;">Gracias por confirmar tu asistencia. Aquí encontrarás la información de la cena.</p>
@@ -261,7 +273,7 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 <p id="texto-mision" style="font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 0;">Sincronizando misión...</p>
 </div>
 
-<button id="btn-abrir-votaciones" data-feature="votaciones" hidden class="btn-juego" style="background-color: #ff9800; max-width: 320px;" onclick="abrirVotaciones()">🏆 VOTAR PESCA-OSCARS</button>
+
 
 <div class="card-container" id="caja-nominados" data-feature="nominados" hidden style="display: none; margin-top: 15px; text-align: left;">
 <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🌟 Nominados Finales</h3>
@@ -280,9 +292,9 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 </div>
 <div id="loading-text">Sincronizando información...</div>
 <div id="vista-equipos">
-<div class="equipo-row"><div class="equipo-nombre">Produc.</div><div class="barra-bg"><div id="barra-prod" class="barra-fill bg-prod"></div><span id="pts-prod" class="puntos-text">0 pts</span></div></div>
-<div class="equipo-row"><div class="equipo-nombre">Mantenim.</div><div class="barra-bg"><div id="barra-mant" class="barra-fill bg-mant"></div><span id="pts-mant" class="puntos-text">0 pts</span></div></div>
-<div class="equipo-row"><div class="equipo-nombre">Ofi.</div><div class="barra-bg"><div id="barra-ofic" class="barra-fill bg-ofic"></div><span id="pts-ofic" class="puntos-text">0 pts</span></div></div>
+<div class="equipo-row"><div class="equipo-nombre">🔵 Azul</div><div class="barra-bg"><div id="barra-azul" class="barra-fill bg-azul"></div><span id="pts-azul" class="puntos-text">0 pts</span></div></div>
+<div class="equipo-row"><div class="equipo-nombre">🔴 Rojo</div><div class="barra-bg"><div id="barra-rojo" class="barra-fill bg-rojo"></div><span id="pts-rojo" class="puntos-text">0 pts</span></div></div>
+<div class="equipo-row"><div class="equipo-nombre">🟡 Amarillo</div><div class="barra-bg"><div id="barra-amarillo" class="barra-fill bg-amarillo"></div><span id="pts-amarillo" class="puntos-text">0 pts</span></div></div>
 </div>
 <div id="vista-agentes" style="display: none;">
 <select id="filtro-ranking" onchange="actualizarTablaRanking()">
@@ -615,7 +627,7 @@ function cerrarModal() { document.getElementById('modal-overlay').classList.remo
 // INICIO Y RACHA DE DÍAS (DAILY LOGIN)
 // =========================================================================
 window.onload = function() {
-if(localStorage.getItem('jugador_nombre') && localStorage.getItem('jugador_dep')) {
+if(localStorage.getItem('jugador_nombre') && localStorage.getItem('jugador_equipo')) {
 mostrarLobby();
 cargarMarcadores();
 }
@@ -651,11 +663,11 @@ enviarPuntosAJuego("Racha Diaria", puntosGanados, "Día " + rachaActual);
 // -------------------------------------------------------------
 function entrar() {
 const nombreInput = document.getElementById('nombre').value.trim();
-const departamentoInput = document.getElementById('departamento').value;
+const equipoInput = document.getElementById('equipo').value;
 const asistenciaInput = document.getElementById('asistencia').value;
 
-if(!nombreInput || !departamentoInput || !asistenciaInput) { 
-    showModal("Error", "Introduce tu nombre, departamento y si vas a venir a la cena para acceder.", "warning"); 
+if(!nombreInput || !equipoInput || !asistenciaInput) { 
+    showModal("Error", "Introduce tu nombre, equipo y si vas a venir a la cena para acceder.", "warning"); 
     return; 
 }
 
@@ -663,7 +675,7 @@ const btnEntrar = document.getElementById('btn-entrar');
 btnEntrar.disabled = true;
 btnEntrar.innerText = "VERIFICANDO...";
 localStorage.setItem('jugador_nombre', nombreInput);
-localStorage.setItem('jugador_dep', departamentoInput);
+localStorage.setItem('jugador_equipo', equipoInput);
 localStorage.setItem('jugador_asistencia', asistenciaInput);
 
 cargarMarcadores((exito) => {
@@ -678,7 +690,7 @@ if (exito) {
 
 } else {
     localStorage.removeItem('jugador_nombre');
-    localStorage.removeItem('jugador_dep');
+    localStorage.removeItem('jugador_equipo');
     btnEntrar.disabled = false;
     btnEntrar.innerText = "ACCEDER";
     showModal("Error de conexión", "No se ha podido conectar con el servidor. Inténtalo de nuevo.", "error");
@@ -690,7 +702,7 @@ function mostrarLobby() {
 document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
 document.getElementById('pantalla-lobby').classList.add('active');
 document.getElementById('nombre-usuario').innerText = localStorage.getItem('jugador_nombre');
-document.getElementById('dep-usuario').innerText = localStorage.getItem('jugador_dep');
+document.getElementById('equipo-usuario').innerText = localStorage.getItem('jugador_equipo');
 document.getElementById('puntos-esquina').style.display = 'flex';
 document.getElementById('racha-dias').style.display = 'flex';
 document.getElementById('racha-dias-num').innerText = parseInt(localStorage.getItem('racha_contador')) || 0;
@@ -874,13 +886,13 @@ actualizarTiendaUI();
 
 }
 
-const deps = datos.departamentos || {};
-const pProd = Number(deps["Producción"]) || 0; const pMant = Number(deps["Mantenimiento"]) || 0; const pOfic = Number(deps["Oficinas"]) || 0;
+const deps = datos.equipos || {};
+const pProd = Number(deps["Azul"]) || 0; const pMant = Number(deps["Rojo"]) || 0; const pOfic = Number(deps["Amarillo"]) || 0;
 const maxPts = Math.max(pProd, pMant, pOfic, 1);
-if(document.getElementById('pts-prod')) {
-document.getElementById('pts-prod').innerText = pProd + " pts"; document.getElementById('barra-prod').style.width = (pProd / maxPts * 100) + "%";
-document.getElementById('pts-mant').innerText = pMant + " pts"; document.getElementById('barra-mant').style.width = (pMant / maxPts * 100) + "%";
-document.getElementById('pts-ofic').innerText = pOfic + " pts"; document.getElementById('barra-ofic').style.width = (pOfic / maxPts * 100) + "%";
+if(document.getElementById('pts-azul')) {
+document.getElementById('pts-azul').innerText = pProd + " pts"; document.getElementById('barra-azul').style.width = (pProd / maxPts * 100) + "%";
+document.getElementById('pts-rojo').innerText = pMant + " pts"; document.getElementById('barra-rojo').style.width = (pMant / maxPts * 100) + "%";
+document.getElementById('pts-amarillo').innerText = pOfic + " pts"; document.getElementById('barra-amarillo').style.width = (pOfic / maxPts * 100) + "%";
 }
 
 if (datos.puntosTotalesJugadores) {
@@ -1041,7 +1053,7 @@ tablaBody.innerHTML += `<tr style="background-color: #fff3cd; font-weight: bold;
 }
 
 function enviarPuntosAJuego(accion, cantidadPuntos, palabra) {
-const datos = { nombre: localStorage.getItem('jugador_nombre'), departamento: localStorage.getItem('jugador_dep'), accion: accion, puntos: cantidadPuntos, palabra: palabra || "N/A" };
+const datos = { nombre: localStorage.getItem('jugador_nombre'), equipo: localStorage.getItem('jugador_equipo'), accion: accion, puntos: cantidadPuntos, palabra: palabra || "N/A" };
 fetch(URL_GOOGLE, { method: 'POST', body: JSON.stringify(datos) })
 .then(res => res.json())
 .then(data => { setTimeout(cargarMarcadores, 500); })
@@ -1053,7 +1065,7 @@ const input = document.getElementById('palabra-secreta'); const btn = document.g
 const codigo = input.value.trim();
 if (!codigo) { showModal("Código vacío", "Introduce el código localizado.", "warning"); return; }
 btn.disabled = true; btn.innerText = "ENVIANDO...";
-const datos = { nombre: localStorage.getItem('jugador_nombre'), departamento: localStorage.getItem('jugador_dep'), accion: "Código Localizado", puntos: 0, palabra: codigo };
+const datos = { nombre: localStorage.getItem('jugador_nombre'), equipo: localStorage.getItem('jugador_equipo'), accion: "Código Localizado", puntos: 0, palabra: codigo };
 fetch(URL_GOOGLE, { method: 'POST', body: JSON.stringify(datos) })
 .then(res => res.json())
 .then(data => { if(data.mensaje.includes("Enhorabuena")) { lanzarConfeti(); showModal("¡Código Validado!", data.mensaje, "success"); } else { showModal("Aviso", data.mensaje, "warning"); } input.value = ""; btn.disabled = false; btn.innerText = "CANJEAR PUNTOS"; cargarMarcadores(); })
@@ -1077,7 +1089,7 @@ reader.onload = function(e) {
 const base64Data = e.target.result.split(',')[1];
 const nombreJugador = localStorage.getItem('jugador_nombre');
 const nombreArchivo = nombreJugador + "_" + new Date().getTime() + "_" + file.name;
-const datos = { nombre: nombreJugador, departamento: localStorage.getItem('jugador_dep'), accion: "Subir Foto", puntos: puntosAsignados, palabra: detallePalabra, archivoBase64: base64Data, mimeType: file.type, nombreArchivo: nombreArchivo };
+const datos = { nombre: nombreJugador, equipo: localStorage.getItem('jugador_equipo'), accion: "Subir Foto", puntos: puntosAsignados, palabra: detallePalabra, archivoBase64: base64Data, mimeType: file.type, nombreArchivo: nombreArchivo };
 fetch(URL_GOOGLE, { method: 'POST', body: JSON.stringify(datos) })
 .then(res => res.json())
 .then(data => {
@@ -1246,7 +1258,7 @@ if (votoEscrito.toLowerCase() === miNombre) { showModal("Trampa", `No puedes vot
 votos.push({ categoria: categoria, voto: votoEscrito });
 }
 const btnEnviar = document.getElementById('btn-enviar-votos'); btnEnviar.disabled = true; btnEnviar.innerText = "ENVIANDO...";
-const datosVoto = { nombre: localStorage.getItem('jugador_nombre'), departamento: localStorage.getItem('jugador_dep'), accion: "VotarMultiple", puntos: 0, palabra: JSON.stringify(votos) };
+const datosVoto = { nombre: localStorage.getItem('jugador_nombre'), equipo: localStorage.getItem('jugador_equipo'), accion: "VotarMultiple", puntos: 0, palabra: JSON.stringify(votos) };
 fetch(URL_GOOGLE + "?token=candado_pescanova_26", { method: 'POST', body: JSON.stringify(datosVoto) })
 .then(res => res.json())
 .then(data => {
@@ -1695,6 +1707,7 @@ function disponible(key) {
   return !!funciones[key];
 }
 function aplicarFases() {
+  document.body.classList.toggle('votaciones-visibles',!!funciones.votaciones);
   document.querySelectorAll('[data-feature]').forEach(el=>el.hidden=!disponible(el.dataset.feature));
   const checkbox=document.getElementById('checkbox-mision');
   checkbox.parentElement.hidden=!funciones.misiones;
@@ -1719,11 +1732,13 @@ function aplicarFases() {
 }
 const pintarAnterior=pintarDatos;
 pintarDatos=function(datos) {
-  if(datos.apiVersion!==2){funciones={};aplicarFases();return;}
+  if(datos.apiVersion!==3){funciones={};aplicarFases();return;}
   funciones=datos.funciones||{};fechaCena=datos.fechaCena||'';campaña=datos.campaign;
   if(localStorage.getItem('jugador_nombre') && datos.jugadorNombre)localStorage.setItem('jugador_nombre',datos.jugadorNombre);
   if(datos.boss && Number(datos.boss.etapa)!==bossEtapaActual){danoAcumuladoSinEnviar=0;danoPendiente=null;clearInterval(autoClickerInterval);clearInterval(sincroBossInterval);clearInterval(ilusionMultijugadorInterval);}
+  if(equipoValido(datos.equipoJugador))localStorage.setItem('jugador_equipo',datos.equipoJugador);
   pintarAnterior(datos);
+  pintarMiEquipo();
   const state=datos.estadoJugador||{}, completed=state.completados||[];
   for(const game of ['zip','parejas','wordle','trivial']) {
     if(completed.includes(game))localStorage.setItem(game+'_ultimo_dia',diaMadrid());else localStorage.removeItem(game+'_ultimo_dia');
@@ -1737,8 +1752,8 @@ pintarDatos=function(datos) {
   document.getElementById('asistencia-confirmada').textContent=datos.miAsistencia?'Respuesta guardada: '+datos.miAsistencia:'Guarda tu respuesta para confirmar tu asistencia.';
   if(answer)document.getElementById('cambiar-asistencia').value=answer;
   const voteBtn=document.getElementById('btn-abrir-votaciones');
-  if(state.haVotado){voteBtn.textContent='✅ VOTOS REGISTRADOS';voteBtn.disabled=true;}
-  else {voteBtn.textContent='🏆 VOTAR PESCA-OSCARS';voteBtn.disabled=false;}
+  if(state.haVotado){voteBtn.textContent='✅ VOTOS REGISTRADOS';voteBtn.disabled=true;document.getElementById('voto-ayuda').textContent='Gracias por participar en los Pesca-Oscars';}
+  else {voteBtn.textContent='🏆 VOTAR PESCA-OSCARS';voteBtn.disabled=false;document.getElementById('voto-ayuda').textContent='Tu voto cuenta: elige a tus compañeros favoritos';}
   actualizarInterfazRuleta();actualizarInterfazMision();aplicarFases();
 };
 cargarMarcadores=async function(callback) {
@@ -1749,7 +1764,7 @@ cargarMarcadores=async function(callback) {
     const res=await fetch(URL_GOOGLE+'?token=candado_pescanova_26&nombre='+encodeURIComponent(name)+'&_tsc='+Date.now(),{signal:AbortSignal.timeout(20000)});
     if(!res.ok)throw new Error('El servidor no responde.');
     const data=await res.json();
-    if(data.error || data.apiVersion!==2)throw new Error(data.error || 'Se está actualizando la web. Vuelve en unos minutos.');
+    if(data.error || data.apiVersion!==3)throw new Error(data.error || 'Se está actualizando la web. Vuelve en unos minutos.');
     if(localStorage.getItem('cena_campaign')!==data.campaign){
       limpiarEstadoCampaña(data.campaign);
       document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));
@@ -1765,7 +1780,7 @@ cargarMarcadores=async function(callback) {
 };
 function requestId(){return crypto.randomUUID().replace(/-/g,'');}
 function pedirOperacion(accion,puntos=0,palabra='',extra={}) {
-  const payload=Object.assign({nombre:localStorage.getItem('jugador_nombre'),departamento:localStorage.getItem('jugador_dep'),accion,puntos,palabra,campaign:campaña,etapa:bossEtapaActual,requestId:requestId()},extra);
+  const payload=Object.assign({nombre:localStorage.getItem('jugador_nombre'),equipo:localStorage.getItem('jugador_equipo'),accion,puntos,palabra,campaign:campaña,etapa:bossEtapaActual,requestId:requestId()},extra);
   const work=async()=>{
     const res=await fetch(URL_GOOGLE,{method:'POST',body:JSON.stringify(payload),signal:AbortSignal.timeout(30000)});
     if(!res.ok)throw new Error('No se pudo guardar la operación.');
@@ -1787,12 +1802,12 @@ enviarPuntosAJuego=function(accion,puntos,palabra,extra={}) {
   });
 };
 entrar=async function() {
-  const nombre=document.getElementById('nombre').value.trim(), dep=document.getElementById('departamento').value, answer=document.getElementById('asistencia').value;
-  if(!nombre||!dep||!answer){showModal('Faltan datos','Indica tu nombre, departamento y asistencia.','warning');return;}
+  const nombre=document.getElementById('nombre').value.trim(), dep=document.getElementById('equipo').value, answer=document.getElementById('asistencia').value;
+  if(!nombre||!dep||!answer){showModal('Faltan datos','Indica tu nombre, equipo y asistencia.','warning');return;}
   const btn=document.getElementById('btn-entrar');btn.disabled=true;btn.textContent='GUARDANDO...';
   try {
     if(!campaña && !(await cargarMarcadores()))throw new Error('No se pudo cargar la configuración.');
-    localStorage.setItem('jugador_nombre',nombre);localStorage.setItem('jugador_dep',dep);
+    localStorage.setItem('jugador_nombre',nombre);localStorage.setItem('jugador_equipo',dep);
     await pedirOperacion('Asistencia Cena',0,answer);
     localStorage.setItem('jugador_asistencia',answer);
     await cargarMarcadores();mostrarLobby();aplicarFases();
@@ -1805,7 +1820,17 @@ guardarAsistencia=async function(){
   catch(error){showModal('No se ha guardado',error.message,'error');}finally{btn.disabled=false;}
 };
 const lobbyAnterior=mostrarLobby;
-mostrarLobby=function(){lobbyAnterior();aplicarFases();};
+mostrarLobby=function(){
+  if(!equipoValido(localStorage.getItem('jugador_equipo'))){
+    document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));
+    document.getElementById('pantalla-registro').classList.add('active');
+    document.getElementById('nombre').value=localStorage.getItem('jugador_nombre')||'';
+    document.getElementById('asistencia').value=localStorage.getItem('jugador_asistencia')||'';
+    document.querySelector('.subtitulo').textContent='Elige el color de tu equipo para continuar. Conservas tus puntos.';
+    return;
+  }
+  lobbyAnterior();pintarMiEquipo();aplicarFases();
+};
 const seccionAnterior=cambiarSeccionLobby;
 cambiarSeccionLobby=function(id,nav){
   const key={ranking:'estadisticas',fotos:'galeria'}[id]||id;
@@ -1949,8 +1974,24 @@ Game.prototype.endGame=async function(){
   await registrarVictoria('Éxito Tower',String(score),'');
 };
 
+
+function equipoValido(team){return ['Azul','Rojo','Amarillo'].includes(team);}
+function pintarMiEquipo(){
+  const team=localStorage.getItem('jugador_equipo'), el=document.getElementById('equipo-usuario');
+  const icons={Azul:'🔵',Rojo:'🔴',Amarillo:'🟡'};
+  el.textContent=equipoValido(team)?icons[team]+' Equipo '+team:'Elige tu equipo';
+  el.className='equipo-insignia equipo-'+String(team||'').toLowerCase();
+  if(equipoValido(team) && document.getElementById('perfil-equipo').hidden)document.getElementById('nuevo-equipo').value=team;
+}
+async function guardarEquipo(){
+  const team=document.getElementById('nuevo-equipo').value, btn=document.getElementById('btn-equipo');
+  btn.disabled=true;
+  try{await pedirOperacion('Cambiar Equipo',0,team,{equipo:team});localStorage.setItem('jugador_equipo',team);await cargarMarcadores();document.getElementById('perfil-equipo').hidden=true;pintarMiEquipo();showModal('Equipo guardado','Ahora formas parte del Equipo '+team+'. Conservas tus puntos.','success');}
+  catch(error){showModal('No se ha cambiado el equipo',error.message,'error');}finally{btn.disabled=false;}
+}
 </script>
 
 </body>
 </html>
+
 

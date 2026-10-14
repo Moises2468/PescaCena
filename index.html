@@ -26,14 +26,15 @@
 .solo-lector { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
 #decision-propuesta { width:100%; min-height:100px; padding:12px; border:1px solid #cbdce9; border-radius:10px; font:16px 'Segoe UI',sans-serif; box-sizing:border-box; resize:vertical; margin:8px 0; }
 
-.acciones-evento { position:sticky; top:52px; z-index:900; width:100%; max-width:420px; background:#fff8e1; padding:10px 12px; box-sizing:border-box; border:1px solid #ffd166; border-radius:16px; box-shadow:0 5px 18px rgba(0,0,0,.12); margin:0 0 10px; }
-#btn-abrir-votaciones { background:#ffcc00; color:#17324d; width:100%; max-width:none; margin:0; min-height:52px; font-size:16px; box-shadow:none; }
+.acciones-evento { position:static; width:100%; max-width:420px; background:var(--surface); padding:12px; box-sizing:border-box; border:1px solid #e5cf85; border-radius:16px; box-shadow:none; margin:8px 0 20px; }
+#btn-abrir-votaciones { background:#fff1bc; color:#17324d; width:100%; max-width:none; margin:0; min-height:48px; font-size:14px; box-shadow:none; }
 .voto-ayuda { display:block; color:#6b531b; font-size:12px; line-height:1.35; margin-top:6px; }
-.cabecera-lobby { position:sticky; top:42px; z-index:1001; width:100%; max-width:640px; background:var(--bg); padding:8px 0; box-sizing:border-box; }
-.estado-jugador { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:8px; margin-bottom:8px; }
-.cabecera-lobby #puntos-esquina, .cabecera-lobby #racha-dias, .cabecera-lobby .boss-alerta { position:static; margin:0; white-space:nowrap; }
-.cabecera-lobby .acciones-evento { position:static; max-width:420px; margin:0 auto; }
-@media(max-width:480px) { .cabecera-lobby .boss-alerta { flex-basis:100%; justify-content:center; box-sizing:border-box; } }
+.cabecera-lobby { position:static; width:100%; max-width:1100px; padding:8px 0 20px; box-sizing:border-box; }
+.estado-jugador { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:32px; }
+.progreso-jugador { grid-column:2; grid-row:1; display:flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:10px; }
+.cabecera-lobby #puntos-esquina, .cabecera-lobby #racha-dias, .cabecera-lobby .boss-alerta { position:static; margin:0; white-space:nowrap; box-shadow:none; }
+.cabecera-lobby .boss-alerta { grid-column:1; grid-row:1; justify-self:start; max-width:100%; white-space:normal; text-align:left; font-size:13px; background:#fff0ed; color:#a12b20; border:1px solid #e7b4ab; animation:none; padding:10px 13px; }
+@media(max-width:480px) { .estado-jugador { gap:16px; } .progreso-jugador { flex-direction:column; align-items:flex-end; gap:8px; } .cabecera-lobby .boss-alerta { padding:10px; font-size:12px; } }
 .equipo-insignia { display:inline-flex; align-items:center; gap:6px; border-radius:20px; padding:4px 9px; font-size:12px; font-weight:700; background:#eef4fb; }
 .equipo-azul { color:#1252a7; background:#e8f1ff; } .equipo-rojo { color:#a92222; background:#fff0f0; } .equipo-amarillo { color:#6c5200; background:#fff5c8; }
 .perfil-cambiar { background:none; box-shadow:none; color:#003366; width:auto; margin:5px 0 0; padding:4px; font-size:12px; text-transform:none; text-decoration:underline; }
@@ -243,13 +244,15 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 <option value="Quizá">Quizá, no lo sé aún</option>
 <option value="No">No puedo ir</option>
 </select>
-<button id="btn-entrar" onclick="entrar()">ACCEDER</button>
+<p id="estado-conexion" role="status" aria-live="polite" style="max-width:320px;color:var(--text-muted);font-size:14px;">Conectando con la cena… Puedes ir rellenando tus datos.</p>
+<button id="btn-entrar" onclick="entrar()" disabled>CONECTANDO…</button>
 </div>
 </div>
 
 <div id="pantalla-lobby" class="screen">
 <div class="cabecera-lobby">
 <div class="estado-jugador" aria-label="Tu progreso y evento">
+<div class="progreso-jugador">
 <!-- PUNTOS Y RACHA EN LA CABECERA -->
 <div id="puntos-esquina" data-feature="puntos" hidden>🏆 <span id="puntos-esquina-num">0</span> pts</div>
 
@@ -259,15 +262,17 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 </div>
 
 <!-- ALERTA BOSS -->
+</div>
 <div id="alerta-boss" data-feature="boss" hidden class="boss-alerta" onclick="abrirBoss()">
 <span style="font-size:18px;">⚠️</span> <span id="alerta-boss-txt">¡UN BOSS NOS ATACA!</span>
 </div>
 
 </div>
-<div class="acciones-evento" data-feature="votaciones" hidden><button id="btn-abrir-votaciones" data-feature="votaciones" hidden class="btn-juego" aria-describedby="voto-ayuda" onclick="abrirVotaciones()">🏆 VOTAR PESCA-OSCARS</button><span class="voto-ayuda" id="voto-ayuda">Tu voto cuenta: elige a tus compañeros favoritos</span></div>
 </div>
 <img src="logo.png" class="logo-corporativo" alt="PROYECTO ENERO" style="width: 120px; margin-top: 5px;">
-<div id="sec-inicio" class="seccion-lobby active-sec"><section id="decision-semanal" class="card-container" data-feature="decision" hidden aria-labelledby="decision-pregunta">
+<div id="sec-inicio" class="seccion-lobby active-sec">
+<div class="acciones-evento" data-feature="votaciones" hidden><button id="btn-abrir-votaciones" data-feature="votaciones" hidden class="btn-juego" aria-describedby="voto-ayuda" onclick="abrirVotaciones()">🏆 VOTAR PESCA-OSCARS</button><span class="voto-ayuda" id="voto-ayuda">Tu voto cuenta: elige a tus compañeros favoritos</span></div>
+<section id="decision-semanal" class="card-container" data-feature="decision" hidden aria-labelledby="decision-pregunta">
 <p class="decision-titulo" id="decision-titulo">🎵 La música de la cena</p><h3 id="decision-pregunta"></h3><div id="decision-contenido" aria-live="polite"></div>
 </section>
 <p style="margin:20px 0 0 0; color:var(--text-muted); font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Tiempo para el evento:</p>
@@ -579,7 +584,7 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 </div>
 
 <script>
-const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbw-tfVZmn1XIzAGTAfQyPumEjvIiu9c8h2ywAc5GKSe8Qeu5Bh0V0XLehU3oyggv_Hrog/exec";
+const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbxnM_ZZu3YMPQtmUKwvSEsiDThOZoLjHTz5PToyjtZFVkGBoM_c_FRqcUoxwEEEE6gRxg/exec";
 
 // VARIABLES GLOBALES GENERALES
 let palabraSecretaDelDia = ""; let cargandoInicial = false; let misPuntosActuales = 0; let trivialActual = { pregunta: "", a: "", b: "", c: "", d: "", respuesta: "" }; let juegoTerminado = false; let intentos = 0; let letrasActuales = []; let diccionarioLocal = [];
@@ -1698,6 +1703,14 @@ var Game = /** @class */ (function () {
 let funciones = {}, fechaCena = '', campaña = '', colaOperaciones = Promise.resolve();
 let danoPendiente=null;
 let leyendo = false, compraPendiente = false, danoEnviado = false, botinPendiente = false;
+let lecturaPendiente=null, entradaPendiente=false;
+function mostrarEstadoConexion(estado) {
+  const btn=document.getElementById('btn-entrar'), info=document.getElementById('estado-conexion');
+  if(entradaPendiente)return;
+  if(campaña){btn.disabled=false;btn.textContent='ACCEDER';info.textContent='Todo listo. Ya puedes entrar.';}
+  else if(estado==='cargando'){btn.disabled=true;btn.textContent='CONECTANDO…';info.textContent='Conectando con la cena… Puedes ir rellenando tus datos.';}
+  else{btn.disabled=false;btn.textContent='REINTENTAR CONEXIÓN';info.textContent='La conexión está tardando. Tus datos siguen aquí: pulsa para reintentarlo, sin recargar la página.';}
+}
 function escapar(value) {
   return String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -1781,9 +1794,11 @@ pintarDatos=function(datos) {
   else {voteBtn.textContent='🏆 VOTAR PESCA-OSCARS';voteBtn.disabled=false;document.getElementById('voto-ayuda').textContent='Tu voto cuenta: elige a tus compañeros favoritos';}
   actualizarInterfazRuleta();actualizarInterfazMision();aplicarFases();
 };
-cargarMarcadores=async function(callback) {
-  if(leyendo){if(callback)setTimeout(()=>cargarMarcadores(callback),200);return;}
+cargarMarcadores=function(callback) {
+  if(lecturaPendiente)return callback ? lecturaPendiente.then(data=>{callback(!!data);return data;}) : lecturaPendiente;
   leyendo=true;
+  mostrarEstadoConexion('cargando');
+  lecturaPendiente=(async()=>{
   try {
     const name=localStorage.getItem('jugador_nombre')||'';
     const res=await fetch(URL_GOOGLE+'?token=candado_pescanova_26&nombre='+encodeURIComponent(name)+'&_tsc='+Date.now(),{signal:AbortSignal.timeout(20000)});
@@ -1796,12 +1811,12 @@ cargarMarcadores=async function(callback) {
       document.getElementById('pantalla-registro').classList.add('active');
     }
     pintarDatos(data);
-    if(callback)callback(true);
     return data;
   }catch(error){
-    if(callback){callback(false);showModal('No se pudo conectar',error.message,'error');}
     return null;
   }finally{leyendo=false;cargandoInicial=false;document.getElementById('loading-text').style.display='none';}
+  })().finally(()=>{lecturaPendiente=null;mostrarEstadoConexion('terminado');});
+  return callback ? lecturaPendiente.then(data=>{callback(!!data);return data;}) : lecturaPendiente;
 };
 function requestId(){return crypto.randomUUID().replace(/-/g,'');}
 function pedirOperacion(accion,puntos=0,palabra='',extra={}) {
@@ -1827,17 +1842,20 @@ enviarPuntosAJuego=function(accion,puntos,palabra,extra={}) {
   });
 };
 entrar=async function() {
+  if(entradaPendiente)return;
+  if(!campaña){await cargarMarcadores();if(!campaña)return;}
+  if(entradaPendiente)return;
   const nombre=document.getElementById('nombre').value.trim(), dep=document.getElementById('equipo').value, answer=document.getElementById('asistencia').value;
   if(!nombre||!dep||!answer){showModal('Faltan datos','Indica tu nombre, equipo y asistencia.','warning');return;}
   const btn=document.getElementById('btn-entrar');btn.disabled=true;btn.textContent='GUARDANDO...';
+  entradaPendiente=true;
   try {
-    if(!campaña && !(await cargarMarcadores()))throw new Error('No se pudo cargar la configuración.');
     localStorage.setItem('jugador_nombre',nombre);localStorage.setItem('jugador_equipo',dep);
     await pedirOperacion('Asistencia Cena',0,answer);
     localStorage.setItem('jugador_asistencia',answer);
     await cargarMarcadores();mostrarLobby();aplicarFases();
   }catch(error){showModal('No se ha guardado',error.message,'error');}
-  finally{btn.disabled=false;btn.textContent='ACCEDER';}
+  finally{entradaPendiente=false;mostrarEstadoConexion('terminado');}
 };
 guardarAsistencia=async function(){
   const btn=document.getElementById('btn-asistencia');btn.disabled=true;

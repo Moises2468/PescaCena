@@ -29,7 +29,11 @@
 .acciones-evento { position:sticky; top:52px; z-index:900; width:100%; max-width:420px; background:#fff8e1; padding:10px 12px; box-sizing:border-box; border:1px solid #ffd166; border-radius:16px; box-shadow:0 5px 18px rgba(0,0,0,.12); margin:0 0 10px; }
 #btn-abrir-votaciones { background:#ffcc00; color:#17324d; width:100%; max-width:none; margin:0; min-height:52px; font-size:16px; box-shadow:none; }
 .voto-ayuda { display:block; color:#6b531b; font-size:12px; line-height:1.35; margin-top:6px; }
-.votaciones-visibles #puntos-esquina, .votaciones-visibles #racha-dias { top:auto; bottom:calc(85px + env(safe-area-inset-bottom, 0px)); }
+.cabecera-lobby { position:sticky; top:42px; z-index:1001; width:100%; max-width:640px; background:var(--bg); padding:8px 0; box-sizing:border-box; }
+.estado-jugador { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:8px; margin-bottom:8px; }
+.cabecera-lobby #puntos-esquina, .cabecera-lobby #racha-dias, .cabecera-lobby .boss-alerta { position:static; margin:0; white-space:nowrap; }
+.cabecera-lobby .acciones-evento { position:static; max-width:420px; margin:0 auto; }
+@media(max-width:480px) { .cabecera-lobby .boss-alerta { flex-basis:100%; justify-content:center; box-sizing:border-box; } }
 .equipo-insignia { display:inline-flex; align-items:center; gap:6px; border-radius:20px; padding:4px 9px; font-size:12px; font-weight:700; background:#eef4fb; }
 .equipo-azul { color:#1252a7; background:#e8f1ff; } .equipo-rojo { color:#a92222; background:#fff0f0; } .equipo-amarillo { color:#6c5200; background:#fff5c8; }
 .perfil-cambiar { background:none; box-shadow:none; color:#003366; width:auto; margin:5px 0 0; padding:4px; font-size:12px; text-transform:none; text-decoration:underline; }
@@ -221,19 +225,6 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 <div id="ticker-text" style="white-space: nowrap; display: inline-block; padding-left: 100%; animation: ticker 25s linear infinite;"></div>
 </div>
 
-<!-- PUNTOS EN LA ESQUINA -->
-<div id="puntos-esquina" data-feature="puntos" hidden>🏆 <span id="puntos-esquina-num">0</span> pts</div>
-
-<!-- RACHA DE DÍAS (DAILY LOGIN) -->
-<div id="racha-dias" data-feature="racha" hidden onclick="reclamarRacha()">
-📅 Racha: <span id="racha-dias-num">0</span>
-</div>
-
-<!-- ALERTA BOSS -->
-<div id="alerta-boss" data-feature="boss" hidden class="boss-alerta" onclick="abrirBoss()">
-<span style="font-size:18px;">⚠️</span> <span id="alerta-boss-txt">¡UN BOSS NOS ATACA!</span>
-</div>
-
 <div id="pantalla-registro" class="screen active">
 <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;">
 <img src="logo.png" class="logo-corporativo" alt="PROYECTO ENERO">
@@ -246,7 +237,6 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 <option value="Rojo">🔴 Equipo Rojo</option>
 <option value="Amarillo">🟡 Equipo Amarillo</option>
 </select>
-<!-- NUEVO: DESPLEGABLE DE ASISTENCIA (SIN CONTRASEÑA) -->
 <select id="asistencia" required>
 <option value="" disabled selected>¿Vas a venir a la cena?</option>
 <option value="Sí">Sí, ¡allí estaré!</option>
@@ -258,7 +248,24 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 </div>
 
 <div id="pantalla-lobby" class="screen">
+<div class="cabecera-lobby">
+<div class="estado-jugador" aria-label="Tu progreso y evento">
+<!-- PUNTOS Y RACHA EN LA CABECERA -->
+<div id="puntos-esquina" data-feature="puntos" hidden>🏆 <span id="puntos-esquina-num">0</span> pts</div>
+
+<!-- RACHA DE DÍAS (DAILY LOGIN) -->
+<div id="racha-dias" data-feature="racha" hidden onclick="reclamarRacha()">
+📅 Racha: <span id="racha-dias-num">0</span>
+</div>
+
+<!-- ALERTA BOSS -->
+<div id="alerta-boss" data-feature="boss" hidden class="boss-alerta" onclick="abrirBoss()">
+<span style="font-size:18px;">⚠️</span> <span id="alerta-boss-txt">¡UN BOSS NOS ATACA!</span>
+</div>
+
+</div>
 <div class="acciones-evento" data-feature="votaciones" hidden><button id="btn-abrir-votaciones" data-feature="votaciones" hidden class="btn-juego" aria-describedby="voto-ayuda" onclick="abrirVotaciones()">🏆 VOTAR PESCA-OSCARS</button><span class="voto-ayuda" id="voto-ayuda">Tu voto cuenta: elige a tus compañeros favoritos</span></div>
+</div>
 <img src="logo.png" class="logo-corporativo" alt="PROYECTO ENERO" style="width: 120px; margin-top: 5px;">
 <div id="sec-inicio" class="seccion-lobby active-sec"><section id="decision-semanal" class="card-container" data-feature="decision" hidden aria-labelledby="decision-pregunta">
 <p class="decision-titulo" id="decision-titulo">🎵 La música de la cena</p><h3 id="decision-pregunta"></h3><div id="decision-contenido" aria-live="polite"></div>

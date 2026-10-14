@@ -278,7 +278,7 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 <p style="margin:20px 0 0 0; color:var(--text-muted); font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Tiempo para el evento:</p>
 <div class="contador" id="contador-cena">XX:XX</div><p id="fecha-cena-info">Fecha de la cena pendiente de confirmar</p>
 <div class="info-jugador">Usuario: <strong id="nombre-usuario"></strong><br>Equipo: <strong id="equipo-usuario"></strong><br><button class="perfil-cambiar" onclick="document.getElementById('perfil-equipo').hidden=false">Cambiar equipo</button></div><div class="card-container" id="perfil-equipo" hidden><label for="nuevo-equipo">Elige tu equipo</label><select id="nuevo-equipo"><option value="Azul">🔵 Equipo Azul</option><option value="Rojo">🔴 Equipo Rojo</option><option value="Amarillo">🟡 Equipo Amarillo</option></select><button id="btn-equipo" onclick="guardarEquipo()">GUARDAR EQUIPO</button></div>
-<div class="card-container"><h3>Tu asistencia</h3><p id="asistencia-confirmada">Pendiente de guardar</p><select id="cambiar-asistencia" aria-label="Cambiar mi asistencia"><option value="Sí">Sí, asistiré</option><option value="Quizá">Aún no lo sé</option><option value="No">No puedo ir</option></select><button id="btn-asistencia" onclick="guardarAsistencia()">GUARDAR RESPUESTA</button></div><div class="card-container" style="text-align: left;">
+<div class="card-container"><h3>Tu asistencia</h3><p id="asistencia-confirmada" aria-live="polite">Pendiente de guardar</p><button id="btn-modificar-asistencia" class="perfil-cambiar" onclick="editarAsistencia(true)">Modificar asistencia</button><div id="editor-asistencia" hidden><label for="cambiar-asistencia">¿Vas a venir a la cena?</label><select id="cambiar-asistencia" aria-label="Cambiar mi asistencia"><option value="Sí">Sí, asistiré</option><option value="Quizá">Aún no lo sé</option><option value="No">No puedo ir</option></select><button id="btn-asistencia" onclick="guardarAsistencia()">GUARDAR RESPUESTA</button><button id="btn-cancelar-asistencia" class="perfil-cambiar" onclick="editarAsistencia(false)">Cancelar</button></div></div><div class="card-container" style="text-align: left;">
 <h3 style="margin-top:0; color:var(--primary); font-size:16px;">👋 ¡Bienvenido!</h3>
 <p style="font-size: 14px; color:var(--text-muted); margin-bottom: 0;">Gracias por confirmar tu asistencia. Aquí encontrarás la información de la cena.</p>
 </div>
@@ -1787,8 +1787,8 @@ pintarDatos=function(datos) {
   if(completed.includes('racha'))localStorage.setItem('racha_ultimo_dia',diaMadrid());else localStorage.removeItem('racha_ultimo_dia');
   if(state.racha){localStorage.setItem('racha_contador',state.racha);document.getElementById('racha-dias-num').textContent=state.racha;}
   const answer=datos.miAsistencia||localStorage.getItem('jugador_asistencia');
-  document.getElementById('asistencia-confirmada').textContent=datos.miAsistencia?'Respuesta guardada: '+datos.miAsistencia:'Guarda tu respuesta para confirmar tu asistencia.';
-  if(answer)document.getElementById('cambiar-asistencia').value=answer;
+  pintarAsistencia(answer);
+  if(answer && document.getElementById('editor-asistencia').hidden)document.getElementById('cambiar-asistencia').value=answer;
   const voteBtn=document.getElementById('btn-abrir-votaciones');
   if(state.haVotado){voteBtn.textContent='✅ VOTOS REGISTRADOS';voteBtn.disabled=true;document.getElementById('voto-ayuda').textContent='Gracias por participar en los Pesca-Oscars';}
   else {voteBtn.textContent='🏆 VOTAR PESCA-OSCARS';voteBtn.disabled=false;document.getElementById('voto-ayuda').textContent='Tu voto cuenta: elige a tus compañeros favoritos';}
@@ -1857,10 +1857,26 @@ entrar=async function() {
   }catch(error){showModal('No se ha guardado',error.message,'error');}
   finally{entradaPendiente=false;mostrarEstadoConexion('terminado');}
 };
+let asistenciaEnviando=false;
+function pintarAsistencia(answer){
+  document.getElementById('asistencia-confirmada').textContent=answer?'Tu asistencia: '+answer:'Tu asistencia: pendiente de confirmar';
+}
+function editarAsistencia(abierto){
+  if(asistenciaEnviando)return;
+  if(abierto)document.getElementById('cambiar-asistencia').value=localStorage.getItem('jugador_asistencia')||'Sí';
+  document.getElementById('editor-asistencia').hidden=!abierto;
+  document.getElementById('btn-modificar-asistencia').hidden=abierto;
+  if(abierto)document.getElementById('cambiar-asistencia').focus();
+}
 guardarAsistencia=async function(){
+  if(asistenciaEnviando)return;
+  asistenciaEnviando=true;
   const btn=document.getElementById('btn-asistencia');btn.disabled=true;
-  try{const answer=document.getElementById('cambiar-asistencia').value;await pedirOperacion('Asistencia Cena',0,answer);localStorage.setItem('jugador_asistencia',answer);await cargarMarcadores();showModal('Asistencia guardada','Tu respuesta se ha actualizado.','success');}
-  catch(error){showModal('No se ha guardado',error.message,'error');}finally{btn.disabled=false;}
+  btn.textContent='GUARDANDO…';
+  document.getElementById('cambiar-asistencia').disabled=true;
+  document.getElementById('btn-cancelar-asistencia').disabled=true;
+  try{const answer=document.getElementById('cambiar-asistencia').value;await pedirOperacion('Asistencia Cena',0,answer);localStorage.setItem('jugador_asistencia',answer);pintarAsistencia(answer);document.getElementById('editor-asistencia').hidden=true;document.getElementById('btn-modificar-asistencia').hidden=false;await cargarMarcadores();showModal('Asistencia guardada','Tu respuesta se ha actualizado.','success');}
+  catch(error){showModal('No se ha guardado',error.message,'error');}finally{asistenciaEnviando=false;btn.disabled=false;btn.textContent='GUARDAR RESPUESTA';document.getElementById('cambiar-asistencia').disabled=false;document.getElementById('btn-cancelar-asistencia').disabled=false;}
 };
 const lobbyAnterior=mostrarLobby;
 mostrarLobby=function(){

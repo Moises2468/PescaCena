@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, ">
 <title>Proyecto Enero - Pescanova</title>
 
 <!-- Librerías para Pesca-Tower (Tower Blocks) -->
@@ -10,6 +10,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script>
 
 <style>
+[hidden] { display: none !important; }
+.nav-item { flex: 1; min-width: 0; }
 :root {
 --primary: #003366; --accent: #ffcc00; --bg: #f8f9fa; --surface: #ffffff;
 --text: #202124; --text-muted: #5f6368; --error-bg: #fce8e6;
@@ -193,15 +195,15 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 </div>
 
 <!-- PUNTOS EN LA ESQUINA -->
-<div id="puntos-esquina">🏆 <span id="puntos-esquina-num">0</span> pts</div>
+<div id="puntos-esquina" data-feature="puntos" hidden>🏆 <span id="puntos-esquina-num">0</span> pts</div>
 
 <!-- RACHA DE DÍAS (DAILY LOGIN) -->
-<div id="racha-dias" onclick="reclamarRacha()">
+<div id="racha-dias" data-feature="racha" hidden onclick="reclamarRacha()">
 📅 Racha: <span id="racha-dias-num">0</span>
 </div>
 
 <!-- ALERTA BOSS -->
-<div id="alerta-boss" class="boss-alerta" onclick="abrirBoss()">
+<div id="alerta-boss" data-feature="boss" hidden class="boss-alerta" onclick="abrirBoss()">
 <span style="font-size:18px;">⚠️</span> <span id="alerta-boss-txt">¡UN BOSS NOS ATACA!</span>
 </div>
 
@@ -232,15 +234,15 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 <img src="logo.png" class="logo-corporativo" alt="PROYECTO ENERO" style="width: 120px; margin-top: 5px;">
 <div id="sec-inicio" class="seccion-lobby active-sec">
 <p style="margin:20px 0 0 0; color:var(--text-muted); font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Tiempo para el evento:</p>
-<div class="contador">168:00:00</div>
+<div class="contador" id="contador-cena">XX:XX</div><p id="fecha-cena-info">Fecha de la cena pendiente de confirmar</p>
 <div class="info-jugador">Usuario: <strong id="nombre-usuario"></strong><br>Área: <strong id="dep-usuario"></strong></div>
-<div class="card-container" style="text-align: left;">
+<div class="card-container"><h3>Tu asistencia</h3><p id="asistencia-confirmada">Pendiente de guardar</p><select id="cambiar-asistencia" aria-label="Cambiar mi asistencia"><option value="Sí">Sí, asistiré</option><option value="Quizá">Aún no lo sé</option><option value="No">No puedo ir</option></select><button id="btn-asistencia" onclick="guardarAsistencia()">GUARDAR RESPUESTA</button></div><div class="card-container" style="text-align: left;">
 <h3 style="margin-top:0; color:var(--primary); font-size:16px;">👋 ¡Bienvenido!</h3>
-<p style="font-size: 14px; color:var(--text-muted); margin-bottom: 0;">Vota en los Pesca-Oscars, haz puntos para ti y tu equipo, envia fotos... y mas!</p>
+<p style="font-size: 14px; color:var(--text-muted); margin-bottom: 0;">Gracias por confirmar tu asistencia. Aquí encontrarás la información de la cena.</p>
 </div>
 
 <!-- NUEVO: GRÁFICO DE ASISTENCIA -->
-<div class="card-container" style="text-align: left; margin-top: 15px;">
+<div class="card-container" data-feature="asistencia" hidden style="text-align: left; margin-top: 15px;">
 <h3 style="margin-top:0; color:var(--primary); font-size:16px;">📊 Asistencia a la Cena</h3>
 <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:bold; margin-bottom:8px; color:var(--text-muted);">
 <span>Sí (<span id="count-si" style="color:var(--success)">0</span>)</span>
@@ -254,27 +256,27 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 </div>
 </div>
 
-<div class="card-container" id="card-mision" style="border: 2px solid var(--mission); margin-top: 15px; text-align: left;">
+<div class="card-container" id="card-mision" data-feature="misiones" hidden style="border: 2px solid var(--mission); margin-top: 15px; text-align: left;">
 <h3 style="color: var(--mission); margin-top:0; font-size: 16px;">🎯 Tu Misión Secreta (Semanal)</h3>
 <p id="texto-mision" style="font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 0;">Sincronizando misión...</p>
 </div>
 
-<button id="btn-abrir-votaciones" class="btn-juego" style="background-color: #ff9800; max-width: 320px;" onclick="abrirVotaciones()">🏆 VOTAR PESCA-OSCARS</button>
+<button id="btn-abrir-votaciones" data-feature="votaciones" hidden class="btn-juego" style="background-color: #ff9800; max-width: 320px;" onclick="abrirVotaciones()">🏆 VOTAR PESCA-OSCARS</button>
 
-<div class="card-container" id="caja-nominados" style="display: none; margin-top: 15px; text-align: left;">
+<div class="card-container" id="caja-nominados" data-feature="nominados" hidden style="display: none; margin-top: 15px; text-align: left;">
 <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🌟 Nominados Finales</h3>
 <p style="font-size: 13px; color:var(--text-muted);">Las votaciones han finalizado. Estos son vuestos nominados a los premios en cada categoría:</p>
 <div id="lista-nominados-contenido" style="margin-top: 15px;"></div>
 </div>
 </div>
 
-<div id="sec-ranking" class="seccion-lobby">
+<div id="sec-ranking" data-feature="estadisticas" hidden class="seccion-lobby">
 <h2>Estadísticas</h2>
 <div class="card-container" style="margin-top: 0;">
 <div class="tabs">
-<button class="tab-btn active-tab" id="btn-equipos" onclick="cambiarFiltroRanking('equipos')">🏆 Equipos</button>
-<button class="tab-btn" id="btn-agentes" onclick="cambiarFiltroRanking('agentes')">📊 Top 10</button>
-<button class="tab-btn" id="btn-logros" onclick="cambiarFiltroRanking('logros')">🏅 Logros</button>
+<button class="tab-btn active-tab" id="btn-equipos" data-feature="ranking" hidden onclick="cambiarFiltroRanking('equipos')">🏆 Equipos</button>
+<button class="tab-btn" id="btn-agentes" data-feature="ranking" hidden onclick="cambiarFiltroRanking('agentes')">📊 Top 10</button>
+<button class="tab-btn" id="btn-logros" data-feature="logros" hidden onclick="cambiarFiltroRanking('logros')">🏅 Logros</button>
 </div>
 <div id="loading-text">Sincronizando información...</div>
 <div id="vista-equipos">
@@ -302,9 +304,9 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 </div>
 </div>
 
-<div id="muro-container" style="display: none; margin: 15px auto; width: 90%; max-width: 320px; background: var(--error-bg); border: 1px solid #fad2cf; padding: 12px; border-radius: 12px; cursor: pointer;" onclick="toggleMuro()">
+<div id="muro-container" data-feature="muro" hidden style="display: none; margin: 15px auto; width: 90%; max-width: 320px; background: var(--error-bg); border: 1px solid #fad2cf; padding: 12px; border-radius: 12px; cursor: pointer;" onclick="toggleMuro()">
 <div style="display: flex; justify-content: space-between; align-items: center; color: var(--error-text); font-size: 12px; font-weight: bold;">
-<span>⚠️ MENCIONES ESPECIALES</span>
+<span>💬 EL MURO DE LA CENA</span>
 <span id="muro-icono">+</span>
 </div>
 <div id="muro-contenido" style="display: none; color: var(--error-text); font-size: 13px; margin-top: 10px; border-top: 1px solid #fad2cf; padding-top: 10px; text-align: center;">
@@ -313,16 +315,16 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 </div>
 </div>
 
-<div id="sec-juegos" class="seccion-lobby">
+<div id="sec-juegos" data-feature="juegos" hidden class="seccion-lobby">
 <h2>Retos Activos</h2>
 
-<div class="card-container" style="margin-top: 0; border: 2px solid #8c52ff;">
+<div data-feature="tower" hidden class="card-container" style="margin-top: 0; border: 2px solid #8c52ff;">
 <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🏢 Pesca-Tower</h3>
 <p style="font-size: 13px; color:var(--text-muted);">Apila los bloques lo más alto posible. Solo ganas puntos al superar tu récord personal.</p>
 <button class="btn-juego" style="background-color: #8c52ff;" onclick="abrirTorre()">JUGAR TOWER</button>
 </div>
 
-<div class="card-container">
+<div data-feature="ruleta" hidden class="card-container">
 <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🎡 Ruleta de la Suerte</h3>
 <p style="font-size: 13px; color:var(--text-muted);">El primer tiro del día es GRATIS. Los siguientes cuestan puntos de tu marcador.</p>
 <div id="ruleta-box">❓❓❓</div>
@@ -331,25 +333,25 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 <button class="btn-juego btn-ruleta-start" id="btn-ruleta" onclick="girarRuleta()">GIRAR RULETA</button>
 </div>
 
-<div class="card-container">
+<div data-feature="parejas" hidden class="card-container">
 <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🃏 Pesca-Parejas</h3>
 <p style="font-size: 13px; color:var(--text-muted);">Encuentra las parejas ocultas. Cuantos menos movimientos necesites, más puntos ganarás.</p>
 <button class="btn-juego btn-parejas-start" onclick="abrirParejas()">JUGAR PAREJAS</button>
 </div>
 
-<div class="card-container">
+<div data-feature="zip" hidden class="card-container">
 <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🧩 Pesca-Zip</h3>
 <p style="font-size: 13px; color:var(--text-muted);">Conecta los puntos por orden arrastrando el dedo hasta rellenar toda la cuadrícula. ¡Sé rápido!</p>
 <button class="btn-juego" style="background-color: #8c52ff;" onclick="abrirZip()">JUGAR ZIP</button>
 </div>
 
-<div class="card-container">
+<div data-feature="wordle" hidden class="card-container">
 <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🎮 Pesca-Wordle</h3>
-<p style="font-size: 13px; color:var(--text-muted);">Descifra la palabra oculta del día en menos de 6 intentos. Suma 100 puntos directos.</p>
+<p style="font-size: 13px; color:var(--text-muted);">Descifra la palabra oculta del día en seis intentos. Gana de 20 a 120 puntos según los intentos que necesites.</p>
 <button class="btn-juego" onclick="abrirWordle()">JUGAR WORDLE</button>
 </div>
 
-<div class="card-container">
+<div data-feature="trivial" hidden class="card-container">
 <h3 style="margin-top:0; color:var(--primary); font-size:16px;">🧠 Trivial Diario</h3>
 <p style="font-size: 13px; color:var(--text-muted);">Responde a la pregunta corporativa del día al primer intento y llévate 50 puntos.</p>
 <button class="btn-juego btn-trivial-start" onclick="abrirTrivial()">JUGAR TRIVIAL</button>
@@ -357,7 +359,7 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 
 </div>
 
-<div id="sec-codigos" class="seccion-lobby">
+<div id="sec-codigos" data-feature="codigos" hidden class="seccion-lobby">
 <h2>Validar Código</h2>
 <div class="card-container">
 <p style="margin-top:0; font-size: 14px; font-weight: bold; color: var(--primary);">Introduce el código localizado:</p>
@@ -367,7 +369,7 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 </div>
 </div>
 
-<div id="sec-fotos" class="seccion-lobby">
+<div id="sec-fotos" data-feature="galeria" hidden class="seccion-lobby">
 <h2>Galería</h2>
 <div class="card-container">
 <h3 style="margin-top:0; color:var(--primary); font-size:16px;">📸 Sube tus momentos</h3>
@@ -385,10 +387,10 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 
 <nav class="bottom-nav">
 <div class="nav-item active-nav" onclick="cambiarSeccionLobby('inicio', this)"><span class="nav-icon">🏠</span><span>Inicio</span></div>
-<div class="nav-item" onclick="cambiarSeccionLobby('ranking', this)"><span class="nav-icon">📊</span><span>Ranking</span></div>
-<div class="nav-item" onclick="cambiarSeccionLobby('juegos', this)"><span class="nav-icon">🎮</span><span>Juegos</span></div>
-<div class="nav-item" onclick="cambiarSeccionLobby('codigos', this)"><span class="nav-icon">🎯</span><span>Códigos</span></div>
-<div class="nav-item" onclick="cambiarSeccionLobby('fotos', this)"><span class="nav-icon">📸</span><span>Fotos</span></div>
+<div class="nav-item" data-feature="estadisticas" hidden onclick="cambiarSeccionLobby('ranking', this)"><span class="nav-icon">📊</span><span>Ranking</span></div>
+<div class="nav-item" data-feature="juegos" hidden onclick="cambiarSeccionLobby('juegos', this)"><span class="nav-icon">🎮</span><span>Juegos</span></div>
+<div class="nav-item" data-feature="codigos" hidden onclick="cambiarSeccionLobby('codigos', this)"><span class="nav-icon">🎯</span><span>Códigos</span></div>
+<div class="nav-item" data-feature="galeria" hidden onclick="cambiarSeccionLobby('fotos', this)"><span class="nav-icon">📸</span><span>Fotos</span></div>
 </nav>
 </div>
 
@@ -540,7 +542,7 @@ h2 { color: var(--primary); font-size: 1.5em; margin-top: 10px; margin-bottom: 1
 </div>
 
 <script>
-const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbxkExFr1QjPpwGjCxjFhl94_PqbULqMuQ3Tv5splYXYAYEW5WOfdBS0TCzS_eirggc6jQ/exec";
+const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbzi34guP8DH_DQIpZPzsIXRMT3nX0Ckq90J7tEQGr2YhENQgLTFgwl7u4rrz5Uc8CRjow/exec";
 
 // VARIABLES GLOBALES GENERALES
 let palabraSecretaDelDia = ""; let cargandoInicial = false; let misPuntosActuales = 0; let trivialActual = { pregunta: "", a: "", b: "", c: "", d: "", respuesta: "" }; let juegoTerminado = false; let intentos = 0; let letrasActuales = []; let diccionarioLocal = [];
@@ -621,14 +623,14 @@ iniciarEscuchadoresZip();
 }
 
 function reclamarRacha() {
-let hoy = new Date().toDateString();
+let hoy = diaMadrid();
 let ultimoDia = localStorage.getItem('racha_ultimo_dia');
 if (ultimoDia === hoy) {
 showModal("¡Ya reclamado!", "Ya has reclamado tu recompensa diaria por conectarte hoy. ¡Vuelve mañana para seguir la racha!", "info");
 return;
 }
 let rachaActual = parseInt(localStorage.getItem('racha_contador')) || 0;
-let ayer = new Date(Date.now() - 86400000).toDateString();
+let ayer = diaMadrid(new Date(Date.now() - 86400000));
 if (ultimoDia === ayer) {
 rachaActual++;
 } else {
@@ -722,13 +724,13 @@ else { contenido.style.display = 'none'; icono.innerText = '+'; }
 // NAVEGACIÓN JUEGOS
 function abrirVotaciones() { document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-votaciones').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; document.getElementById('racha-dias').style.display = 'none'; document.getElementById('alerta-boss').style.display = 'none'; window.scrollTo(0,0); }
 function cerrarVotaciones() { document.getElementById('pantalla-votaciones').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; document.getElementById('racha-dias').style.display = 'flex'; if (bossActivo && bossVidaActual > 0) document.getElementById('alerta-boss').style.display = 'flex'; window.scrollTo(0,0); }
-function abrirZip() { if (localStorage.getItem('zip_ultimo_dia') === new Date().toDateString()) { showModal("Atención", "Ya has resuelto el ZIP de hoy. ¡Vuelve mañana!", "info"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-zip').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; document.getElementById('racha-dias').style.display = 'none'; document.getElementById('alerta-boss').style.display = 'none'; window.scrollTo(0,0); inicializarTableroZip(); }
+function abrirZip() { if (localStorage.getItem('zip_ultimo_dia') === diaMadrid()) { showModal("Atención", "Ya has resuelto el ZIP de hoy. ¡Vuelve mañana!", "info"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-zip').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; document.getElementById('racha-dias').style.display = 'none'; document.getElementById('alerta-boss').style.display = 'none'; window.scrollTo(0,0); inicializarTableroZip(); }
 function cerrarZip() { document.getElementById('pantalla-zip').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; document.getElementById('racha-dias').style.display = 'flex'; if (bossActivo && bossVidaActual > 0) document.getElementById('alerta-boss').style.display = 'flex'; window.scrollTo(0,0); }
-function abrirTrivial() { if (localStorage.getItem('trivial_ultimo_dia') === new Date().toDateString()) { showModal("Atención", "Ya has respondido al Trivial de hoy.", "info"); return; } if (!trivialActual.pregunta) { showModal("Aviso", "Aún no se ha configurado la pregunta.", "warning"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-trivial').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; document.getElementById('racha-dias').style.display = 'none'; document.getElementById('alerta-boss').style.display = 'none'; window.scrollTo(0,0); document.getElementById('trivial-pregunta').innerText = trivialActual.pregunta; ['a','b','c','d'].forEach(letra => { let btn = document.getElementById('btn-triv-' + letra); btn.innerText = letra.toUpperCase() + ") " + trivialActual[letra]; btn.className = "btn-opcion"; btn.disabled = false; }); }
+function abrirTrivial() { if (localStorage.getItem('trivial_ultimo_dia') === diaMadrid()) { showModal("Atención", "Ya has respondido al Trivial de hoy.", "info"); return; } if (!trivialActual.pregunta) { showModal("Aviso", "Aún no se ha configurado la pregunta.", "warning"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-trivial').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; document.getElementById('racha-dias').style.display = 'none'; document.getElementById('alerta-boss').style.display = 'none'; window.scrollTo(0,0); document.getElementById('trivial-pregunta').innerText = trivialActual.pregunta; ['a','b','c','d'].forEach(letra => { let btn = document.getElementById('btn-triv-' + letra); btn.innerText = letra.toUpperCase() + ") " + trivialActual[letra]; btn.className = "btn-opcion"; btn.disabled = false; }); }
 function cerrarTrivial() { document.getElementById('pantalla-trivial').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; document.getElementById('racha-dias').style.display = 'flex'; if (bossActivo && bossVidaActual > 0) document.getElementById('alerta-boss').style.display = 'flex'; window.scrollTo(0,0); }
-function abrirWordle() { if (localStorage.getItem('wordle_ultimo_dia') === new Date().toDateString()) { showModal("Atención", "Ya completaste el Wordle hoy. ¡Descansa esa cabeza!", "info"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-wordle').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; document.getElementById('racha-dias').style.display = 'none'; document.getElementById('alerta-boss').style.display = 'none'; window.scrollTo(0,0); juegoTerminado = false; intentos = 0; letrasActuales = []; for (let i=0; i<6; i++) for (let j=0; j<5; j++) { document.getElementById(`casilla-${i}-${j}`).innerText = ""; document.getElementById(`casilla-${i}-${j}`).className = "casilla"; } }
+function abrirWordle() { if (localStorage.getItem('wordle_ultimo_dia') === diaMadrid()) { showModal("Atención", "Ya completaste el Wordle hoy. ¡Descansa esa cabeza!", "info"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-wordle').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; document.getElementById('racha-dias').style.display = 'none'; document.getElementById('alerta-boss').style.display = 'none'; window.scrollTo(0,0); juegoTerminado = false; intentos = 0; letrasActuales = []; for (let i=0; i<6; i++) for (let j=0; j<5; j++) { document.getElementById(`casilla-${i}-${j}`).innerText = ""; document.getElementById(`casilla-${i}-${j}`).className = "casilla"; } }
 function cerrarWordle() { document.getElementById('pantalla-wordle').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; document.getElementById('racha-dias').style.display = 'flex'; if (bossActivo && bossVidaActual > 0) document.getElementById('alerta-boss').style.display = 'flex'; window.scrollTo(0,0); }
-function abrirParejas() { if (localStorage.getItem('parejas_ultimo_dia') === new Date().toDateString()) { showModal("Atención", "Ya has encontrado todas las parejas por hoy. ¡Mañana más!", "info"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-parejas').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; document.getElementById('racha-dias').style.display = 'none'; document.getElementById('alerta-boss').style.display = 'none'; window.scrollTo(0,0); iniciarParejas(); }
+function abrirParejas() { if (localStorage.getItem('parejas_ultimo_dia') === diaMadrid()) { showModal("Atención", "Ya has encontrado todas las parejas por hoy. ¡Mañana más!", "info"); return; } document.getElementById('pantalla-lobby').classList.remove('active'); document.getElementById('pantalla-parejas').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'none'; document.getElementById('racha-dias').style.display = 'none'; document.getElementById('alerta-boss').style.display = 'none'; window.scrollTo(0,0); iniciarParejas(); }
 function cerrarParejas() { document.getElementById('pantalla-parejas').classList.remove('active'); document.getElementById('pantalla-lobby').classList.add('active'); document.getElementById('puntos-esquina').style.display = 'flex'; document.getElementById('racha-dias').style.display = 'flex'; if (bossActivo && bossVidaActual > 0) document.getElementById('alerta-boss').style.display = 'flex'; window.scrollTo(0,0); }
 
 // --- NAVEGACIÓN PESCA-TOWER ---
@@ -869,7 +871,7 @@ let anchoVida = bossVidaMaxima > 0 ? (bossVidaActual / bossVidaMaxima * 100) : 0
 document.getElementById('boss-vida-fill').style.width = anchoVida + "%";
 document.getElementById('boss-vida-txt').innerText = bossVidaActual + " / " + bossVidaMaxima;
 actualizarTiendaUI();
-if (bossVidaActual <= 0 && document.getElementById('pantalla-boss').classList.contains('active')) { reclamarBotinBoss(); cerrarBoss(); }
+
 }
 
 const deps = datos.departamentos || {};
@@ -897,14 +899,14 @@ if (document.getElementById('boss-ranking').style.display === 'block') { renderi
 const contenedorLogros = document.getElementById('lista-logros');
 if (contenedorLogros && datos.logros && Array.isArray(datos.logros)) {
 contenedorLogros.innerHTML = datos.logros.length > 0 ? datos.logros.map(logro => `
-<div class="logro-item"><div class="logro-titulo">${logro.icono} ${logro.nombre}</div><div class="logro-desc">${logro.descripcion}</div></div>
+<div class="logro-item"><div class="logro-titulo">${logro.conseguido ? "✅" : "🔒"} ${escapar(logro.icono)} ${escapar(logro.nombre)}</div><div class="logro-desc">${escapar(logro.descripcion)} · ${Math.min(logro.progreso || 0, logro.objetivo || 1)}/${logro.objetivo || 1}</div></div>
 `).join('') : '<div style="color:var(--text-muted); padding: 20px;">No hay logros destacados.</div>';
 }
 
 const contenedorMuro = document.getElementById('lista-muro');
 const muroContainer = document.getElementById('muro-container');
 if (contenedorMuro && datos.muro && Array.isArray(datos.muro) && datos.muro.length > 0) {
-contenedorMuro.innerHTML = datos.muro.map(tramposo => `<div style="margin-bottom:5px;">🚨 ${tramposo}</div>`).join('');
+contenedorMuro.innerHTML = datos.muro.map(m => '<div style="margin-bottom:10px;">' + escapar(m.texto) + '<br><small>' + escapar(m.autor) + '</small></div>').join('');
 if(muroContainer) muroContainer.style.display = 'block';
 } else if (muroContainer) { muroContainer.style.display = 'none'; }
 
@@ -918,7 +920,7 @@ const containerVot = document.getElementById('formulario-votaciones');
 if (datos.categoriasVotacion && Array.isArray(datos.categoriasVotacion) && datos.categoriasVotacion.length > 0 && containerVot && containerVot.innerHTML === "") {
 let formHTML = '';
 datos.categoriasVotacion.forEach((cat, index) => {
-formHTML += `<div style="margin-bottom: 12px; text-align: left;"><label style="font-size: 13px; font-weight: bold; color: var(--primary);">${cat}</label><input type="text" id="voto-${index}" data-cat="${cat}" placeholder="Nombre del compañero..." style="padding: 10px; margin-top: 5px;"></div>`;
+formHTML += `<div style="margin-bottom: 12px; text-align: left;"><label style="font-size: 13px; font-weight: bold; color: var(--primary);">${escapar(cat)}</label><input type="text" id="voto-${index}" data-cat="${escapar(cat)}" placeholder="Nombre del compañero..." style="padding: 10px; margin-top: 5px;"></div>`;
 });
 containerVot.innerHTML = formHTML;
 }
@@ -933,9 +935,9 @@ if (cajaNominados && listaNominados && datos.nominadosFinales && Array.isArray(d
 cajaNominados.style.display = 'block';
 listaNominados.innerHTML = datos.nominadosFinales.map(cat => `
 <div style="margin-bottom: 15px; border-bottom: 1px solid #f1f3f4; padding-bottom: 10px;">
-<div style="font-weight: bold; color: var(--primary); font-size: 14px; margin-bottom: 5px;">${cat.categoria}</div>
+<div style="font-weight: bold; color: var(--primary); font-size: 14px; margin-bottom: 5px;">${escapar(cat.categoria)}</div>
 <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-muted);">
-${cat.nominados && Array.isArray(cat.nominados) ? cat.nominados.map(nom => `<li style="margin-bottom: 3px;">${nom}</li>`).join('') : '<li>Sin nominados</li>'}
+${cat.nominados && Array.isArray(cat.nominados) ? cat.nominados.map(nom => `<li style="margin-bottom: 3px;">${escapar(nom)}</li>`).join('') : '<li>Sin nominados</li>'}
 </ul></div>`).join('');
 }
 } else {
@@ -997,7 +999,7 @@ return;
 }
 }
 
-let hoy = new Date().toDateString();
+let hoy = diaMadrid();
 let lastKnownRanks = JSON.parse(localStorage.getItem('last_ranks_' + filtro) || "{}");
 let lastKnownDate = localStorage.getItem('last_date_' + filtro);
 let currentRanks = {};
@@ -1024,17 +1026,17 @@ else tendenciaIcon = '<span style="color:var(--text-muted); font-size:12px; marg
 let esMiFila = (posActual === miPosicion) ? 'style="background-color: #fff3cd; font-weight: bold;"' : '';
 let icono = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : posActual + 'º';
 let txtNombre = (posActual === miPosicion) ? j.nombre + ' (TÚ)' : j.nombre;
-tablaBody.innerHTML += `<tr ${esMiFila}><td style="font-weight:bold; color:var(--primary);">${icono}${tendenciaIcon}</td><td>${txtNombre}</td><td>${j.valor}${sufijoValor}</td></tr>`;
+tablaBody.innerHTML += `<tr ${esMiFila}><td style="font-weight:bold; color:var(--primary);">${icono}${tendenciaIcon}</td><td>${escapar(txtNombre)}</td><td>${j.valor}${sufijoValor}</td></tr>`;
 }
 
 if (miPosicion > 10) {
 let posViejaMia = compareRanks[miNombre]; let miTendencia = '<span style="color:#ff9800; font-size:11px; margin-left:3px;">🆕</span>';
 if(posViejaMia) { if (miPosicion < posViejaMia) miTendencia = '<span style="color:var(--success); font-size:12px; margin-left:3px; font-weight:bold;">⬆️</span>'; else if (miPosicion > posViejaMia) miTendencia = '<span style="color:var(--error-text); font-size:12px; margin-left:3px; font-weight:bold;">⬇️</span>'; else miTendencia = '<span style="color:var(--text-muted); font-size:12px; margin-left:3px; font-weight:bold;">➖</span>'; }
 tablaBody.innerHTML += `<tr><td colspan="3" style="text-align:center; color: var(--text-muted); font-size:12px; padding: 5px;">⋮</td></tr>`;
-tablaBody.innerHTML += `<tr style="background-color: #fff3cd; font-weight: bold; color: var(--error-text);"><td>${miPosicion}º${miTendencia}</td><td>${miNombre} (TÚ)</td><td>${miValor}${sufijoValor}</td></tr>`;
+tablaBody.innerHTML += `<tr style="background-color: #fff3cd; font-weight: bold; color: var(--error-text);"><td>${miPosicion}º${miTendencia}</td><td>${escapar(miNombre)} (TÚ)</td><td>${miValor}${sufijoValor}</td></tr>`;
 } else if (miPosicion === -1 && rankingCompleto.length > 0) {
 tablaBody.innerHTML += `<tr><td colspan="3" style="text-align:center; color: var(--text-muted); font-size:12px; padding: 5px;">⋮</td></tr>`;
-tablaBody.innerHTML += `<tr style="background-color: #fff3cd; font-weight: bold; color: var(--text-muted);"><td>-</td><td>${miNombre} (TÚ)</td><td>Sin registrar</td></tr>`;
+tablaBody.innerHTML += `<tr style="background-color: #fff3cd; font-weight: bold; color: var(--text-muted);"><td>-</td><td>${escapar(miNombre)} (TÚ)</td><td>Sin registrar</td></tr>`;
 }
 }
 
@@ -1116,7 +1118,7 @@ setTimeout(() => { c1.querySelector('.parejas-back').classList.add('matched'); c
 function comprobarVictoriaParejas() {
 if (parejasAcertadas === 8) {
 let pts = 20; if (parejasMovimientos <= 12) pts = 150; else if (parejasMovimientos <= 18) pts = 100; else if (parejasMovimientos <= 24) pts = 50;
-setTimeout(() => { lanzarConfeti(); showModal("¡Memoria de Elefante!", `Has encontrado todas las parejas en ${parejasMovimientos} movimientos. \n\n¡Ganas ${pts} puntos!`, "success"); localStorage.setItem('parejas_ultimo_dia', new Date().toDateString()); enviarPuntosAJuego("Éxito Parejas", pts, "Movimientos: " + parejasMovimientos); cerrarParejas(); }, 600);
+setTimeout(() => { lanzarConfeti(); showModal("¡Memoria de Elefante!", `Has encontrado todas las parejas en ${parejasMovimientos} movimientos. \n\n¡Ganas ${pts} puntos!`, "success"); localStorage.setItem('parejas_ultimo_dia', diaMadrid()); enviarPuntosAJuego("Éxito Parejas", pts, "Movimientos: " + parejasMovimientos); cerrarParejas(); }, 600);
 }
 }
 
@@ -1125,7 +1127,7 @@ setTimeout(() => { lanzarConfeti(); showModal("¡Memoria de Elefante!", `Has enc
 // =========================================================================
 function getZipNivelDiario() {
 const rutas = [ ["0,0", "0,3", "1,0", "2,3", "3,0"], ["3,3", "3,0", "0,0", "0,3", "1,2"], ["0,1", "2,0", "3,2", "1,3", "1,1"], ["1,1", "2,0", "2,2", "1,3", "1,2"], ["2,1", "1,0", "0,3", "3,2", "1,1"], ["0,2", "3,3", "2,0", "1,1", "1,2"] ];
-const index = new Date().getDate() % rutas.length; const ruta = rutas[index]; const puntos = {}; ruta.forEach((pos, i) => puntos[pos] = i + 1); return { puntos, totalDots: 5 };
+const index = Number(diaMadrid().slice(-2)) % rutas.length; const ruta = rutas[index]; const puntos = {}; ruta.forEach((pos, i) => puntos[pos] = i + 1); return { puntos, totalDots: 5 };
 }
 function inicializarTableroZip() {
 zipNivelActual = getZipNivelDiario(); const tablero = document.getElementById('tablero-zip'); tablero.innerHTML = ''; tablero.style.gridTemplateColumns = `repeat(4, 1fr)`;
@@ -1146,7 +1148,7 @@ zipDrawing = false; if(zipTimerInterval) clearInterval(zipTimerInterval);
 if(zipPath.length === 16) {
 let zipTime = (Date.now() - zipStartTime) / 1000; document.getElementById('zip-timer-display').innerText = zipTime.toFixed(1) + "s"; let puntosZip = 150;
 if (zipTime <= 4) puntosZip = 150; else if (zipTime <= 8) puntosZip = 120; else if (zipTime <= 15) puntosZip = 80; else puntosZip = 50;
-setTimeout(() => { lanzarConfeti(); showModal("¡Velocidad Extrema!", "Lo completaste en " + zipTime.toFixed(1) + " segundos. ¡Sumas " + puntosZip + " puntos!", "success"); localStorage.setItem('zip_ultimo_dia', new Date().toDateString()); enviarPuntosAJuego("Éxito ZIP", puntosZip, "Tiempo: " + zipTime.toFixed(1) + "s"); cerrarZip(); }, 300);
+setTimeout(async () => { if(await registrarVictoria("Éxito ZIP", "Tiempo: " + zipTime.toFixed(1) + "s", "zip_ultimo_dia")) cerrarZip(); else resetZip(); }, 300);
 } else { setTimeout(() => { showModal("¡Ups!", "Has llegado al 5, pero te faltan cuadrados grises por rellenar. ¡Inténtalo de nuevo sin levantar el dedo!", "warning"); resetZip(); }, 300); }
 }
 }
@@ -1166,7 +1168,7 @@ tableroZip.addEventListener('mousemove', (e) => { if(!zipDrawing) return; if(e.b
 // =========================================================================
 // RULETA, WORDLE Y TRIVIAL
 // =========================================================================
-function obtenerCosteGiroActual() { let hoy = new Date().toDateString(); let ultimoDia = localStorage.getItem('ruleta_dia'); let tiradasHoy = 0; if (ultimoDia === hoy) tiradasHoy = parseInt(localStorage.getItem('ruleta_tiradas')) || 0; else localStorage.setItem('ruleta_dia', hoy); if (tiradasHoy === 0) return 0; if (tiradasHoy === 1) return 20; if (tiradasHoy === 2) return 50; return 50 * Math.pow(2, tiradasHoy - 2); }
+function obtenerCosteGiroActual() { let hoy = diaMadrid(); let ultimoDia = localStorage.getItem('ruleta_dia'); let tiradasHoy = 0; if (ultimoDia === hoy) tiradasHoy = parseInt(localStorage.getItem('ruleta_tiradas')) || 0; else localStorage.setItem('ruleta_dia', hoy); if (tiradasHoy === 0) return 0; if (tiradasHoy === 1) return 20; if (tiradasHoy === 2) return 50; return 50 * Math.pow(2, tiradasHoy - 2); }
 function actualizarInterfazRuleta() { let coste = obtenerCosteGiroActual(); let btn = document.getElementById('btn-ruleta'); let txtCoste = document.getElementById('coste-ruleta-txt'); if (coste === 0) { txtCoste.innerHTML = `Coste próximo giro: <span style="color:var(--success)">GRATIS</span>`; btn.disabled = false; } else { txtCoste.innerHTML = `Coste próximo giro: <span style="color:var(--error-text)">${coste} pts</span>`; if (misPuntosActuales < coste) { txtCoste.innerHTML += `<br><span style="color:var(--error-text); font-size:11px;">⚠️ SALDO INSUFICIENTE PARA JUGAR</span>`; btn.disabled = true; } else { btn.disabled = false; } } }
 function girarRuleta() {
 let tiradasHoy = parseInt(localStorage.getItem('ruleta_tiradas')) || 0;
@@ -1195,9 +1197,9 @@ function comprobarTrivial(opcionElegida) {
 const correcta = trivialActual.respuesta.toUpperCase();
 document.getElementById('btn-triv-' + opcionElegida.toLowerCase()).classList.add(opcionElegida === correcta ? 'correct' : 'wrong');
 if (opcionElegida !== correcta) document.getElementById('btn-triv-' + correcta.toLowerCase()).classList.add('correct');
-localStorage.setItem('trivial_ultimo_dia', new Date().toDateString());
+localStorage.setItem('trivial_ultimo_dia', diaMadrid());
 setTimeout(() => {
-if (opcionElegida === correcta) { showModal("¡Has Acertado!", "Trivial corporativo superado. Sumas 50 puntos directos.", "success"); enviarPuntosAJuego("Victoria Trivial", 50, trivialActual.pregunta); } else { showModal("Respuesta Incorrecta", "No has acertado la pregunta. ¡Prueba suerte mañana!", "error"); enviarPuntosAJuego("Intento Trivial (Fallo)", 0, trivialActual.pregunta); }
+if (opcionElegida === correcta) { showModal("¡Has Acertado!", "Trivial corporativo superado. Sumas 50 puntos directos.", "success"); enviarPuntosAJuego("Victoria Trivial", 50, trivialActual.pregunta, {respuesta: opcionElegida}); } else { showModal("Respuesta Incorrecta", "No has acertado la pregunta. ¡Prueba suerte mañana!", "error"); enviarPuntosAJuego("Intento Trivial (Fallo)", 0, trivialActual.pregunta, {respuesta: opcionElegida}); }
 cerrarTrivial();
 }, 1500);
 }
@@ -1221,12 +1223,12 @@ for (let i = 0; i < 5; i++) if (feedback[i] === 'gris') { let idx = secretaArray
 for (let i = 0; i < 5; i++) { let casilla = document.getElementById(`casilla-${intentos}-${i}`); casilla.style.transform = "rotateX(90deg)"; setTimeout(() => { casilla.classList.add(feedback[i]); casilla.style.transform = "rotateX(0deg)"; }, i * 200); }
 setTimeout(() => {
 if (palabraAdivinada === palabraSecretaDelDia) {
-juegoTerminado = true; localStorage.setItem('wordle_ultimo_dia', new Date().toDateString());
+juegoTerminado = true; localStorage.setItem('wordle_ultimo_dia', diaMadrid());
 let intentosSobrantes = 5 - intentos; let puntosGanados = (intentosSobrantes + 1) * 20;
 setTimeout(() => { lanzarConfeti(); showModal("¡Reto Descifrado!", "Has adivinado la palabra. Sumas " + puntosGanados + " puntos.", "success"); enviarPuntosAJuego("Éxito Wordle", puntosGanados, palabraAdivinada); cerrarWordle(); }, 500);
 } else {
 intentos++; letrasActuales = [];
-if (intentos === 6) { juegoTerminado = true; localStorage.setItem('wordle_ultimo_dia', new Date().toDateString()); setTimeout(() => { showModal("Fin del juego", "Agotaste tus intentos. La palabra era: " + palabraSecretaDelDia, "error"); enviarPuntosAJuego("Fallo Wordle", 0, "No adivinó"); cerrarWordle(); }, 500); }
+if (intentos === 6) { juegoTerminado = true; localStorage.setItem('wordle_ultimo_dia', diaMadrid()); setTimeout(() => { showModal("Fin del juego", "Agotaste tus intentos. La palabra era: " + palabraSecretaDelDia, "error"); enviarPuntosAJuego("Fallo Wordle", 0, "No adivinó"); cerrarWordle(); }, 500); }
 }
 }, 1500);
 }
@@ -1274,7 +1276,7 @@ for(let i=0; i<Math.min(10, ranking.length); i++) {
 let r = ranking[i]; let icono = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i+1) + 'º';
 let txtNombre = r.nombre === localStorage.getItem('jugador_nombre') ? r.nombre + " (TÚ)" : r.nombre;
 let filaMia = r.nombre === localStorage.getItem('jugador_nombre') ? 'style="background:#fff3cd; font-weight:bold;"' : '';
-tabla.innerHTML += `<tr ${filaMia}><td style="font-weight:bold; color:var(--primary);">${icono}</td><td>${txtNombre}</td><td>${r.dano}</td></tr>`;
+tabla.innerHTML += `<tr ${filaMia}><td style="font-weight:bold; color:var(--primary);">${icono}</td><td>${escapar(txtNombre)}</td><td>${r.dano}</td></tr>`;
 }
 }
 
@@ -1341,7 +1343,7 @@ if (bossVidaActual < 0) bossVidaActual = 0;
 document.getElementById('boss-vida-fill').style.width = (bossVidaActual / bossVidaMaxima * 100) + "%"; document.getElementById('boss-vida-txt').innerText = bossVidaActual + " / " + bossVidaMaxima;
 let img = document.getElementById('boss-img'); img.classList.remove('shake-boss'); void img.offsetWidth; img.classList.add('shake-boss');
 mostrarGolpeVisual(cantidadFinal, esCritico, false, x, y);
-if (bossVidaActual === 0) { document.getElementById('alerta-boss').style.display = 'none'; clearInterval(autoClickerInterval); clearInterval(ilusionMultijugadorInterval); reclamarBotinBoss(); enviarDanoAlServidor(); }
+if (bossVidaActual === 0) { document.getElementById('alerta-boss').style.display = 'none'; clearInterval(autoClickerInterval); clearInterval(ilusionMultijugadorInterval); enviarDanoAlServidor().then(() => reclamarBotinBoss()); }
 }
 
 function mostrarGolpeVisual(cantidad, esCritico, esAjeno, x, y) {
@@ -1654,7 +1656,301 @@ var Game = /** @class */ (function () {
   };
   return Game;
 })();
+
+// Progressive release. Unavailable API/configuration always keeps activities closed.
+let funciones = {}, fechaCena = '', campaña = '', colaOperaciones = Promise.resolve();
+let danoPendiente=null;
+let leyendo = false, compraPendiente = false, danoEnviado = false, botinPendiente = false;
+function escapar(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function diaMadrid(d = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d);
+  const get=t=>parts.find(p=>p.type===t).value;
+  return get('year')+'-'+get('month')+'-'+get('day');
+}
+getSemanaActual = function() {
+  const parts=diaMadrid().split('-').map(Number), start=Date.UTC(parts[0],0,1), current=Date.UTC(parts[0],parts[1]-1,parts[2]);
+  return parts[0]+'-'+Math.ceil(((current-start)/86400000+1)/7);
+};
+function limpiarEstadoCampaña(id) {
+  if (localStorage.getItem('cena_campaign') === id) return;
+  const prefixes=['jugador_','asistencia_','racha_','zip_','wordle_','parejas_','tower_','ruleta_','botin_','mision_','last_','baseline_','marcadores_'];
+  for (const key of Object.keys(localStorage)) if(prefixes.some(p=>key.startsWith(p)))localStorage.removeItem(key);
+  localStorage.setItem('cena_campaign',id);
+}
+function actualizarCuentaAtras() {
+  const counter=document.getElementById('contador-cena'), info=document.getElementById('fecha-cena-info');
+  const fecha=new Date(fechaCena), valid=fechaCena && !Number.isNaN(fecha.getTime());
+  if(!valid){counter.textContent='XX:XX';info.textContent='Fecha de la cena pendiente de confirmar';return;}
+  const restante=Math.max(0,fecha.getTime()-Date.now()), seconds=Math.floor(restante/1000);
+  counter.textContent=Math.floor(seconds/86400)+' días · '+String(Math.floor(seconds/3600)%24).padStart(2,'0')+':'+String(Math.floor(seconds/60)%60).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
+  info.textContent=restante===0?'¡Ha llegado el día!':fecha.toLocaleString('es-ES',{timeZone:'Europe/Madrid',dateStyle:'long',timeStyle:'short'});
+}
+function disponible(key) {
+  if(key==='inicio')return true;
+  if(key==='estadisticas'||key==='rankingNav')return !!(funciones.ranking||funciones.logros||funciones.muro);
+  if(key==='galeria'||key==='fotosNav')return !!(funciones.fotos||funciones.misiones);
+  if(key==='puntos')return !!(funciones.juegos||funciones.ranking||funciones.boss||funciones.codigos||funciones.fotos||funciones.misiones||funciones.racha);
+  return !!funciones[key];
+}
+function aplicarFases() {
+  document.querySelectorAll('[data-feature]').forEach(el=>el.hidden=!disponible(el.dataset.feature));
+  const checkbox=document.getElementById('checkbox-mision');
+  checkbox.parentElement.hidden=!funciones.misiones;
+  if(!funciones.fotos && funciones.misiones)checkbox.checked=true;
+  document.getElementById('btn-subir-foto').disabled=!funciones.fotos&&!funciones.misiones;
+  document.querySelector('.bottom-nav').hidden=!['juegos','estadisticas','codigos','galeria'].some(disponible);
+  const current=document.querySelector('.seccion-lobby.active-sec');
+  if(current && current.hidden) cambiarSeccionLobby('inicio',document.querySelector('.nav-item'));
+  if(!funciones.ranking){
+    document.getElementById('vista-equipos').hidden=true;document.getElementById('vista-agentes').hidden=true;
+    document.getElementById('vista-logros').style.display=funciones.logros?'block':'none';
+  } else {document.getElementById('vista-equipos').hidden=false;document.getElementById('vista-agentes').hidden=false;}
+  const guardScreens={zip:'zip',wordle:'wordle',parejas:'parejas',trivial:'trivial',torre:'tower',votaciones:'votaciones',boss:'boss'};
+  for(const screen in guardScreens){
+    const el=document.getElementById('pantalla-'+screen);
+    if(el && el.classList.contains('active')&&!disponible(guardScreens[screen])){
+      clearInterval(autoClickerInterval);clearInterval(sincroBossInterval);clearInterval(ilusionMultijugadorInterval);clearInterval(zipTimerInterval);
+      danoAcumuladoSinEnviar=0;mostrarLobby();
+    }
+  }
+  actualizarCuentaAtras();
+}
+const pintarAnterior=pintarDatos;
+pintarDatos=function(datos) {
+  if(datos.apiVersion!==2){funciones={};aplicarFases();return;}
+  funciones=datos.funciones||{};fechaCena=datos.fechaCena||'';campaña=datos.campaign;
+  if(localStorage.getItem('jugador_nombre') && datos.jugadorNombre)localStorage.setItem('jugador_nombre',datos.jugadorNombre);
+  if(datos.boss && Number(datos.boss.etapa)!==bossEtapaActual){danoAcumuladoSinEnviar=0;danoPendiente=null;clearInterval(autoClickerInterval);clearInterval(sincroBossInterval);clearInterval(ilusionMultijugadorInterval);}
+  pintarAnterior(datos);
+  const state=datos.estadoJugador||{}, completed=state.completados||[];
+  for(const game of ['zip','parejas','wordle','trivial']) {
+    if(completed.includes(game))localStorage.setItem(game+'_ultimo_dia',diaMadrid());else localStorage.removeItem(game+'_ultimo_dia');
+  }
+  localStorage.setItem('tower_record_personal',state.towerRecord||0);
+  localStorage.setItem('ruleta_tiradas',state.ruletaTiradas||0);localStorage.setItem('ruleta_dia',diaMadrid());
+  if(state.misionCompletada)localStorage.setItem('mision_semana_completada',getSemanaActual());else localStorage.removeItem('mision_semana_completada');
+  if(completed.includes('racha'))localStorage.setItem('racha_ultimo_dia',diaMadrid());else localStorage.removeItem('racha_ultimo_dia');
+  if(state.racha){localStorage.setItem('racha_contador',state.racha);document.getElementById('racha-dias-num').textContent=state.racha;}
+  const answer=datos.miAsistencia||localStorage.getItem('jugador_asistencia');
+  document.getElementById('asistencia-confirmada').textContent=datos.miAsistencia?'Respuesta guardada: '+datos.miAsistencia:'Guarda tu respuesta para confirmar tu asistencia.';
+  if(answer)document.getElementById('cambiar-asistencia').value=answer;
+  const voteBtn=document.getElementById('btn-abrir-votaciones');
+  if(state.haVotado){voteBtn.textContent='✅ VOTOS REGISTRADOS';voteBtn.disabled=true;}
+  else {voteBtn.textContent='🏆 VOTAR PESCA-OSCARS';voteBtn.disabled=false;}
+  actualizarInterfazRuleta();actualizarInterfazMision();aplicarFases();
+};
+cargarMarcadores=async function(callback) {
+  if(leyendo){if(callback)setTimeout(()=>cargarMarcadores(callback),200);return;}
+  leyendo=true;
+  try {
+    const name=localStorage.getItem('jugador_nombre')||'';
+    const res=await fetch(URL_GOOGLE+'?token=candado_pescanova_26&nombre='+encodeURIComponent(name)+'&_tsc='+Date.now(),{signal:AbortSignal.timeout(20000)});
+    if(!res.ok)throw new Error('El servidor no responde.');
+    const data=await res.json();
+    if(data.error || data.apiVersion!==2)throw new Error(data.error || 'Se está actualizando la web. Vuelve en unos minutos.');
+    if(localStorage.getItem('cena_campaign')!==data.campaign){
+      limpiarEstadoCampaña(data.campaign);
+      document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));
+      document.getElementById('pantalla-registro').classList.add('active');
+    }
+    pintarDatos(data);
+    if(callback)callback(true);
+    return data;
+  }catch(error){
+    if(callback){callback(false);showModal('No se pudo conectar',error.message,'error');}
+    return null;
+  }finally{leyendo=false;cargandoInicial=false;document.getElementById('loading-text').style.display='none';}
+};
+function requestId(){return crypto.randomUUID().replace(/-/g,'');}
+function pedirOperacion(accion,puntos=0,palabra='',extra={}) {
+  const payload=Object.assign({nombre:localStorage.getItem('jugador_nombre'),departamento:localStorage.getItem('jugador_dep'),accion,puntos,palabra,campaign:campaña,etapa:bossEtapaActual,requestId:requestId()},extra);
+  const work=async()=>{
+    const res=await fetch(URL_GOOGLE,{method:'POST',body:JSON.stringify(payload),signal:AbortSignal.timeout(30000)});
+    if(!res.ok)throw new Error('No se pudo guardar la operación.');
+    const data=await res.json();
+    if(data.ok!==true)throw new Error(data.mensaje||'El servidor rechazó la operación.');
+    if(Number.isFinite(data.saldo)){misPuntosActuales=data.saldo;document.getElementById('puntos-esquina-num').textContent=data.saldo;}
+    return data;
+  };
+  const result=colaOperaciones.then(work);
+  colaOperaciones=result.catch(()=>{});
+  return result;
+}
+enviarPuntosAJuego=function(accion,puntos,palabra,extra={}) {
+  return pedirOperacion(accion,puntos,palabra,extra).then(async data=>{await cargarMarcadores();return data;}).catch(error=>{
+    const flags={'Éxito ZIP':'zip_ultimo_dia','Éxito Parejas':'parejas_ultimo_dia','Éxito Wordle':'wordle_ultimo_dia','Fallo Wordle':'wordle_ultimo_dia','Racha Diaria':'racha_ultimo_dia'};
+    if(flags[accion])localStorage.removeItem(flags[accion]);
+    showModal('No se ha guardado',error.message+' Comprueba la conexión y vuelve a intentarlo.','error');
+    return null;
+  });
+};
+entrar=async function() {
+  const nombre=document.getElementById('nombre').value.trim(), dep=document.getElementById('departamento').value, answer=document.getElementById('asistencia').value;
+  if(!nombre||!dep||!answer){showModal('Faltan datos','Indica tu nombre, departamento y asistencia.','warning');return;}
+  const btn=document.getElementById('btn-entrar');btn.disabled=true;btn.textContent='GUARDANDO...';
+  try {
+    if(!campaña && !(await cargarMarcadores()))throw new Error('No se pudo cargar la configuración.');
+    localStorage.setItem('jugador_nombre',nombre);localStorage.setItem('jugador_dep',dep);
+    await pedirOperacion('Asistencia Cena',0,answer);
+    localStorage.setItem('jugador_asistencia',answer);
+    await cargarMarcadores();mostrarLobby();aplicarFases();
+  }catch(error){showModal('No se ha guardado',error.message,'error');}
+  finally{btn.disabled=false;btn.textContent='ACCEDER';}
+};
+guardarAsistencia=async function(){
+  const btn=document.getElementById('btn-asistencia');btn.disabled=true;
+  try{const answer=document.getElementById('cambiar-asistencia').value;await pedirOperacion('Asistencia Cena',0,answer);localStorage.setItem('jugador_asistencia',answer);await cargarMarcadores();showModal('Asistencia guardada','Tu respuesta se ha actualizado.','success');}
+  catch(error){showModal('No se ha guardado',error.message,'error');}finally{btn.disabled=false;}
+};
+const lobbyAnterior=mostrarLobby;
+mostrarLobby=function(){lobbyAnterior();aplicarFases();};
+const seccionAnterior=cambiarSeccionLobby;
+cambiarSeccionLobby=function(id,nav){
+  const key={ranking:'estadisticas',fotos:'galeria'}[id]||id;
+  if(!disponible(key))return;
+  seccionAnterior(id,nav||document.querySelector('.nav-item'));
+};
+[
+  ['abrirZip','zip'],['abrirWordle','wordle'],['abrirParejas','parejas'],['abrirTrivial','trivial'],
+  ['abrirTorre','tower'],['abrirVotaciones','votaciones'],['abrirBoss','boss']
+].forEach(([name,key])=>{
+  const original=window[name];window[name]=function(...args){if(!disponible(key)){showModal('Actividad cerrada','Esta actividad todavía no está abierta.','info');return;}return original(...args);};
+});
+const filtroAnterior=cambiarFiltroRanking;
+cambiarFiltroRanking=function(view){if(view==='logros'&&!funciones.logros)return;if(view!=='logros'&&!funciones.ranking)return;filtroAnterior(view);};
+canjearCodigo=async function(){
+  if(!funciones.codigos)return;
+  const btn=document.getElementById('btn-canjear-codigo'), input=document.getElementById('palabra-secreta');
+  if(!input.value.trim())return;btn.disabled=true;
+  try{const data=await pedirOperacion('Código Localizado',0,input.value.trim());await cargarMarcadores();showModal('Código validado',data.mensaje,'success');input.value='';}
+  catch(error){showModal('No se ha canjeado',error.message,'error');}finally{btn.disabled=false;}
+};
+subirFotoDrive=async function(){
+  const file=document.getElementById('input-foto').files[0], mission=document.getElementById('checkbox-mision').checked;
+  if(!disponible(mission?'misiones':'fotos'))return;
+  if(!file){showModal('Selecciona una foto','Elige una imagen antes de enviar.','warning');return;}
+  if(!/^image\/(jpeg|png|webp)$/.test(file.type)||file.size>5000000){showModal('Imagen no válida','Utiliza JPG, PNG o WebP de hasta 5 MB.','warning');return;}
+  const btn=document.getElementById('btn-subir-foto'), info=document.getElementById('mensaje-foto');btn.disabled=true;info.style.display='block';
+  try{
+    const b64=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result.split(',')[1]);reader.onerror=()=>reject(new Error('No se pudo leer la imagen.'));reader.readAsDataURL(file);});
+    const data=await pedirOperacion('Subir Foto',0,mission?'Misión: '+miMisionActual:'Foto Libre',{archivoBase64:b64,mimeType:file.type});
+    if(mission)localStorage.setItem('mision_semana_completada',getSemanaActual());
+    await cargarMarcadores();document.getElementById('input-foto').value='';showModal('Foto guardada','Sumas '+data.puntos+' puntos.','success');
+  }catch(error){showModal('No se ha subido la foto',error.message,'error');}
+  finally{btn.disabled=false;info.style.display='none';aplicarFases();}
+};
+emitirVotos=async function(){
+  if(!funciones.votaciones)return;
+  const inputs=[...document.querySelectorAll('#formulario-votaciones input')], votes=inputs.map(el=>({categoria:el.dataset.cat,voto:el.value.trim()}));
+  if(!votes.length||votes.some(v=>!v.voto)){showModal('Faltan votos','Completa todas las categorías.','warning');return;}
+  const btn=document.getElementById('btn-enviar-votos');btn.disabled=true;
+  try{await pedirOperacion('VotarMultiple',0,JSON.stringify(votes));await cargarMarcadores();showModal('Votos registrados','Gracias por participar.','success');cerrarVotaciones();}
+  catch(error){showModal('No se han guardado los votos',error.message,'error');}finally{btn.disabled=false;}
+};
+girarRuleta=async function(){
+  if(!funciones.ruleta)return;const btn=document.getElementById('btn-ruleta'),box=document.getElementById('ruleta-box');btn.disabled=true;box.textContent='🎡 Girando...';
+  try{const data=await pedirOperacion('Ruleta',0,'');box.textContent=(data.premio>=0?'+':'')+data.premio+' PTS';await cargarMarcadores();showModal('Resultado','Premio: '+data.premio+' · Coste: '+data.coste+' · Balance: '+data.puntos+' puntos','info');}
+  catch(error){box.textContent='❓❓❓';showModal('No se ha realizado el giro',error.message,'error');}finally{actualizarInterfazRuleta();}
+};
+reclamarRacha=async function(){
+  if(!funciones.racha)return;
+  try{const data=await pedirOperacion('Racha Diaria',0,'');await cargarMarcadores();showModal('Recompensa diaria','Racha: '+data.racha+' días · +'+data.puntos+' puntos','success');}
+  catch(error){showModal('Recompensa no disponible',error.message,'info');}
+};
+comprarMejora=async function(tipo){
+  if(compraPendiente||!funciones.boss)return;compraPendiente=true;
+  try{const data=await pedirOperacion('ComprarMejoraBoss',0,'Tipo: '+tipo);miLvlFuerza=data.fuerza;miLvlAuto=data.auto;actualizarTiendaUI();await cargarMarcadores();clearInterval(autoClickerInterval);if(miLvlAuto>0&&document.getElementById('pantalla-boss').classList.contains('active'))autoClickerInterval=setInterval(()=>hacerDano(miLvlAuto,false,0,0),1000);showModal('Mejora comprada','Coste: '+(-data.puntos)+' puntos.','success');}
+  catch(error){showModal('No se ha comprado',error.message,'error');}finally{compraPendiente=false;}
+};
+comprarFrenesi=async function(){
+  if(compraPendiente||!funciones.boss)return;compraPendiente=true;
+  try{const data=await pedirOperacion('ComprarFrenesi',0,'Buff Global');activarFrenesiLocal(data.frenesiRestante);await cargarMarcadores();}
+  catch(error){showModal('No se ha activado',error.message,'error');}finally{compraPendiente=false;}
+};
+enviarDanoAlServidor=async function(){
+  if(danoEnviado||(!danoPendiente && danoAcumuladoSinEnviar<=0))return;
+  if(!danoPendiente){danoPendiente={amount:danoAcumuladoSinEnviar,stage:bossEtapaActual,id:requestId()};danoAcumuladoSinEnviar=0;}
+  const {amount,stage,id}=danoPendiente;danoEnviado=true;
+  try{await pedirOperacion('DanoBoss',amount,'Fase: '+stage,{etapa:stage,requestId:id});danoPendiente=null;await cargarMarcadores();}
+  catch(error){showModal('Daño pendiente',error.message,'warning');}
+  finally{danoEnviado=false;}
+};
+reclamarBotinBoss=async function(){
+  if(botinPendiente||!funciones.boss)return;
+  const key='botin_reclamado_fase_'+bossEtapaActual;
+  if(localStorage.getItem(key))return;botinPendiente=true;
+  try{await enviarDanoAlServidor();await cargarMarcadores();const awarded=ultimosDatosServidor && ultimosDatosServidor.estadoJugador && ultimosDatosServidor.estadoJugador.botines;if(awarded && Object.hasOwn(awarded,String(bossEtapaActual))){localStorage.setItem(key,'true');showModal('Boss derrotado','Tu botín: +'+awarded[bossEtapaActual]+' puntos.','success');return;}const data=await pedirOperacion('Botín Boss',0,'Recompensa Fase: '+bossEtapaActual);localStorage.setItem(key,'true');await cargarMarcadores();showModal('Boss derrotado','Tu botín: +'+data.puntos+' puntos.','success');}
+  catch(error){showModal('Botín no disponible',error.message,'info');}
+  finally{botinPendiente=false;}
+};
+const loadAnterior=window.onload;
+window.onload=async function(){
+  aplicarFases();await cargarMarcadores();
+  if(localStorage.getItem('jugador_nombre'))mostrarLobby();
+  iniciarEscuchadoresZip();
+  setInterval(actualizarCuentaAtras,1000);
+  setInterval(()=>{if(document.visibilityState==='visible')cargarMarcadores();},15000);
+};
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')cargarMarcadores();});
+let wordleEnviando=false;
+revisarPalabra=async function(){
+  if(juegoTerminado||wordleEnviando||!funciones.wordle)return;
+  if(letrasActuales.length!==5){showModal('Faltan letras','Introduce una palabra de cinco letras.','warning');return;}
+  wordleEnviando=true;
+  try{
+    const word=letrasActuales.join(''), data=await pedirOperacion('Intento Wordle',0,word);
+    const row=data.intento-1;
+    for(let i=0;i<5;i++){const cell=document.getElementById('casilla-'+row+'-'+i);cell.textContent=word[i];cell.className='casilla '+data.feedback[i];}
+    intentos=data.intento;letrasActuales=[];juegoTerminado=data.terminado;
+    if(data.terminado){
+      localStorage.setItem('wordle_ultimo_dia',diaMadrid());await cargarMarcadores();
+      showModal(data.ganado?'¡Palabra encontrada!':'Fin del Wordle',data.ganado?'Has ganado '+data.puntos+' puntos.':'La palabra era '+data.palabraCorrecta+'. Vuelve mañana.',data.ganado?'success':'info');
+    }
+  }catch(error){showModal('No se ha enviado',error.message,'error');}finally{wordleEnviando=false;}
+};
+const abrirWordleV2=abrirWordle;
+abrirWordle=function(){
+  abrirWordleV2();
+  if(!document.getElementById('pantalla-wordle').classList.contains('active'))return;
+  const previous=(ultimosDatosServidor && ultimosDatosServidor.estadoJugador && ultimosDatosServidor.estadoJugador.wordleIntentos)||[];
+  intentos=previous.length;
+  previous.forEach((attempt,row)=>{for(let i=0;i<5;i++){const cell=document.getElementById('casilla-'+row+'-'+i);cell.textContent=attempt.word[i];cell.className='casilla '+attempt.feedback[i];}});
+};
+comprobarTrivial=async function(opcion){
+  if(!funciones.trivial)return;
+  ['a','b','c','d'].forEach(l=>document.getElementById('btn-triv-'+l).disabled=true);
+  try{
+    const data=await pedirOperacion('Victoria Trivial',0,'',{respuesta:opcion});
+    document.getElementById('btn-triv-'+opcion.toLowerCase()).classList.add(opcion===data.correcta?'correct':'wrong');
+    document.getElementById('btn-triv-'+data.correcta.toLowerCase()).classList.add('correct');
+    localStorage.setItem('trivial_ultimo_dia',diaMadrid());await cargarMarcadores();
+    showModal(data.puntos?'¡Respuesta correcta!':'Respuesta incorrecta',data.puntos?'Sumas '+data.puntos+' puntos.':'La respuesta correcta es '+data.correcta+'. Vuelve mañana.',data.puntos?'success':'info');
+  }catch(error){showModal('No se ha guardado',error.message,'error');['a','b','c','d'].forEach(l=>document.getElementById('btn-triv-'+l).disabled=false);}
+};
+async function registrarVictoria(accion,detalle,flag){
+  try{
+    const data=await pedirOperacion(accion,0,detalle);
+    if(flag)localStorage.setItem(flag,diaMadrid());
+    await cargarMarcadores();
+    lanzarConfeti();showModal('¡Reto completado!','Resultado: '+detalle+' · Has ganado '+data.puntos+' puntos.','success');
+    return true;
+  }catch(error){showModal('Resultado no guardado',error.message,'error');return false;}
+}
+comprobarVictoriaParejas=function(){
+  if(parejasAcertadas!==8)return;
+  setTimeout(async()=>{if(await registrarVictoria('Éxito Parejas','Movimientos: '+parejasMovimientos,'parejas_ultimo_dia'))cerrarParejas();},600);
+};
+Game.prototype.endGame=async function(){
+  this.updateState(this.STATES.ENDED);
+  const score=this.blocks.length-1;
+  if(score<=0)return;
+  await registrarVictoria('Éxito Tower',String(score),'');
+};
+
 </script>
 
 </body>
 </html>
+

@@ -483,10 +483,12 @@ Racha: <span id="racha-dias-num">0</span>
 <div id="pantalla-zip" class="screen">
 <div class="wordle-header"><button class="btn-volver" onclick="cerrarZip()">← Volver</button><h2 style="margin:0; color:var(--primary);">PESCA-ZIP</h2><div style="width: 70px;"></div></div>
 <div id="zip-timer-display">0.0s</div>
+<p id="zip-guardado" role="status" hidden></p>
+<button id="zip-reintentar" class="btn-codigo" type="button" hidden onclick="guardarZipTerminado()">Reintentar guardado</button>
 <p style="font-size: 13px; color:var(--text-muted); margin-bottom: 5px;">Arrastra el dedo desde el 1 hasta el 5.</p>
 <p style="font-size: 12px; color:var(--error-text); margin-top: 0; font-weight: bold;">Debes pasar por TODOS los cuadrados grises.</p>
 <div id="tablero-zip"></div>
-<button class="btn-codigo" onclick="resetZip()">REINICIAR TRAZO</button>
+<button id="zip-reiniciar" class="btn-codigo" onclick="resetZip()">REINICIAR TRAZO</button>
 </div>
 
 <!-- PANTALLA PAREJAS -->
@@ -1152,7 +1154,7 @@ zipNivelActual = getZipNivelDiario(); const tablero = document.getElementById('t
 for(let r = 0; r < lado; r++) { for(let c = 0; c < lado; c++) { let cell = document.createElement('div'); cell.className = 'zip-cell'; cell.dataset.id = `${r},${c}`; let num = zipNivelActual.puntos[`${r},${c}`]; if(num) cell.innerHTML = `<div class="zip-dot">${num}</div>`; tablero.appendChild(cell); } }
 resetZip();
 }
-function resetZip() { zipPath = []; zipDrawing = false; zipNextDot = 2; zipStartTime = 0; if (zipTimerInterval) clearInterval(zipTimerInterval); const timerEl = document.getElementById('zip-timer-display'); if (timerEl) { timerEl.innerText = "0.0s"; timerEl.style.color = "var(--primary)"; } actualizarTableroZip(); }
+function resetZip() { if(zipGuardando)return; zipPendiente=null; document.getElementById('zip-guardado').hidden=true; document.getElementById('zip-reintentar').hidden=true; zipPath = []; zipDrawing = false; zipNextDot = 2; zipStartTime = 0; if (zipTimerInterval) clearInterval(zipTimerInterval); const timerEl = document.getElementById('zip-timer-display'); if (timerEl) { timerEl.innerText = "0.0s"; timerEl.style.color = "var(--primary)"; } actualizarTableroZip(); }
 function actualizarTableroZip() { document.querySelectorAll('.zip-cell').forEach(cell => { cell.classList.remove('path', 'path-head'); if (zipPath.includes(cell.dataset.id)) { cell.classList.add('path'); if (zipPath[zipPath.length - 1] === cell.dataset.id) cell.classList.add('path-head'); } }); }
 function handleZipMove(id) {
 if(!zipDrawing || zipPath[zipPath.length - 1] === id || zipPath.includes(id)) return;
@@ -1164,9 +1166,8 @@ zipPath.push(id); actualizarTableroZip();
 if(zipNextDot > zipNivelActual.totalDots) {
 zipDrawing = false; if(zipTimerInterval) clearInterval(zipTimerInterval);
 if(zipPath.length === (zipNivelActual.tamano||4)**2) {
-let zipTime = (Date.now() - zipStartTime) / 1000; document.getElementById('zip-timer-display').innerText = zipTime.toFixed(1) + "s"; let puntosZip = 150;
-if (zipTime <= 4) puntosZip = 150; else if (zipTime <= 8) puntosZip = 120; else if (zipTime <= 15) puntosZip = 80; else puntosZip = 50;
-setTimeout(async () => { if(await registrarVictoria("Éxito ZIP", "Tiempo: " + zipTime.toFixed(1) + "s", "zip_ultimo_dia")) cerrarZip(); else resetZip(); }, 300);
+zipPendiente={ruta:zipPath.slice(),diaZip:diaZipActivo,requestId:requestId()};
+guardarZipTerminado();
 } else { setTimeout(() => { showModal("¡Ups!", "Has llegado al último número, pero te faltan cuadrados grises por rellenar. ¡Inténtalo de nuevo sin levantar el dedo!", "warning"); resetZip(); }, 300); }
 }
 }
@@ -1174,6 +1175,7 @@ function iniciarEscuchadoresZip() {
 const tableroZip = document.getElementById('tablero-zip');
 if (tableroZip) {
 tableroZip.addEventListener('pointerdown', (e) => {
+if(zipPendiente||zipGuardando||localStorage.getItem('zip_ultimo_dia')===diaMadrid())return;
 let cell = e.target.closest('.zip-cell'); if(!cell) return; let id = cell.dataset.id;
 if(zipNivelActual.puntos[id] === 1 && zipPath.length === 0) { zipDrawing = true; zipPath = [id]; zipNextDot = 2; zipStartTime = zipInicioServidor||Date.now(); if (zipTimerInterval) clearInterval(zipTimerInterval); zipTimerInterval = setInterval(() => { let current = (Date.now() - zipStartTime) / 1000; let timerEl = document.getElementById('zip-timer-display'); timerEl.innerText = current.toFixed(1) + "s"; if(current > 10) timerEl.style.color = "var(--error-text)"; else if(current > 6) timerEl.style.color = "#ff9800"; else if(current > 3) timerEl.style.color = "var(--success)"; else timerEl.style.color = "var(--primary)"; }, 100); actualizarTableroZip(); } else if (zipPath.includes(id) && id === zipPath[zipPath.length - 1]) { zipDrawing = true; }
 });
@@ -1823,6 +1825,9 @@ cargarMarcadores=function(callback) {
       document.getElementById('pantalla-registro').classList.add('active');
     }
     pintarDatos(data);
+    if(name){
+      try{sessionStorage.setItem('pesca-lectura',JSON.stringify({name:localStorage.getItem('jugador_nombre'),day:diaMadrid(),at:Date.now(),data}));}catch(_){}
+    }
     ultimaLecturaGeneral=Date.now();
     document.getElementById("estado-sesion").hidden=true;
     return data;
@@ -1840,6 +1845,7 @@ function pedirOperacion(accion,puntos=0,palabra='',extra={}) {
     if(!res.ok)throw new Error('No se pudo guardar la operación.');
     const data=await res.json();
     if(data.ok!==true)throw new Error(data.mensaje||'El servidor rechazó la operación.');
+    try{sessionStorage.removeItem('pesca-lectura');}catch(_){}
     if(Number.isFinite(data.saldo)){misPuntosActuales=data.saldo;document.getElementById('puntos-esquina-num').textContent=data.saldo;}
     return data;
   };
@@ -1927,17 +1933,40 @@ canjearCodigo=async function(){
   try{const data=await pedirOperacion('Código Localizado',0,input.value.trim());await cargarMarcadores();showModal('Código validado',data.mensaje,'success');input.value='';}
   catch(error){showModal('No se ha canjeado',error.message,'error');}finally{btn.disabled=false;}
 };
+async function prepararFotoCena(file){
+  if(/^image\/(jpeg|png|webp)$/.test(file.type)&&file.size<=750000)return file;
+  let imagen;
+  try{imagen=await createImageBitmap(file);}
+  catch(_){throw new Error('Tu navegador no puede abrir este formato. Selecciona una foto JPG, PNG o WebP.');}
+  try{
+    const escala=Math.min(1,1600/Math.max(imagen.width,imagen.height));
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.max(1,Math.round(imagen.width*escala));
+    canvas.height=Math.max(1,Math.round(imagen.height*escala));
+    const ctx=canvas.getContext('2d',{alpha:false});
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(imagen,0,0,canvas.width,canvas.height);
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.82));
+    if(!blob||blob.size>5000000)throw new Error('No se pudo preparar la foto. Prueba con otra imagen.');
+    return blob;
+  }finally{imagen.close();}
+}
+let fotoPendiente=null;
 subirFotoDrive=async function(){
   const file=document.getElementById('input-foto').files[0], mission=document.getElementById('checkbox-mision').checked;
   if(!disponible(mission?'misiones':'fotos'))return;
   if(!file){showModal('Selecciona una foto','Elige una imagen antes de enviar.','warning');return;}
-  if(!/^image\/(jpeg|png|webp)$/.test(file.type)||file.size>5000000){showModal('Imagen no válida','Utiliza JPG, PNG o WebP de hasta 5 MB.','warning');return;}
+  if(file.size>25000000){showModal('Imagen demasiado grande','Elige una foto de menos de 25 MB.','warning');return;}
   const btn=document.getElementById('btn-subir-foto'), info=document.getElementById('mensaje-foto');btn.disabled=true;info.style.display='block';
   try{
-    const b64=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result.split(',')[1]);reader.onerror=()=>reject(new Error('No se pudo leer la imagen.'));reader.readAsDataURL(file);});
-    const data=await pedirOperacion('Subir Foto',0,mission?'Misión: '+miMisionActual:'Foto Libre',{archivoBase64:b64,mimeType:file.type});
+    info.textContent='Preparando y subiendo la foto…';
+    if(fotoPendiente?.file!==file||fotoPendiente?.mission!==mission)fotoPendiente={file,mission,id:requestId()};
+    const foto=await prepararFotoCena(file);
+    const b64=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result.split(',')[1]);reader.onerror=()=>reject(new Error('No se pudo leer la imagen.'));reader.readAsDataURL(foto);});
+    const data=await pedirOperacion('Subir Foto',0,mission?'Misión: '+miMisionActual:'Foto Libre',{archivoBase64:b64,mimeType:foto.type,requestId:fotoPendiente.id});
+    fotoPendiente=null;
     if(mission)localStorage.setItem('mision_semana_completada',getSemanaActual());
-    await cargarMarcadores();document.getElementById('input-foto').value='';showModal('Foto guardada','Sumas '+data.puntos+' puntos.','success');
+    document.getElementById('input-foto').value='';showModal('Foto guardada','Sumas '+data.puntos+' puntos.','success');cargarMarcadores();
   }catch(error){showModal('No se ha subido la foto',error.message,'error');}
   finally{btn.disabled=false;info.style.display='none';aplicarFases();}
 };
@@ -2030,7 +2059,17 @@ document.addEventListener("DOMContentLoaded",()=>{
   aplicarFases();
   const perfilGuardado=localStorage.getItem('cena_campaign')&&localStorage.getItem('jugador_nombre')&&equipoValido(localStorage.getItem('jugador_equipo'));
   const sincronizacion=document.getElementById('estado-sesion');
-  if(perfilGuardado){mostrarLobby();pintarAsistencia(localStorage.getItem('jugador_asistencia'));sincronizacion.hidden=false;}
+  if(perfilGuardado){
+    mostrarLobby();pintarAsistencia(localStorage.getItem('jugador_asistencia'));
+    try{
+      const saved=JSON.parse(sessionStorage.getItem('pesca-lectura')||'null');
+      if(saved?.name===localStorage.getItem('jugador_nombre')&&saved?.day===diaMadrid()&&
+         saved?.data?.campaign===localStorage.getItem('cena_campaign')&&Date.now()-saved.at<120000){
+        pintarDatos(saved.data);
+      }
+    }catch(_){}
+    sincronizacion.hidden=false;
+  }
   cargarMarcadores().then(data=>{
     if(!data){if(perfilGuardado)sincronizacion.textContent='No se ha podido sincronizar. Reintentaremos la conexión.';return;}
     sincronizacion.hidden=true;
@@ -2145,6 +2184,31 @@ comprobarTrivial=async function(opcion){
     showModal(data.puntos?'¡Respuesta correcta!':'Respuesta incorrecta',data.puntos?'Sumas '+data.puntos+' puntos.':'La respuesta correcta es '+data.correcta+'. Vuelve mañana.',data.puntos?'success':'info');
   }catch(error){showModal('No se ha guardado',error.message,'error');['a','b','c','d'].forEach(l=>document.getElementById('btn-triv-'+l).disabled=false);}
 };
+let zipPendiente=null, zipGuardando=false;
+async function guardarZipTerminado(){
+  if(!zipPendiente||zipGuardando)return;
+  zipGuardando=true;
+  const status=document.getElementById('zip-guardado');
+  const reiniciar=document.getElementById('zip-reiniciar');
+  const retry=document.getElementById('zip-reintentar');
+  status.hidden=false;retry.hidden=true;reiniciar.disabled=true;
+  status.textContent='Recorrido completo. Guardando el resultado…';
+  try{
+    const data=await pedirOperacion('Éxito ZIP',0,'',zipPendiente);
+    zipPendiente=null;
+    localStorage.setItem('zip_ultimo_dia',diaMadrid());
+    const tiempo=Number.isFinite(data.tiempo)?' en '+data.tiempo.toFixed(1)+' s':'';
+    status.textContent='ZIP guardado'+tiempo+' · '+data.puntos+' puntos.';
+    lanzarConfeti();
+    cargarMarcadores();
+  }catch(error){
+    status.textContent='No se pudo confirmar el resultado. '+error.message;
+    retry.hidden=false;
+  }finally{
+    zipGuardando=false;
+    reiniciar.disabled=localStorage.getItem('zip_ultimo_dia')===diaMadrid();
+  }
+}
 async function registrarVictoria(accion,detalle,flag){
   const extra=accion==="Éxito ZIP"?{ruta:zipPath.slice(),diaZip:diaZipActivo}:{};
   try{

@@ -2349,12 +2349,17 @@ function pintarQuiz(q){
 }
 async function consultarQuiz(respuesta){
  if(!funciones.trivial||quizOcupado)return;
+ const restanteAlTocar=respuesta?Math.max(0,Math.min(15000,Math.ceil(quizFin-performance.now()))):undefined;
  quizOcupado=true;
+ if(respuesta){
+  clearInterval(quizReloj);
+  document.getElementById('quiz-tiempo').textContent=restanteAlTocar?'Respuesta seleccionada · Comprobando…':'Tiempo agotado · Comprobando…';
+ }
  const botones=['a','b','c','d'].map(k=>document.getElementById('btn-triv-'+k));
  botones.forEach(b=>b.disabled=true);
  try{
   const request=respuesta?'Responder Quiz':'Abrir Quiz';
-  const data=await pedirOperacion(request,0,'',{respuesta,indice:quizVista?.indice,diaQuiz:quizDia});
+  const data=await pedirOperacion(request,0,'',{respuesta,indice:quizVista?.indice,diaQuiz:quizDia,restanteAlTocar});
   if(!data.quiz)throw new Error('No se recibió la ronda. Pulsa volver y ábrela otra vez.');
   if(document.getElementById('pantalla-trivial').classList.contains('active'))pintarQuiz(data.quiz);
   if(data.quiz.terminado)cargarMarcadores();

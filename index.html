@@ -319,7 +319,7 @@ Racha: <span id="racha-dias-num">0</span>
 </div>
 
 </div></div></div>
-<div id="sec-inicio" class="seccion-lobby active-sec">
+<div id="sec-inicio" class="seccion-lobby active-sec"><p id="estado-sesion" class="pagina-intro" role="status" hidden>Actualizando actividades…</p>
 <section class="perfil-resumen"><button type="button" id="ver-perfil-inicio" class="seccion-etiqueta" onclick="abrirPerfil('inicio')">Tu perfil</button><h2 id="nombre-usuario"></h2><div class="perfil-linea"><button id="equipo-usuario" type="button" onclick="abrirClan()" aria-label="Ver miembros y puntos de tu equipo"></button><span id="asistencia-resumen">Asistencia pendiente</span></div></section>
 <button id="anuncio-nominados" type="button" hidden onclick="abrirVotaciones()"><span><small>Pesca-Oscars</small><strong>¡Ya tenemos nominados!</strong></span><span aria-hidden="true">Ver lista ›</span></button>
 <div class="contador" id="contador-cena" hidden></div><p id="fecha-cena-info">Fecha por confirmar</p>
@@ -1686,7 +1686,7 @@ function mostrarEstadoConexion(estado) {
   const btn=document.getElementById('btn-entrar'), info=document.getElementById('estado-conexion');
   if(entradaPendiente)return;
   if(campaña){btn.disabled=false;btn.textContent='ACCEDER';info.textContent='Todo listo. Ya puedes entrar.';}
-  else if(estado==='cargando'){btn.disabled=true;btn.textContent='CONECTANDO…';info.textContent='Conectando con la cena… Puedes ir rellenando tus datos.';}
+  else if(estado==='cargando'){btn.disabled=false;btn.textContent='ACCEDER';info.textContent='Conectando con la cena… Puedes ir rellenando tus datos.';}
   else{btn.disabled=false;btn.textContent='REINTENTAR CONEXIÓN';info.textContent='La conexión está tardando. Tus datos siguen aquí: pulsa para reintentarlo, sin recargar la página.';}
 }
 function escapar(value) {
@@ -1821,6 +1821,7 @@ cargarMarcadores=function(callback) {
       document.getElementById('pantalla-registro').classList.add('active');
     }
     pintarDatos(data);
+    document.getElementById("estado-sesion").hidden=true;
     return data;
   }catch(error){
     return null;
@@ -1853,17 +1854,17 @@ enviarPuntosAJuego=function(accion,puntos,palabra,extra={}) {
 };
 entrar=async function() {
   if(entradaPendiente)return;
-  if(!campaña){await cargarMarcadores();if(!campaña)return;}
-  if(entradaPendiente)return;
   const nombre=document.getElementById('nombre').value.trim(), dep=document.getElementById('equipo').value, answer=document.getElementById('asistencia').value;
   if(!nombre||!dep||!answer){showModal('Faltan datos','Indica tu nombre, equipo y asistencia.','warning');return;}
   const btn=document.getElementById('btn-entrar');btn.disabled=true;btn.textContent='GUARDANDO...';
   entradaPendiente=true;
   try {
-    await pedirOperacion('Asistencia Cena',0,answer,{nombre,equipo:dep});
+    const acceso=await pedirOperacion('Asistencia Cena',0,answer,{nombre,equipo:dep});
+    if(acceso.campaign&&acceso.campaign!==localStorage.getItem('cena_campaign'))limpiarEstadoCampaña(acceso.campaign);
+    if(acceso.campaign)campaña=acceso.campaign;
     localStorage.setItem('jugador_nombre',nombre);localStorage.setItem('jugador_equipo',dep);
     localStorage.setItem('jugador_asistencia',answer);
-    mostrarLobby();aplicarFases();pintarAsistencia(answer);cargarMarcadores();
+    mostrarLobby();aplicarFases();pintarAsistencia(answer);Promise.resolve(lecturaPendiente).then(()=>cargarMarcadores());
   }catch(error){showModal('No se ha guardado',error.message,'error');}
   finally{entradaPendiente=false;mostrarEstadoConexion('terminado');}
 };
@@ -2020,14 +2021,21 @@ reclamarBotinBoss=async function(){
   catch(error){showModal('Botín no disponible',error.message,'info');}
   finally{botinPendiente=false;}
 };
-const loadAnterior=window.onload;
-window.onload=async function(){
-  aplicarFases();await cargarMarcadores();
-  if(localStorage.getItem('jugador_nombre'))mostrarLobby();
+window.onload=null;
+document.addEventListener("DOMContentLoaded",()=>{
+  aplicarFases();
+  const perfilGuardado=localStorage.getItem('cena_campaign')&&localStorage.getItem('jugador_nombre')&&equipoValido(localStorage.getItem('jugador_equipo'));
+  const sincronizacion=document.getElementById('estado-sesion');
+  if(perfilGuardado){mostrarLobby();pintarAsistencia(localStorage.getItem('jugador_asistencia'));sincronizacion.hidden=false;}
+  cargarMarcadores().then(data=>{
+    if(!data){if(perfilGuardado)sincronizacion.textContent='No se ha podido sincronizar. Reintentaremos la conexión.';return;}
+    sincronizacion.hidden=true;
+    if(localStorage.getItem('jugador_nombre')&&document.getElementById('pantalla-registro').classList.contains('active')&&!entradaPendiente)mostrarLobby();
+  });
   iniciarEscuchadoresZip();
   setInterval(actualizarCuentaAtras,1000);
   setInterval(()=>{if(document.visibilityState==='visible'&&!wordleEnviando&&!quizOcupado)cargarMarcadores();},15000);
-};
+});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')cargarMarcadores();});
 let wordleEnviando=false, intentoWordlePendiente=null;
 revisarPalabra=async function(){

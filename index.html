@@ -235,6 +235,10 @@ body{background:var(--bg);text-align:center;color:var(--text)}
 #boss-img-container{width:100%!important;height:clamp(185px,34dvh,300px)!important;margin:0!important;background:white;border-radius:8px;overflow:hidden;touch-action:manipulation;user-select:none}#boss-img-container:focus-visible{outline:3px solid var(--accent);outline-offset:2px}.arena-hint{font-size:12px;color:#e1eafa;text-align:center;margin:6px 0 0}
 .combat-summary{display:flex;justify-content:space-between;gap:12px;width:100%;text-align:left;padding:11px 0;border-bottom:1px solid var(--line)}.combat-summary small{display:block;color:var(--text-muted)}
 #pantalla-boss .tabs,#boss-tienda,#boss-ranking{max-width:none!important}.boss-return{width:100%;text-align:left;margin:0 0 8px}.boss-return button{min-height:44px}.boss-secondary .tienda-fila{background:#edf3fa!important;border:0!important}.boss-secondary .tienda-fila button{background:var(--primary)!important;color:white}
+#sec-juegos .categorias-juegos{display:flex;gap:4px;padding:4px;margin:16px 0 12px;background:#e7eef8;border-radius:10px}
+#sec-juegos .categorias-juegos button{flex:1;min-height:44px;padding:8px;border:0;border-radius:7px;background:transparent;color:#142941;font:inherit;font-weight:700;cursor:pointer;box-shadow:none}
+#sec-juegos .categorias-juegos button[aria-selected="true"]{background:#142941;color:#fff}
+#sec-juegos .categorias-juegos button:focus-visible,#sec-juegos [role="tabpanel"]:focus-visible{outline:2px solid #245785;outline-offset:2px}
 @media(max-width:375px){.juegos-grid .card-container{padding:8px}.bottom-nav .nav-item{font-size:10px}}
 </style>
 
@@ -385,7 +389,7 @@ Racha: <span id="racha-dias-num">0</span>
 </div>
 
 <div id="sec-juegos" data-feature="sala" hidden class="seccion-lobby">
-<h2>Sala de juegos</h2><button id="boss-juegos" class="boss-entry" data-feature="boss" hidden onclick="abrirBoss()"><span class="boss-entry-icon" aria-hidden="true">&gt;_</span><span><strong>Reto de todos</strong><small id="boss-juegos-estado">Cargando combate…</small></span><span class="boss-entry-action" id="boss-juegos-accion">Entrar al combate <span aria-hidden="true">›</span></span></button>
+<h2>Sala de juegos</h2>
 <div data-feature="juegos" hidden><div data-feature="ruleta" hidden class="ruleta-portada">
 <p class="seccion-etiqueta">Ruleta de bienvenida</p>
 <p style="font-size: 13px; color:var(--text-muted);">El primer tiro del día es GRATIS. Los siguientes cuestan puntos de tu marcador.</p>
@@ -393,7 +397,16 @@ Racha: <span id="racha-dias-num">0</span>
 <p id="coste-ruleta-txt" style="font-size: 13px; font-weight: bold; color: var(--text); margin-bottom:5px;">Cargando...</p>
 <p id="mis-puntos-txt" style="font-size: 11px; color: var(--text-muted); margin-top:0;">Tus puntos actuales: <span id="mis-puntos-num">0</span></p>
 <button class="btn-juego btn-ruleta-start" id="btn-ruleta" onclick="girarRuleta()">Girar la ruleta</button>
-</div><p class="seccion-etiqueta etiqueta-retos">Elige tu reto</p><div class="retos-grid"><button class="reto" data-feature="zip" hidden onclick="abrirZip()"><span aria-hidden="true">▦</span><strong>ZIP</strong><small>Puzle</small></button><button class="reto" data-feature="trivial" hidden onclick="abrirTrivial()"><span aria-hidden="true">?</span><strong>Trivial</strong><small>Preguntas</small></button><button class="reto" data-feature="tower" hidden onclick="abrirTorre()"><span aria-hidden="true">▥</span><strong>Apila cubos</strong><small>Puntería</small></button><button class="reto" data-feature="parejas" hidden onclick="abrirParejas()"><span aria-hidden="true">◇</span><strong>Parejas</strong><small>Memoria</small></button><button class="reto" data-feature="wordle" hidden onclick="abrirWordle()"><span aria-hidden="true">Aa</span><strong>Wordle</strong><small>Palabras</small></button></div></div></div>
+</div></div>
+<div class="categorias-juegos" role="tablist" aria-label="Categorías de juegos" onkeydown="navegarCategoriasJuegos(event)">
+<button type="button" role="tab" id="tab-juegos-diarios" aria-controls="panel-juegos-diarios" aria-selected="true" tabindex="0" onclick="seleccionarCategoriaJuegos(this)">Diarios</button>
+<button type="button" role="tab" id="tab-juegos-compania" aria-controls="panel-juegos-compania" aria-selected="false" tabindex="-1" onclick="seleccionarCategoriaJuegos(this)">En compañía</button>
+</div>
+<div id="panel-juegos-diarios" role="tabpanel" aria-labelledby="tab-juegos-diarios" tabindex="0"><div class="retos-grid" data-feature="juegos" hidden><button class="reto" data-feature="zip" hidden onclick="abrirZip()"><span aria-hidden="true">▦</span><strong>ZIP</strong><small>Puzle</small></button><button class="reto" data-feature="trivial" hidden onclick="abrirTrivial()"><span aria-hidden="true">?</span><strong>Trivial</strong><small>Preguntas</small></button><button class="reto" data-feature="tower" hidden onclick="abrirTorre()"><span aria-hidden="true">▥</span><strong>Apila cubos</strong><small>Puntería</small></button><button class="reto" data-feature="parejas" hidden onclick="abrirParejas()"><span aria-hidden="true">◇</span><strong>Parejas</strong><small>Memoria</small></button><button class="reto" data-feature="wordle" hidden onclick="abrirWordle()"><span aria-hidden="true">Aa</span><strong>Wordle</strong><small>Palabras</small></button></div>
+<p id="juegos-diarios-vacio" hidden>Todavía no hay retos diarios disponibles.</p></div>
+<div id="panel-juegos-compania" role="tabpanel" aria-labelledby="tab-juegos-compania" tabindex="0" hidden><button id="boss-juegos" class="boss-entry" data-feature="boss" hidden onclick="abrirBoss()"><span class="boss-entry-icon" aria-hidden="true">&gt;_</span><span><strong>Reto de todos</strong><small id="boss-juegos-estado">Cargando combate…</small></span><span class="boss-entry-action" id="boss-juegos-accion">Entrar al combate <span aria-hidden="true">›</span></span></button>
+<p id="juegos-compania-vacio" hidden>El Reto de todos aún no está disponible.</p></div>
+</div>
 
 <section id="sec-codigos" data-feature="codigos" hidden class="seccion-lobby"><button type="button" class="volver-mas" onclick="cambiarSeccionLobby('mas',document.getElementById('nav-mas'))">← Más</button>
 <div class="mas-contenido"><h2>Códigos</h2><p class="pagina-intro">Introduce el código del QR que has encontrado para sumar puntos.</p>
@@ -1732,9 +1745,29 @@ function disponible(key) {
   if(key==='puntos')return !!(funciones.juegos||funciones.ranking||funciones.boss||funciones.codigos||funciones.fotos||funciones.misiones||funciones.racha);
   return !!funciones[key];
 }
+function seleccionarCategoriaJuegos(activa) {
+  activa.parentElement.querySelectorAll('[role="tab"]').forEach(tab=>{
+    const seleccionada=tab===activa;
+    tab.setAttribute('aria-selected',String(seleccionada));
+    tab.tabIndex=seleccionada?0:-1;
+    document.getElementById(tab.getAttribute('aria-controls')).hidden=!seleccionada;
+  });
+}
+function navegarCategoriasJuegos(event) {
+  const tabs=Array.from(event.currentTarget.querySelectorAll('[role="tab"]'));
+  const indice=tabs.indexOf(event.target);
+  if(indice<0)return;
+  const siguiente={ArrowLeft:1-indice,ArrowRight:1-indice,Home:0,End:1}[event.key];
+  if(siguiente===undefined)return;
+  event.preventDefault();
+  seleccionarCategoriaJuegos(tabs[siguiente]);
+  tabs[siguiente].focus();
+}
 function aplicarFases() {
   document.body.classList.toggle('votaciones-visibles',!!funciones.votaciones);
   document.querySelectorAll('[data-feature]').forEach(el=>el.hidden=!disponible(el.dataset.feature));
+  document.getElementById('juegos-diarios-vacio').hidden=!!funciones.juegos&&!!document.querySelector('#panel-juegos-diarios .reto:not([hidden])');
+  document.getElementById('juegos-compania-vacio').hidden=!document.getElementById('boss-juegos').hidden;
   const checkbox=document.getElementById('checkbox-mision');
   checkbox.parentElement.hidden=!funciones.misiones;
   if(!funciones.fotos && funciones.misiones)checkbox.checked=true;

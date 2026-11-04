@@ -1336,6 +1336,7 @@ window.scrollTo(0,0);
 if (bossVidaActual <= 0) { reclamarBotinBoss(); return; }
 if (miLvlAuto > 0) { autoClickerInterval = setInterval(() => { if(bossVidaActual > 0) hacerDano(miLvlAuto, false, 0, 0); }, 1000); }
 sincroBossInterval = setInterval(enviarDanoAlServidor, 5000);
+refrescarBossLigero();
 }
 
 function cerrarBoss() {
@@ -1804,6 +1805,7 @@ pintarDatos=function(datos) {
   else {voteBtn.textContent=' VOTAR PESCA-OSCARS';voteBtn.disabled=false;document.getElementById('voto-ayuda').textContent='Tu voto cuenta: elige a tus compañeros favoritos';}
   actualizarInterfazRuleta();actualizarInterfazMision();aplicarFases();
 };
+let ultimaLecturaGeneral=0;
 cargarMarcadores=function(callback) {
   if(lecturaPendiente)return callback ? lecturaPendiente.then(data=>{callback(!!data);return data;}) : lecturaPendiente;
   leyendo=true;
@@ -1821,6 +1823,7 @@ cargarMarcadores=function(callback) {
       document.getElementById('pantalla-registro').classList.add('active');
     }
     pintarDatos(data);
+    ultimaLecturaGeneral=Date.now();
     document.getElementById("estado-sesion").hidden=true;
     return data;
   }catch(error){
@@ -1907,6 +1910,7 @@ cambiarSeccionLobby=function(id,nav){
   const key={ranking:'estadisticas',fotos:'galeria',juegos:'sala',votar:'premios',perfil:'miAsistencia'}[id]||id;
   if(!disponible(key))return;
   seccionAnterior(id,nav||document.querySelector('.nav-item'));
+  if(id==='ranking')refrescarRanking();
 };
 [
   ['abrirZip','zip'],['abrirWordle','wordle'],['abrirParejas','parejas'],['abrirTrivial','trivial'],
@@ -2034,9 +2038,17 @@ document.addEventListener("DOMContentLoaded",()=>{
   });
   iniciarEscuchadoresZip();
   setInterval(actualizarCuentaAtras,1000);
-  setInterval(()=>{if(document.visibilityState==='visible'&&!wordleEnviando&&!quizOcupado)cargarMarcadores();},15000);
+  setInterval(()=>{
+    if(document.visibilityState!=='visible')return;
+    if(document.getElementById('sec-ranking').classList.contains('active-sec')&&document.getElementById('pantalla-lobby').classList.contains('active'))refrescarRanking();
+    if(document.getElementById('pantalla-boss').classList.contains('active'))refrescarBossLigero();
+  },15000);
 });
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')cargarMarcadores();});
+document.addEventListener('visibilitychange',()=>{
+ if(document.visibilityState!=='visible'||wordleEnviando||quizOcupado)return;
+ if(document.getElementById('pantalla-boss').classList.contains('active'))refrescarBossLigero();
+ else if(document.getElementById('pantalla-registro').classList.contains('active')||Date.now()-ultimaLecturaGeneral>=60000)cargarMarcadores();
+});
 let wordleEnviando=false, intentoWordlePendiente=null;
 revisarPalabra=async function(){
   if(juegoTerminado||wordleEnviando||!funciones.wordle)return;
@@ -2292,7 +2304,9 @@ const pintarAntesDeDecision=pintarDatos;
 pintarDatos=function(datos){
   pintarAntesDeDecision(datos);
   pintarDecisionSemanal(datos?.decisionSemanal);
-  const boss=datos?.boss;
+  actualizarGolpesAjenos(datos?.boss);
+};
+function actualizarGolpesAjenos(boss){
   if(!boss||!funciones.boss){arenaPrev=null;return;}
   const actual=Object.fromEntries(Object.entries(boss.jugadores||{}).map(([nombre,j])=>[nombre,Number(j.dano)||0]));
   const yo=localStorage.getItem('jugador_nombre');
@@ -2400,6 +2414,43 @@ abrirTorre=async function(){
  }catch(e){showModal('Tower no disponible',e.message,'error');}
  finally{towerCargando=false;if(btn)btn.disabled=false;if(label)label.textContent=antes;}
 };
+
+
+let bossLecturaPendiente=false;
+function refrescarRanking(){
+ if(Date.now()-ultimaLecturaGeneral<60000)return;
+ cargarMarcadores();
+}
+async function refrescarBossLigero(){
+ const screen=document.getElementById('pantalla-boss');
+ if(!screen.classList.contains('active')||document.visibilityState!=='visible'||danoEnviado||bossLecturaPendiente)return;
+ if(!ultimosDatosServidor?.bossLigero)return;
+ bossLecturaPendiente=true;
+ const antes=ultimosDatosServidor?.boss;
+ const vidaAntes=antes?.vidaActual;
+ try{
+  const res=await fetch(URL_GOOGLE+'?token=candado_pescanova_26&modo=boss',{signal:AbortSignal.timeout(10000)});
+  if(!res.ok)return;
+  const data=await res.json(), boss=data.boss;
+  if(!screen.classList.contains('active')||!boss||danoEnviado)return;
+  if(data.campaign!==campaña||boss.activo!=='SI'||Number(boss.etapa)!==bossEtapaActual){cargarMarcadores();return;}
+  if(ultimosDatosServidor?.boss!==antes||antes?.vidaActual!==vidaAntes)return;
+  ultimosDatosServidor.boss=boss;
+  const yo=localStorage.getItem('jugador_nombre');
+  const confirmado=Number(boss.jugadores?.[yo]?.dano)||0;
+  const pendiente=danoPendiente?Math.max(0,danoPendiente.amount-Math.max(0,confirmado-danoPendiente.base)):0;
+  bossVidaMaxima=Number(boss.vidaMaxima)||1;
+  bossVidaActual=Math.max(0,Number(boss.vidaActual)-danoAcumuladoSinEnviar-pendiente);
+  document.getElementById('boss-vida-fill').style.width=(bossVidaActual/bossVidaMaxima*100)+'%';
+  document.getElementById('boss-vida-txt').textContent=bossVidaActual+' / '+bossVidaMaxima;
+  if(boss.frenesiRestante>0){if(!frenesiActivo)activarFrenesiLocal(boss.frenesiRestante);}
+  else if(frenesiActivo){clearInterval(frenesiTimerLocal);frenesiActivo=false;document.getElementById('frenesi-banner').style.display='none';}
+  actualizarArena(boss);actualizarGolpesAjenos(boss);
+  if(document.getElementById('btn-boss-ranking').classList.contains('active-tab'))renderizarRankingBoss();
+  if(!boss.vidaActual){clearInterval(autoClickerInterval);if(vidaAntes>0&&confirmado>0)reclamarBotinBoss();}
+ }catch(_){/* La siguiente consulta reintenta sin interrumpir la partida. */}
+ finally{bossLecturaPendiente=false;}
+}
 
 </script>
 

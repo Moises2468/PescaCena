@@ -2073,7 +2073,20 @@ revisarPalabra=async function(){
       localStorage.setItem('wordle_ultimo_dia',diaMadrid());cargarMarcadores();
       showModal(data.ganado?'¡Palabra encontrada!':'Fin del Wordle',data.ganado?'Has ganado '+data.puntos+' puntos.':(data.palabraCorrecta?'La palabra era '+data.palabraCorrecta+'. ':'')+'Vuelve mañana.',data.ganado?'success':'info');
     }
-  }catch(error){estado.textContent=error.message+' Puedes corregir la palabra o volver a enviarla.';return;}
+  }catch(error){
+    const palabraRechazada=error.message==='La palabra no está en el diccionario.';
+    if(palabraRechazada)intentoWordlePendiente=null;
+    if(document.getElementById('pantalla-wordle').classList.contains('active')){
+      showModal(
+        palabraRechazada?'Palabra no admitida':'No se pudo comprobar',
+        palabraRechazada
+          ? '«'+letrasActuales.join('')+'» no está en el diccionario del juego. Conservas este intento. Cambia la palabra y vuelve a enviar.'
+          : error.message+' Puedes volver a enviar la palabra.',
+        palabraRechazada?'warning':'error'
+      );
+      document.querySelector('#modal-overlay button')?.focus();
+    }
+  }
   finally{wordleEnviando=false;btn.disabled=false;if(estado.textContent==='Comprobando palabra…')estado.textContent='';}
 };
 const abrirWordleV2=abrirWordle;

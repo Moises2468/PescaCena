@@ -6,8 +6,8 @@
 <title>Proyecto Enero - Pescanova</title>
 
 <!-- Librerías para Pesca-Tower (Tower Blocks) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script>
+
+
 
 <style>
 #decision-semanal { background:linear-gradient(150deg,#edf7ff,#ffffff); border:1px solid #a7cce9; text-align:left; }
@@ -459,11 +459,11 @@ Racha: <span id="racha-dias-num">0</span>
 </div>
 <p style="font-size: 13px; color:var(--text-muted); margin-bottom: 5px;">Usa palabras de 5 letras para adivinar la palabra del dia.</p>
 <p style="font-size: 12px; color:var(--text-muted); margin-top: 0; font-weight: bold;">Letra en Verde, esta en su posicion. Letra Naranja, no esta en su posicion. Letra gris, no esta en la palabra.</p>
-<div class="tablero" id="tablero"></div>
+<p id="wordle-estado" role="status" style="min-height:20px;margin:3px 0;font-size:13px;color:var(--text-muted)"></p><div class="tablero" id="tablero"></div>
 <div class="teclado">
 <div class="fila-teclas"><button class="tecla" onclick="presionarTecla('Q')">Q</button><button class="tecla" onclick="presionarTecla('W')">W</button><button class="tecla" onclick="presionarTecla('E')">E</button><button class="tecla" onclick="presionarTecla('R')">R</button><button class="tecla" onclick="presionarTecla('T')">T</button><button class="tecla" onclick="presionarTecla('Y')">Y</button><button class="tecla" onclick="presionarTecla('U')">U</button><button class="tecla" onclick="presionarTecla('I')">I</button><button class="tecla" onclick="presionarTecla('O')">O</button><button class="tecla" onclick="presionarTecla('P')">P</button></div>
 <div class="fila-teclas"><button class="tecla" onclick="presionarTecla('A')">A</button><button class="tecla" onclick="presionarTecla('S')">S</button><button class="tecla" onclick="presionarTecla('D')">D</button><button class="tecla" onclick="presionarTecla('F')">F</button><button class="tecla" onclick="presionarTecla('G')">G</button><button class="tecla" onclick="presionarTecla('H')">H</button><button class="tecla" onclick="presionarTecla('J')">J</button><button class="tecla" onclick="presionarTecla('K')">K</button><button class="tecla" onclick="presionarTecla('L')">L</button><button class="tecla" onclick="presionarTecla('Ñ')">Ñ</button></div>
-<div class="fila-teclas"><button class="tecla tecla-grande" onclick="revisarPalabra()">ENVIAR</button><button class="tecla" onclick="presionarTecla('Z')">Z</button><button class="tecla" onclick="presionarTecla('X')">X</button><button class="tecla" onclick="presionarTecla('C')">C</button><button class="tecla" onclick="presionarTecla('V')">V</button><button class="tecla" onclick="presionarTecla('B')">B</button><button class="tecla" onclick="presionarTecla('N')">N</button><button class="tecla" onclick="presionarTecla('M')">M</button><button class="tecla tecla-grande" onclick="borrarLetra()">BORRAR</button></div>
+<div class="fila-teclas"><button class="tecla tecla-grande" id="btn-enviar-wordle" onclick="revisarPalabra()">ENVIAR</button><button class="tecla" onclick="presionarTecla('Z')">Z</button><button class="tecla" onclick="presionarTecla('X')">X</button><button class="tecla" onclick="presionarTecla('C')">C</button><button class="tecla" onclick="presionarTecla('V')">V</button><button class="tecla" onclick="presionarTecla('B')">B</button><button class="tecla" onclick="presionarTecla('N')">N</button><button class="tecla" onclick="presionarTecla('M')">M</button><button class="tecla tecla-grande" onclick="borrarLetra()">BORRAR</button></div>
 </div>
 </div>
 
@@ -1225,8 +1225,8 @@ cerrarTrivial();
 const tablero = document.getElementById('tablero');
 if (tablero) { for (let i = 0; i < 6; i++) { let fila = document.createElement('div'); fila.className = 'fila'; for (let j = 0; j < 5; j++) { let casilla = document.createElement('div'); casilla.className = 'casilla'; casilla.id = `casilla-${i}-${j}`; fila.appendChild(casilla); } tablero.appendChild(fila); } }
 
-function presionarTecla(letra) { if (juegoTerminado || letrasActuales.length >= 5) return; letrasActuales.push(letra); actualizarFila(); }
-function borrarLetra() { if (juegoTerminado || letrasActuales.length === 0) return; letrasActuales.pop(); actualizarFila(); }
+function presionarTecla(letra) { if (juegoTerminado || wordleEnviando || letrasActuales.length >= 5) return; letrasActuales.push(letra); actualizarFila(); }
+function borrarLetra() { if (juegoTerminado || wordleEnviando || letrasActuales.length === 0) return; letrasActuales.pop(); actualizarFila(); }
 function actualizarFila() { for (let i = 0; i < 5; i++) { let casilla = document.getElementById(`casilla-${intentos}-${i}`); if(casilla) casilla.innerText = letrasActuales[i] || ""; } }
 function revisarPalabra() {
 if (!palabraSecretaDelDia) { showModal("Aviso", "Sincronizando diccionario... espera 1 segundo.", "info"); return; }
@@ -2026,24 +2026,35 @@ window.onload=async function(){
   if(localStorage.getItem('jugador_nombre'))mostrarLobby();
   iniciarEscuchadoresZip();
   setInterval(actualizarCuentaAtras,1000);
-  setInterval(()=>{if(document.visibilityState==='visible')cargarMarcadores();},15000);
+  setInterval(()=>{if(document.visibilityState==='visible'&&!wordleEnviando&&!quizOcupado)cargarMarcadores();},15000);
 };
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')cargarMarcadores();});
-let wordleEnviando=false;
+let wordleEnviando=false, intentoWordlePendiente=null;
 revisarPalabra=async function(){
   if(juegoTerminado||wordleEnviando||!funciones.wordle)return;
   if(letrasActuales.length!==5){showModal('Faltan letras','Introduce una palabra de cinco letras.','warning');return;}
   wordleEnviando=true;
+  const estado=document.getElementById('wordle-estado'), btn=document.getElementById('btn-enviar-wordle');
+  estado.textContent='Comprobando palabra…';btn.disabled=true;
   try{
-    const word=letrasActuales.join(''), data=await pedirOperacion('Intento Wordle',0,word);
+    const word=letrasActuales.join('');
+    if(intentoWordlePendiente?.word!==word||intentoWordlePendiente?.dia!==diaMadrid())intentoWordlePendiente={word,dia:diaMadrid(),id:requestId()};
+    const data=await pedirOperacion('Intento Wordle',0,word,{requestId:intentoWordlePendiente.id});
+    intentoWordlePendiente=null;
+    if(ultimosDatosServidor&&!data.terminado){
+      const state=ultimosDatosServidor.estadoJugador||(ultimosDatosServidor.estadoJugador={});
+      const attempts=state.wordleIntentos||(state.wordleIntentos=[]);
+      attempts[data.intento-1]={word,feedback:data.feedback};
+    }
     const row=data.intento-1;
     for(let i=0;i<5;i++){const cell=document.getElementById('casilla-'+row+'-'+i);cell.textContent=word[i];cell.className='casilla '+data.feedback[i];}
     intentos=data.intento;letrasActuales=[];juegoTerminado=data.terminado;
     if(data.terminado){
-      localStorage.setItem('wordle_ultimo_dia',diaMadrid());await cargarMarcadores();
-      showModal(data.ganado?'¡Palabra encontrada!':'Fin del Wordle',data.ganado?'Has ganado '+data.puntos+' puntos.':'La palabra era '+data.palabraCorrecta+'. Vuelve mañana.',data.ganado?'success':'info');
+      localStorage.setItem('wordle_ultimo_dia',diaMadrid());cargarMarcadores();
+      showModal(data.ganado?'¡Palabra encontrada!':'Fin del Wordle',data.ganado?'Has ganado '+data.puntos+' puntos.':(data.palabraCorrecta?'La palabra era '+data.palabraCorrecta+'. ':'')+'Vuelve mañana.',data.ganado?'success':'info');
     }
-  }catch(error){showModal('No se ha enviado',error.message,'error');}finally{wordleEnviando=false;}
+  }catch(error){estado.textContent=error.message+' Puedes corregir la palabra o volver a enviarla.';return;}
+  finally{wordleEnviando=false;btn.disabled=false;if(estado.textContent==='Comprobando palabra…')estado.textContent='';}
 };
 const abrirWordleV2=abrirWordle;
 abrirWordle=function(){
@@ -2355,6 +2366,27 @@ abrirTrivial=function(){
 comprobarTrivial=opcion=>consultarQuiz(opcion);
 const cerrarQuizPrevio=cerrarTrivial;
 cerrarTrivial=function(){clearInterval(quizReloj);cerrarQuizPrevio();};
+let towerCargando=false;
+function cargarLibTower(src){
+ return new Promise((resolve,reject)=>{
+  const s=document.createElement('script');s.src=src;
+  s.onload=resolve;s.onerror=()=>{s.remove();reject(new Error('No se ha podido cargar el juego.'));};
+  document.head.append(s);
+ });
+}
+const abrirTorreCargada=abrirTorre;
+abrirTorre=async function(){
+ if(!funciones.tower||towerCargando)return;
+ towerCargando=true;
+ const btn=document.querySelector('#sec-juegos button[data-feature=tower]'), label=btn?.querySelector('small'), antes=label?.textContent;
+ if(btn)btn.disabled=true;if(label)label.textContent='Cargando…';
+ try{
+  if(typeof THREE==='undefined')await cargarLibTower('https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js');
+  if(typeof TweenLite==='undefined')await cargarLibTower('https://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js');
+  if(document.getElementById('sec-juegos').classList.contains('active-sec'))abrirTorreCargada();
+ }catch(e){showModal('Tower no disponible',e.message,'error');}
+ finally{towerCargando=false;if(btn)btn.disabled=false;if(label)label.textContent=antes;}
+};
 
 </script>
 

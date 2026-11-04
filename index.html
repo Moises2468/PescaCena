@@ -359,12 +359,12 @@ Racha: <span id="racha-dias-num">0</span>
 </div>
 <div id="vista-agentes" style="display: none;">
 <select id="filtro-ranking" onchange="actualizarTablaRanking()">
-<option value="global"> Top 10 Global (Puntos Totales)</option>
-<option value="parejas">Top 10 Memoria (Pesca-Parejas)</option>
-<option value="zip"> Top 10 más Rápidos (Pesca-Zip)</option>
-<option value="wordle"> Top 10 más Eficientes (Pesca-Wordle)</option>
-<!-- AQUI ESTÁ LA OPCIÓN DE TOWER PARA EL DESPLEGABLE -->
-<option value="tower"> Top 10 Arquitectos (Pesca-Tower)</option>
+<option value="global">Puntos totales</option>
+<option value="zip">ZIP</option>
+<option value="trivial">Quiz</option>
+<option value="tower">Apila cubos</option>
+<option value="parejas">Parejas</option>
+<option value="wordle">Wordle</option>
 </select>
 <table class="tabla-top" id="tabla-agentes-body">
 <!-- Se rellena por JSS -->
@@ -1000,45 +1000,37 @@ if (!tablaBody || !ultimosDatosServidor) return;
 
 let miNombre = localStorage.getItem('jugador_nombre') || "";
 let miPosicion = -1; let miValor = 0; let rankingCompleto = [];
-let etiquetaColumna = "Pts"; let sufijoValor = "";
-
-if (filtro === "global") {
-etiquetaColumna = "Pts";
-if (ultimosDatosServidor.puntosTotalesJugadores) {
-for (let n in ultimosDatosServidor.puntosTotalesJugadores) { rankingCompleto.push({ nombre: n, valor: ultimosDatosServidor.puntosTotalesJugadores[n] }); }
-rankingCompleto.sort((a, b) => b.valor - a.valor);
-}
-}
-else if (filtro === "parejas") {
-etiquetaColumna = "Movimientos"; sufijoValor = " movs";
-if (ultimosDatosServidor.rankingParejas) { rankingCompleto = [...ultimosDatosServidor.rankingParejas]; rankingCompleto.sort((a, b) => a.valor - b.valor); } else { tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Estamos procesando las jugadas de Parejas...</td></tr>"; return; }
-}
-else if (filtro === "zip") {
-etiquetaColumna = "Tiempo"; sufijoValor = "s";
-if (ultimosDatosServidor.rankingZip) { rankingCompleto = [...ultimosDatosServidor.rankingZip]; rankingCompleto.sort((a, b) => a.valor - b.valor); } else { tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Estamos procesando los tiempos del Zip...</td></tr>"; return; }
-}
-else if (filtro === "wordle") {
-etiquetaColumna = "Puntos";
-if (ultimosDatosServidor.rankingWordle) { rankingCompleto = [...ultimosDatosServidor.rankingWordle]; rankingCompleto.sort((a, b) => b.valor - a.valor); } else { tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Estamos procesando las jugadas de Wordle...</td></tr>"; return; }
-}
-else if (filtro === "tower") {
-etiquetaColumna = "Bloques"; sufijoValor = " blqs";
-if (ultimosDatosServidor.rankingTower) { 
-rankingCompleto = [...ultimosDatosServidor.rankingTower]; 
-rankingCompleto.sort((a, b) => b.valor - a.valor); 
-} else { 
-tablaBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:var(--text-muted);'>Estamos procesando los récords de Pesca-Tower...</td></tr>"; 
-return; 
-}
+const criterios = {
+  global: { columna: 'Puntos', sufijo: ' pts' },
+  zip: { columna: 'Tiempo', sufijo: ' s', clave: 'rankingZip', ascendente: true },
+  trivial: { columna: 'Aciertos seguidos', sufijo: '', clave: 'rankingQuiz' },
+  tower: { columna: 'Récord (bloques)', sufijo: '', clave: 'rankingTower' },
+  parejas: { columna: 'Movimientos', sufijo: '', clave: 'rankingParejas', ascendente: true },
+  wordle: { columna: 'Intentos', sufijo: '', clave: 'rankingWordle', ascendente: true }
+};
+const criterio = criterios[filtro];
+const {columna: etiquetaColumna, sufijo: sufijoValor} = criterio;
+const filas = criterio.clave ? ultimosDatosServidor[criterio.clave] :
+  Object.entries(ultimosDatosServidor.puntosTotalesJugadores || {}).map(([nombre, valor]) => ({nombre, valor}));
+rankingCompleto = (filas || []).map(({nombre, valor}) => ({
+  nombre, valor: filtro === 'wordle' ? 7 - Number(valor) / 20 : Number(valor)
+})).filter(j => Number.isFinite(j.valor) && (filtro !== 'wordle' || (Number.isInteger(j.valor) && j.valor >= 1 && j.valor <= 6)));
+rankingCompleto.sort((a,b) => (criterio.ascendente ? a.valor - b.valor : b.valor - a.valor) || a.nombre.localeCompare(b.nombre, 'es'));
+if (!rankingCompleto.length) {
+  tablaBody.innerHTML = "<tr><td colspan='3'>"+(filtro === 'trivial' && !Array.isArray(filas) ? 'Ranking de Quiz pendiente de activar.' : 'Todavía no hay resultados.')+"</td></tr>";
+  return;
 }
 
 let hoy = diaMadrid();
 let lastKnownRanks = JSON.parse(localStorage.getItem('last_ranks_' + filtro) || "{}");
 let lastKnownDate = localStorage.getItem('last_date_' + filtro);
 let currentRanks = {};
+let miIndice = -1;
+let posicion = 0;
 rankingCompleto.forEach((j, idx) => {
-currentRanks[j.nombre] = idx + 1;
-if (j.nombre.toLowerCase().trim() === miNombre.toLowerCase().trim()) { miPosicion = idx + 1; miValor = j.valor; }
+if (idx === 0 || j.valor !== rankingCompleto[idx - 1].valor) posicion = idx + 1;
+currentRanks[j.nombre] = posicion;
+if (j.nombre.toLowerCase().trim() === miNombre.toLowerCase().trim()) { miIndice = idx; miPosicion = posicion; miValor = j.valor; }
 });
 
 if (lastKnownDate !== hoy) { localStorage.setItem('baseline_compare_' + filtro, JSON.stringify(lastKnownRanks)); localStorage.setItem('last_date_' + filtro, hoy); }
@@ -1048,7 +1040,7 @@ let compareRanks = JSON.parse(localStorage.getItem('baseline_compare_' + filtro)
 tablaBody.innerHTML = `<tr><th>Pos</th><th>Usuario</th><th>${etiquetaColumna}</th></tr>`;
 for (let i = 0; i < Math.min(10, rankingCompleto.length); i++) {
 let j = rankingCompleto[i];
-let posActual = i + 1;
+let posActual = currentRanks[j.nombre];
 let tendenciaIcon = '<span style="color:#ff9800; font-size:11px; margin-left:3px;">🆕</span>';
 if (compareRanks[j.nombre]) {
 let posVieja = compareRanks[j.nombre];
@@ -1056,13 +1048,13 @@ if (posActual < posVieja) tendenciaIcon = '<span style="color:var(--success); fo
 else if (posActual > posVieja) tendenciaIcon = '<span style="color:var(--error-text); font-size:12px; margin-left:3px; font-weight:bold;">⬇</span>';
 else tendenciaIcon = '<span style="color:var(--text-muted); font-size:12px; margin-left:3px; font-weight:bold;"></span>';
 }
-let esMiFila = (posActual === miPosicion) ? 'style="background-color: #fff3cd; font-weight: bold;"' : '';
+let esMiFila = (i === miIndice) ? 'style="background-color: #fff3cd; font-weight: bold;"' : '';
 let icono = posActual + 'º';
-let txtNombre = (posActual === miPosicion) ? j.nombre + ' (TÚ)' : j.nombre;
+let txtNombre = (i === miIndice) ? j.nombre + ' (TÚ)' : j.nombre;
 tablaBody.innerHTML += `<tr ${esMiFila}><td style="font-weight:bold; color:var(--primary);">${icono}${tendenciaIcon}</td><td>${escapar(txtNombre)}</td><td>${j.valor}${sufijoValor}</td></tr>`;
 }
 
-if (miPosicion > 10) {
+if (miIndice >= 10) {
 let posViejaMia = compareRanks[miNombre]; let miTendencia = '<span style="color:#ff9800; font-size:11px; margin-left:3px;">🆕</span>';
 if(posViejaMia) { if (miPosicion < posViejaMia) miTendencia = '<span style="color:var(--success); font-size:12px; margin-left:3px; font-weight:bold;">⬆</span>'; else if (miPosicion > posViejaMia) miTendencia = '<span style="color:var(--error-text); font-size:12px; margin-left:3px; font-weight:bold;">⬇</span>'; else miTendencia = '<span style="color:var(--text-muted); font-size:12px; margin-left:3px; font-weight:bold;"></span>'; }
 tablaBody.innerHTML += `<tr><td colspan="3" style="text-align:center; color: var(--text-muted); font-size:12px; padding: 5px;">⋮</td></tr>`;

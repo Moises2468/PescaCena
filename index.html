@@ -2056,7 +2056,18 @@ revisarPalabra=async function(){
   wordleEnviando=true;
   const estado=document.getElementById('wordle-estado'), btn=document.getElementById('btn-enviar-wordle');
   estado.textContent='Comprobando palabra…';btn.disabled=true;
+  const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const espera=[];
   try{
+    if(!reduceMotion){
+      for(let i=0;i<5;i++){
+        const cell=document.getElementById('casilla-'+intentos+'-'+i);
+        if(cell)espera.push(cell.animate(
+          [{transform:'rotateX(0deg)'},{transform:'rotateX(24deg)'},{transform:'rotateX(0deg)'}],
+          {duration:280,delay:i*45,easing:'ease-in-out'}
+        ));
+      }
+    }
     const word=letrasActuales.join('');
     if(intentoWordlePendiente?.word!==word||intentoWordlePendiente?.dia!==diaMadrid())intentoWordlePendiente={word,dia:diaMadrid(),id:requestId()};
     const data=await pedirOperacion('Intento Wordle',0,word,{requestId:intentoWordlePendiente.id});
@@ -2066,8 +2077,31 @@ revisarPalabra=async function(){
       const attempts=state.wordleIntentos||(state.wordleIntentos=[]);
       attempts[data.intento-1]={word,feedback:data.feedback};
     }
+    espera.forEach(animation=>animation.cancel());
+    estado.textContent='';
     const row=data.intento-1;
-    for(let i=0;i<5;i++){const cell=document.getElementById('casilla-'+row+'-'+i);cell.textContent=word[i];cell.className='casilla '+data.feedback[i];}
+    await Promise.all(data.feedback.map(async(color,i)=>{
+      const cell=document.getElementById('casilla-'+row+'-'+i);
+      if(!cell)return;
+      let close;
+      if(!reduceMotion){
+        close=cell.animate(
+          [{transform:'rotateX(0deg)'},{transform:'rotateX(90deg)'}],
+          {duration:85,delay:i*65,fill:'forwards',easing:'ease-in'}
+        );
+        await close.finished;
+      }
+      cell.textContent=word[i];
+      cell.className='casilla '+color;
+      if(!reduceMotion){
+        const open=cell.animate(
+          [{transform:'rotateX(90deg)'},{transform:'rotateX(0deg)'}],
+          {duration:95,easing:'ease-out'}
+        );
+        close.cancel();
+        await open.finished;
+      }
+    }));
     intentos=data.intento;letrasActuales=[];juegoTerminado=data.terminado;
     if(data.terminado){
       localStorage.setItem('wordle_ultimo_dia',diaMadrid());cargarMarcadores();
@@ -2087,7 +2121,10 @@ revisarPalabra=async function(){
       document.querySelector('#modal-overlay button')?.focus();
     }
   }
-  finally{wordleEnviando=false;btn.disabled=false;if(estado.textContent==='Comprobando palabra…')estado.textContent='';}
+  finally{
+    espera.forEach(animation=>animation.cancel());
+    wordleEnviando=false;btn.disabled=false;estado.textContent='';
+  }
 };
 const abrirWordleV2=abrirWordle;
 abrirWordle=function(){

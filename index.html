@@ -485,7 +485,7 @@ Racha: <span id="racha-dias-num">0</span>
 <div id="zip-timer-display">0.0s</div>
 <p id="zip-guardado" role="status" hidden></p>
 <button id="zip-reintentar" class="btn-codigo" type="button" hidden onclick="guardarZipTerminado()">Reintentar guardado</button>
-<p style="font-size: 13px; color:var(--text-muted); margin-bottom: 5px;">Arrastra el dedo desde el 1 hasta el 5.</p>
+<p style="font-size: 13px; color:var(--text-muted); margin-bottom: 5px;">Une los números en orden, desde el 1 hasta el último.</p>
 <p style="font-size: 12px; color:var(--error-text); margin-top: 0; font-weight: bold;">Debes pasar por TODOS los cuadrados grises.</p>
 <div id="tablero-zip"></div>
 <button id="zip-reiniciar" class="btn-codigo" onclick="resetZip()">REINICIAR TRAZO</button>
@@ -2192,13 +2192,15 @@ async function guardarZipTerminado(){
   const reiniciar=document.getElementById('zip-reiniciar');
   const retry=document.getElementById('zip-reintentar');
   status.hidden=false;retry.hidden=true;reiniciar.disabled=true;
+  const timer=document.getElementById('zip-timer-display');
+  timer.textContent='—';
   status.textContent='Recorrido completo. Guardando el resultado…';
   try{
     const data=await pedirOperacion('Éxito ZIP',0,'',zipPendiente);
     zipPendiente=null;
     localStorage.setItem('zip_ultimo_dia',diaMadrid());
-    const tiempo=Number.isFinite(data.tiempo)?' en '+data.tiempo.toFixed(1)+' s':'';
-    status.textContent='ZIP guardado'+tiempo+' · '+data.puntos+' puntos.';
+    if(Number.isFinite(data.tiempo))timer.textContent=data.tiempo.toFixed(1)+' s';
+    status.textContent='ZIP guardado · '+data.puntos+' puntos.';
     lanzarConfeti();
     cargarMarcadores();
   }catch(error){

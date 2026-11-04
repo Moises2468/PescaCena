@@ -1335,7 +1335,7 @@ document.getElementById('alerta-boss').style.display = 'none'; document.getEleme
 window.scrollTo(0,0);
 if (bossVidaActual <= 0) { reclamarBotinBoss(); return; }
 if (miLvlAuto > 0) { autoClickerInterval = setInterval(() => { if(bossVidaActual > 0) hacerDano(miLvlAuto, false, 0, 0); }, 1000); }
-sincroBossInterval = setInterval(enviarDanoAlServidor, 5000);
+iniciarEnviosBoss();
 refrescarBossLigero();
 }
 
@@ -2467,6 +2467,22 @@ abrirTorre=async function(){
 
 
 let bossLecturaPendiente=false;
+function iniciarEnviosBoss(){
+ clearInterval(sincroBossInterval);
+ let siguienteEnvio=0, primerLote=true;
+ sincroBossInterval=setInterval(()=>{
+  if(danoEnviado||(!danoPendiente&&danoAcumuladoSinEnviar<=0))return;
+  const ahora=Date.now();
+  if(!siguienteEnvio){
+   siguienteEnvio=ahora+3500+Math.random()*700;
+   return;
+  }
+  if(ahora<siguienteEnvio)return;
+  siguienteEnvio=ahora+(primerLote?8000:9000)+Math.random()*2000;
+  primerLote=false;
+  enviarDanoAlServidor();
+ },250);
+}
 function refrescarRanking(){
  if(Date.now()-ultimaLecturaGeneral<60000)return;
  cargarMarcadores();
@@ -2485,9 +2501,10 @@ async function refrescarBossLigero(){
   if(!screen.classList.contains('active')||!boss||danoEnviado)return;
   if(data.campaign!==campaña||boss.activo!=='SI'||Number(boss.etapa)!==bossEtapaActual){cargarMarcadores();return;}
   if(ultimosDatosServidor?.boss!==antes||antes?.vidaActual!==vidaAntes)return;
-  ultimosDatosServidor.boss=boss;
   const yo=localStorage.getItem('jugador_nombre');
   const confirmado=Number(boss.jugadores?.[yo]?.dano)||0;
+  if(confirmado<(Number(antes?.jugadores?.[yo]?.dano)||0))return;
+  ultimosDatosServidor.boss=boss;
   const pendiente=danoPendiente?Math.max(0,danoPendiente.amount-Math.max(0,confirmado-danoPendiente.base)):0;
   bossVidaMaxima=Number(boss.vidaMaxima)||1;
   bossVidaActual=Math.max(0,Number(boss.vidaActual)-danoAcumuladoSinEnviar-pendiente);

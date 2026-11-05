@@ -219,11 +219,18 @@ function renderDaily(data){
 function renderWeekly(data){
   const wasOpen=bankOpen;bankOpen=data.open;if(wasOpen!==bankOpen)renderAlbum();
   const count=data.ids.filter(id=>data.marks[id]).length;
-  $("weekly-count").textContent=count+"/5";
-  $("weekly-status").textContent=data.open?"Banco especial abierto hasta el lunes.":count+" de 5 especies · se renueva cada lunes";
-  $("weekly").replaceChildren(...data.ids.map(id=>{
-    const mark=data.marks[id];
-    return item("li",Pesca.find(id).name+(mark?" · Capturada por "+mark.name:" · Por capturar"),mark?"done":"");
+  $('weekly-count').textContent=count+'/'+data.ids.length;
+  $('weekly-total').textContent=count+' de '+data.ids.length;
+  $('weekly-progress').max=data.ids.length;$('weekly-progress').value=count;
+  $('weekly-heading').textContent=data.open?'¡Banco especial abierto!':'Abramos el banco especial';
+  $('weekly-status').textContent=data.open?'Objetivo completado. Ya podéis pescar en la nueva zona.':'Faltan '+(data.ids.length-count)+((data.ids.length-count)===1?' especie.':' especies.');
+  $('weekly').replaceChildren(...data.ids.map(id=>{
+    const fish=Pesca.find(id),mark=data.marks[id],row=item('li','','weekly-species');
+    row.classList.toggle('done',!!mark);row.append(drawFish(fish,true));
+    const detail=item('div','','weekly-species-detail');
+    detail.append(item('strong',fish.name),item('span',mark?'Conseguida · '+mark.name:'Pendiente',mark?'weekly-done':'weekly-pending'));
+    if(!mark)detail.append(item('small',fish.hint));
+    row.append(detail);return row;
   }));
   renderButtons();
 }

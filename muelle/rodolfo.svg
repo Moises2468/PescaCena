@@ -1,19 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 270 254" role="img" aria-label="Rodolfo, langostino naranja con guantes blancos y bufanda azul">
- <circle cx="135" cy="126" r="110" fill="#e5f2f6"/>
- <g fill="none" stroke="#264661" stroke-width="2.5" stroke-linecap="round" opacity=".6"><path d="M34 180h34m131 4h36M38 194h16m159 8h15"/><path d="m213 72 6-9m9 24 10-3M37 96l-10-4"/></g>
- <g stroke="#26394f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
-  <path fill="#ec853f" d="M140 190q10 25 40 30-13 8-28 1-9 12-31 11l11-24z"/>
-  <path fill="#f3a35a" d="M177 106q-2 69-39 101-29-12-35-51-8-35 13-55z"/>
-  <path fill="none" stroke="#b75430" d="M111 159q21 7 45-4m-39 21q17 6 31-3m-20 17q8 3 14 0"/>
-  <path fill="none" stroke="#cf673b" stroke-width="5" d="M111 125q-28 2-48-37m106 34q21-2 39-36"/>
-  <path fill="#fffdf4" d="M66 88q-14 2-20-8l-9-15q-4-8 3-10 4-1 8 7l4 7-4-16q-1-9 6-8 4 0 6 8l4 12 5-6q7-6 12 0 3 5-5 12l-1 13z"/>
-  <path fill="#fffdf4" d="M204 88q15 5 22-5l9-14q4-8-3-10-5-1-10 8l-3 5 5-16q2-9-5-9-5 0-7 9l-4 13-5-5q-7-5-11 1-3 5 5 11l-1 9z"/>
-  <path fill="#f2994b" d="M110 75 97 57l24 10 4-13 13 12q23-4 34 17 13 28-10 42-20 12-43-3-11-7-12-20L69 120l37-34z"/>
-  <path fill="#fffdf4" d="M121 105q19 9 37-6-5 20-20 20-12 0-17-14z"/>
-  <path fill="#fffdf4" d="M125 83q9-11 22-3l2 6q-10 7-23 1z"/><path d="M139 82v4" stroke-width="5"/>
-  <path fill="#295e94" d="M111 116q31 18 59-1l4 15q-24 20-60 4z"/><path fill="#214c81" d="M123 133q2 23-22 48l18 12q23-28 20-55z"/>
- </g>
- <g fill="none" stroke="#c85c35" stroke-width="3" stroke-linecap="round"><path d="M124 67C108 39 87 29 75 38s-4 23 7 17c5-3 4-9 0-10"/><path d="M155 67c10-24 30-42 45-31 13 10 2 26-7 19-4-3-4-8 0-11"/></g>
- <path d="M105 169l18 5-3 8-18-5z" fill="#fffaf0"/><path d="m107 173 13 4" stroke="#d56a3f" stroke-width="2"/>
- <path d="M89 211q47 13 107-2" fill="none" stroke="#a6c3d2" stroke-width="2" stroke-linecap="round" opacity=".55"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 200" role="img" aria-label="Rodolfo, langostino sonriente con grandes ojos y bigote rizado">
+<g stroke="#263f53" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+<ellipse cx="90" cy="191" rx="48" ry="5" fill="#dbe7ec" stroke="none"/>
+<path d="M104 121q44 11 38 45-5 27-36 20l-8-14q25 8 28-10 1-16-24-17Z" fill="#e88549"/>
+<path d="m107 185-7 8-9-14 10-11 9 7 13-3 6 12-13 8Z" fill="#efab68"/>
+<path d="M80 105q-20 11-25 45-4 28 29 30 31 0 30-28l-9-44Z" fill="#f3a35f"/>
+<path d="M64 137q23 8 45-1m-48 15q25 9 52-2m-46 17q19 7 39-2m12-17 12-5m-7 18 15-4" fill="none" stroke="#c46f3e" stroke-width="2"/>
+<path d="M64 116q-26 3-30-22M105 116q21 1 29-22" fill="none" stroke="#e18c50" stroke-width="8"/>
+<path d="M33 98q-14-1-18-14l-5-12q-1-7 5-7 5 1 7 11l1-19q1-8 7-6 5 1 4 10l1 11 5-8q4-6 9-2 4 4-1 11l-6 12q4 5 0 10Z" fill="#fff9e9"/>
+<path d="M134 98q14 1 19-11l5-13q2-7-4-8-5-1-8 10l1-20q0-8-6-7-5 1-5 10l-2 12-5-8q-5-6-9-1-3 4 2 11l5 12q-5 6-1 11Z" fill="#fff9e9"/>
+<path d="M65 109Q41 93 50 63l-15-8 20-3-8-15 24 9Q91 31 110 49l15 1-13 12q11 28-9 43Z" fill="#ee9854"/>
+<path d="M62 48Q44 17 27 23q-16 5-4 16m74 4q15-36 36-29 18 6 5 19" fill="none" stroke="#cf7643" stroke-width="3"/>
+<path d="M61 76q-3-22 10-24 14-2 15 23M86 75q-1-23 13-23 14 1 10 24" fill="#fffdf3"/>
+<ellipse cx="74" cy="68" rx="4.5" ry="8" fill="#23394c" stroke="none"/><ellipse cx="96" cy="67" rx="4.5" ry="8" fill="#23394c" stroke="none"/>
+<circle cx="72.5" cy="65" r="1.6" fill="white" stroke="none"/><circle cx="94.5" cy="64" r="1.6" fill="white" stroke="none"/>
+<path d="M59 48q9-8 18-3m15-2q10-6 18 1" fill="none" stroke-width="3"/>
+<ellipse cx="84" cy="79" rx="8" ry="5" fill="#e68043"/>
+<path d="M84 83Q69 74 63 82q-5 7 4 10-3-8 5-5l12 1q13 0 16-1 9-4 8 4 10-3 5-10-7-8-29 2Z" fill="#433d3d" stroke="none"/>
+<path d="M69 94q17 9 32-1-3 15-16 15-12-1-16-14Z" fill="#fffaf0" stroke-width="1.7"/>
+<path d="M60 107q27 15 48-1l4 12q-27 17-52 1Z" fill="#3c709b"/>
+<path d="m77 121-6 27 14-4 6-22" fill="#427da9"/><path d="M68 138l16 4" stroke="#f2d88f" stroke-width="3"/>
+</g></svg>

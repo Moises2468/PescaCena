@@ -239,6 +239,13 @@ body{background:var(--bg);text-align:center;color:var(--text)}
 #sec-juegos .categorias-juegos button{flex:1;min-height:44px;padding:8px;border:0;border-radius:7px;background:transparent;color:#142941;font:inherit;font-weight:700;cursor:pointer;box-shadow:none}
 #sec-juegos .categorias-juegos button[aria-selected="true"]{background:#142941;color:#fff}
 #sec-juegos .categorias-juegos button:focus-visible,#sec-juegos [role="tabpanel"]:focus-visible{outline:2px solid #245785;outline-offset:2px}
+.acceso-tabs{display:flex;gap:4px;background:#e7eef8;padding:4px;border-radius:10px;margin:16px auto;max-width:340px}
+.acceso-tabs button{flex:1;min-height:44px;font:inherit;font-weight:700;border:0;border-radius:7px;padding:8px;color:#142941;background:transparent;box-shadow:none}
+.acceso-tabs button[aria-pressed="true"]{color:#fff;background:#142941}
+#pantalla-registro input,#pantalla-registro select{box-sizing:border-box}
+#pin-acceso,#pin-confirmar{letter-spacing:.3em}
+#estado-conexion{min-height:2.5em}
+#cuenta-nombre-estado{font-size:14px}
 @media(max-width:375px){.juegos-grid .card-container{padding:8px}.bottom-nav .nav-item{font-size:10px}}
 </style>
 
@@ -291,9 +298,16 @@ body{background:#fff;font-family:system-ui,sans-serif}.screen{max-width:590px;pa
 <div id="pantalla-registro" class="screen active"><div class="entrada">
 <div class="entrada-marca"><img src="logo.png" alt=""><p>Cena de empresa</p><h1>PescaCena</h1></div>
 <h2>Bienvenido a PescaCena</h2>
-<p class="subtitulo">Indica tus datos para entrar</p>
-<label for="nombre">Nombre o apodo</label><input type="text" id="nombre" placeholder="Nombre/Apodo" required>
-<label for="equipo">Color de tu equipo</label><select id="equipo">
+<p class="subtitulo">Entra con tu nombre y tu PIN.</p>
+<div class="acceso-tabs" aria-label="Acceso a PescaCena">
+<button type="button" id="acceso-entrar" aria-pressed="true" onclick="modoAcceso('entrar')">Entrar</button>
+<button type="button" id="acceso-crear" aria-pressed="false" onclick="modoAcceso('crear')">Es mi primera vez</button></div>
+<label for="nombre">Nombre o apodo</label><input type="text" id="nombre" placeholder="Nombre/Apodo" maxlength="60" autocomplete="username" required>
+<label for="pin-acceso" id="pin-etiqueta">Tu PIN de 6 cifras</label>
+<input type="password" id="pin-acceso" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="current-password" placeholder="••••••" required>
+<div id="alta-confirmacion" hidden><label for="pin-confirmar">Repite tu PIN</label><input type="password" id="pin-confirmar" inputmode="numeric" maxlength="6" autocomplete="new-password"></div>
+<div id="recuperacion-acceso" hidden><label for="codigo-recuperacion">Código de recuperación</label><input id="codigo-recuperacion" type="text" maxlength="12" autocomplete="off" autocapitalize="characters"><p>Pide el código a la organización. Después elige un PIN nuevo.</p></div>
+<div id="datos-primera-vez" hidden><label for="equipo">Color de tu equipo</label><select id="equipo">
 <option value="" disabled selected>Elige el color de tu equipo...</option>
 <option value="Azul"> Equipo Azul</option>
 <option value="Rojo"> Equipo Rojo</option>
@@ -305,6 +319,7 @@ body{background:#fff;font-family:system-ui,sans-serif}.screen{max-width:590px;pa
 <option value="Quizá">Quizá, no lo sé aún</option>
 <option value="No">No puedo ir</option>
 </select>
+</div><button type="button" id="olvido-pin" class="perfil-cambiar" onclick="modoAcceso('recuperar')">He olvidado mi PIN</button>
 <p id="estado-conexion" role="status" aria-live="polite" style="max-width:320px;color:var(--text-muted);font-size:14px;">Conectando con la cena… Puedes ir rellenando tus datos.</p>
 <button id="btn-entrar" onclick="entrar()" disabled>CONECTANDO…</button>
 </div>
@@ -423,9 +438,10 @@ Racha: <span id="racha-dias-num">0</span>
 <button class="mas-link" data-feature="codigos" hidden onclick="cambiarSeccionLobby('codigos',document.getElementById('nav-mas'))">Códigos <span>›</span></button>
 <button class="mas-link" id="ver-perfil-mas" onclick="abrirPerfil('mas')">Tu perfil <span>›</span></button></section>
 <section id="sec-perfil" class="seccion-lobby"><button id="volver-perfil" type="button" class="volver-mas" onclick="volverPerfil()">← Más</button><div class="mas-contenido"><h2>Tu perfil</h2><p class="pagina-intro" id="perfil-nombre"></p>
+<section class="perfil-fila"><h3>Nombre</h3><form id="form-cambiar-nombre" onsubmit="event.preventDefault();guardarNombreCuenta()"><label for="cuenta-nuevo-nombre">Nombre visible</label><input id="cuenta-nuevo-nombre" maxlength="60" autocomplete="nickname" required><button type="submit" id="btn-nombre-cuenta" class="accion-dorada">Guardar nombre</button><p id="cuenta-nombre-estado" role="status"></p></form></section>
 <section class="perfil-fila"><h3>Asistencia</h3><div class="asistencia-detalle"><p id="asistencia-confirmada" aria-live="polite">Pendiente de guardar</p><button id="btn-modificar-asistencia" class="perfil-cambiar" onclick="editarAsistencia(true)">Modificar asistencia</button><div id="editor-asistencia" hidden><label for="cambiar-asistencia">¿Vas a venir a la cena?</label><select id="cambiar-asistencia" aria-label="Cambiar mi asistencia"><option value="Sí">Sí, asistiré</option><option value="Quizá">Aún no lo sé</option><option value="No">No puedo ir</option></select><button id="btn-asistencia" onclick="guardarAsistencia()">Guardar respuesta</button><button id="btn-cancelar-asistencia" class="perfil-cambiar" onclick="editarAsistencia(false)">Cancelar</button></div></div></section>
 <section class="perfil-fila"><h3>Equipo</h3><p id="perfil-equipo-actual"></p><button id="btn-editar-equipo" class="perfil-cambiar" type="button" onclick="editarEquipo(true)">Cambiar equipo</button><div class="perfil-editor" id="perfil-equipo" hidden><label for="nuevo-equipo">Elige tu equipo</label><select id="nuevo-equipo"><option value="Azul"> Equipo Azul</option><option value="Rojo"> Equipo Rojo</option><option value="Amarillo"> Equipo Amarillo</option></select><button id="btn-equipo" onclick="guardarEquipo()">Guardar equipo</button><button type="button" class="perfil-cambiar" onclick="editarEquipo(false)">Cancelar</button></div></section>
-</div></section>
+<section class="perfil-fila"><h3>Acceso</h3><p>Tu sesión queda guardada en este dispositivo. En otro móvil o PC puedes entrar con tu nombre y PIN.</p></section></div></section>
 <section id="sec-votar" data-feature="premios" hidden class="seccion-lobby">
 <p class="seccion-etiqueta">Pesca-Oscars</p><h2 id="premios-titulo">Votaciones</h2><p class="pagina-intro" id="premios-instrucciones">Elige a un compañero por categoría. No puedes votarte a ti mismo.</p>
 <p id="votos-estado" class="pagina-intro" hidden></p><div id="caja-votaciones-form"><div id="formulario-votaciones"></div><button id="btn-enviar-votos" class="accion-dorada" onclick="emitirVotos()">Enviar mis votos</button></div><div class="nominados-panel" id="caja-nominados" hidden style="display: none; margin-top: 15px; text-align: left;">
@@ -1840,17 +1856,21 @@ cargarMarcadores=function(callback) {
   lecturaPendiente=(async()=>{
   try {
     const name=localStorage.getItem('jugador_nombre')||'';
-    const res=await fetch(URL_GOOGLE+'?token=candado_pescanova_26&nombre='+encodeURIComponent(name)+'&_tsc='+Date.now(),{signal:AbortSignal.timeout(20000)});
+    const sesionLectura=sesionLocalCuenta();
+    const res=await fetch(URL_GOOGLE+(sesionLectura?'':'?token=candado_pescanova_26&_tsc='+Date.now()),sesionLectura?{method:'POST',body:JSON.stringify({accion:'Leer Cuenta',sesion:sesionLectura}),signal:AbortSignal.timeout(20000)}:{signal:AbortSignal.timeout(20000)});
     if(!res.ok)throw new Error('El servidor no responde.');
     const data=await res.json();
+    if(sesionLectura!==sesionLocalCuenta())return null;
+    if(data.codigo==='SESION'){perderSesionCuenta(data.mensaje);return null;}
     if(data.error || data.apiVersion!==3)throw new Error(data.error || 'Se está actualizando la web. Vuelve en unos minutos.');
     if(localStorage.getItem('cena_campaign')!==data.campaign){
       limpiarEstadoCampaña(data.campaign);
       document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));
       document.getElementById('pantalla-registro').classList.add('active');
     }
+    if(data.cuenta)guardarIdentidadCuenta(data.cuenta,data);
     pintarDatos(data);
-    if(name){
+    if(name && sesionLocalCuenta()){
       try{sessionStorage.setItem('pesca-lectura',JSON.stringify({name:localStorage.getItem('jugador_nombre'),day:diaMadrid(),at:Date.now(),data}));}catch(_){}
     }
     ultimaLecturaGeneral=Date.now();
@@ -1866,9 +1886,10 @@ function requestId(){return crypto.randomUUID().replace(/-/g,'');}
 function pedirOperacion(accion,puntos=0,palabra='',extra={}) {
   const payload=Object.assign({nombre:localStorage.getItem('jugador_nombre'),equipo:localStorage.getItem('jugador_equipo'),accion,puntos,palabra,campaign:campaña,etapa:bossEtapaActual,requestId:requestId()},extra);
   const work=async()=>{
-    const res=await fetch(URL_GOOGLE,{method:'POST',body:JSON.stringify(payload),signal:AbortSignal.timeout(30000)});
+    const res=await fetch(URL_GOOGLE,{method:'POST',body:JSON.stringify({...payload,sesion:sesionLocalCuenta()}),signal:AbortSignal.timeout(30000)});
     if(!res.ok)throw new Error('No se pudo guardar la operación.');
     const data=await res.json();
+    if(data.codigo==='SESION')perderSesionCuenta(data.mensaje);
     if(data.ok!==true)throw new Error(data.mensaje||'El servidor rechazó la operación.');
     try{sessionStorage.removeItem('pesca-lectura');}catch(_){}
     if(Number.isFinite(data.saldo)){misPuntosActuales=data.saldo;document.getElementById('puntos-esquina-num').textContent=data.saldo;}
@@ -1926,7 +1947,7 @@ guardarAsistencia=async function(){
 };
 const lobbyAnterior=mostrarLobby;
 mostrarLobby=function(){
-  if(!equipoValido(localStorage.getItem('jugador_equipo'))){
+  if(!sesionLocalCuenta() || !equipoValido(localStorage.getItem('jugador_equipo'))){
     document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));
     document.getElementById('pantalla-registro').classList.add('active');
     document.getElementById('nombre').value=localStorage.getItem('jugador_nombre')||'';
@@ -2082,7 +2103,8 @@ reclamarBotinBoss=async function(){
 window.onload=null;
 document.addEventListener("DOMContentLoaded",()=>{
   aplicarFases();
-  const perfilGuardado=localStorage.getItem('cena_campaign')&&localStorage.getItem('jugador_nombre')&&equipoValido(localStorage.getItem('jugador_equipo'));
+  modoAcceso('entrar');
+  const perfilGuardado=sesionLocalCuenta()&&localStorage.getItem('cena_campaign')&&localStorage.getItem('jugador_nombre')&&equipoValido(localStorage.getItem('jugador_equipo'));
   const sincronizacion=document.getElementById('estado-sesion');
   if(perfilGuardado){
     mostrarLobby();pintarAsistencia(localStorage.getItem('jugador_asistencia'));
@@ -2098,7 +2120,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   cargarMarcadores().then(data=>{
     if(!data){if(perfilGuardado)sincronizacion.textContent='No se ha podido sincronizar. Reintentaremos la conexión.';return;}
     sincronizacion.hidden=true;
-    if(localStorage.getItem('jugador_nombre')&&document.getElementById('pantalla-registro').classList.contains('active')&&!entradaPendiente)mostrarLobby();
+    if(sesionLocalCuenta()&&localStorage.getItem('jugador_nombre')&&document.getElementById('pantalla-registro').classList.contains('active')&&!entradaPendiente)mostrarLobby();
   });
   iniciarEscuchadoresZip();
   setInterval(actualizarCuentaAtras,1000);
@@ -2609,6 +2631,121 @@ async function refrescarBossLigero(){
  }catch(_){/* La siguiente consulta reintenta sin interrumpir la partida. */}
  finally{bossLecturaPendiente=false;}
 }
+
+
+let accesoModo='entrar', accesoSolicitud=null;
+function sesionLocalCuenta(){return localStorage.getItem('pesca_sesion')||'';}
+
+function modoAcceso(modo){
+  if(entradaPendiente)return;
+  accesoModo=modo;
+  document.getElementById('datos-primera-vez').hidden=modo!=='crear';
+  document.getElementById('alta-confirmacion').hidden=modo==='entrar';
+  document.getElementById('recuperacion-acceso').hidden=modo!=='recuperar';
+  document.getElementById('olvido-pin').hidden=modo==='recuperar';
+  document.getElementById('acceso-entrar').setAttribute('aria-pressed',String(modo==='entrar'));
+  document.getElementById('acceso-crear').setAttribute('aria-pressed',String(modo==='crear'));
+  document.getElementById('pin-etiqueta').textContent=modo==='entrar'?'Tu PIN de 6 cifras':'Elige un PIN de 6 cifras';
+  document.getElementById('pin-acceso').autocomplete=modo==='entrar'?'current-password':'new-password';
+  document.getElementById('pin-acceso').value='';
+  document.getElementById('pin-confirmar').value='';
+  document.getElementById('estado-conexion').textContent=modo==='crear'?'Recuerda tu nombre y tu PIN para entrar desde otro dispositivo.':modo==='recuperar'?'La organización puede ayudarte a recuperar el acceso.':'Tu sesión quedará guardada en este dispositivo.';
+  mostrarEstadoConexion('terminado');
+}
+mostrarEstadoConexion=function(){
+  const btn=document.getElementById('btn-entrar');
+  btn.disabled=entradaPendiente;
+  btn.textContent=entradaPendiente?'Entrando…':accesoModo==='crear'?'Crear mi cuenta':accesoModo==='recuperar'?'Guardar PIN y entrar':'Entrar';
+};
+
+function limpiarIdentidadLocalCuenta(){
+  const prefixes=['jugador_','asistencia_','racha_','zip_','wordle_','parejas_','tower_','ruleta_','botin_','mision_','last_','baseline_','marcadores_'];
+  for(const key of Object.keys(localStorage))if(prefixes.some(p=>key.startsWith(p)))localStorage.removeItem(key);
+  localStorage.removeItem('pesca_sesion');
+  localStorage.removeItem('pesca_cuenta_id');
+  sessionStorage.removeItem('pesca-lectura');
+  ultimosDatosServidor=null;funciones={};
+  clearInterval(autoClickerInterval);clearInterval(sincroBossInterval);clearInterval(ilusionMultijugadorInterval);
+  clearInterval(zipTimerInterval);clearInterval(quizReloj);
+  danoAcumuladoSinEnviar=0;danoPendiente=null;
+}
+function perderSesionCuenta(mensaje){
+  limpiarIdentidadLocalCuenta();
+  document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));
+  document.getElementById('pantalla-registro').classList.add('active');
+  document.getElementById('estado-conexion').textContent=mensaje||'Entra con tu nombre y tu PIN.';
+  aplicarFases();
+}
+function guardarIdentidadCuenta(cuenta,datos={}){
+  localStorage.setItem('pesca_cuenta_id',cuenta.id);
+  localStorage.setItem('jugador_nombre',cuenta.nombre);
+  const equipo=datos.equipoJugador||cuenta.equipo;
+  const asistencia=datos.miAsistencia||cuenta.asistencia;
+  if(equipoValido(equipo))localStorage.setItem('jugador_equipo',equipo);
+  if(asistencia)localStorage.setItem('jugador_asistencia',asistencia);
+}
+entrar=async function(){
+  if(entradaPendiente)return;
+  const nombre=document.getElementById('nombre').value.trim();
+  const pin=document.getElementById('pin-acceso').value;
+  if(!nombre || !/^\d{6}$/.test(pin)){showModal('Revisa tus datos','Escribe tu nombre y un PIN de 6 cifras.','warning');return;}
+  if(accesoModo!=='entrar' && pin!==document.getElementById('pin-confirmar').value){showModal('Los PIN no coinciden','Repite el mismo PIN en las dos casillas.','warning');return;}
+  const equipo=document.getElementById('equipo').value,asistencia=document.getElementById('asistencia').value;
+  if(accesoModo==='crear'&&(!equipoValido(equipo)||!asistencia)){showModal('Faltan datos','Elige tu equipo e indica si vas a venir.','warning');return;}
+  const codigo=document.getElementById('codigo-recuperacion').value.trim().toUpperCase();
+  if(accesoModo==='recuperar'&&!codigo){showModal('Falta el código','Pide el código de recuperación a la organización.','warning');return;}
+  const accion={entrar:'Entrar Cuenta',crear:'Crear Cuenta',recuperar:'Recuperar Cuenta'}[accesoModo];
+  const datos={accion,nombre,pin,equipo,asistencia,codigo};
+  const firma=JSON.stringify(datos);
+  if(accesoSolicitud?.firma!==firma)accesoSolicitud={firma,id:requestId()};
+  entradaPendiente=true;mostrarEstadoConexion();
+  for(const id of ['acceso-entrar','acceso-crear'])document.getElementById(id).disabled=true;
+  try{
+    const response=await fetch(URL_GOOGLE,{method:'POST',body:JSON.stringify({...datos,requestId:accesoSolicitud.id}),signal:AbortSignal.timeout(30000)});
+    if(!response.ok)throw new Error('La conexión está tardando. Prueba de nuevo, sin recargar.');
+    const acceso=await response.json();
+    if(!acceso.ok)throw new Error(acceso.mensaje||'No se pudo entrar.');
+    // Esperar cualquier lectura anterior para que no reemplace la identidad nueva.
+    await Promise.resolve(lecturaPendiente);
+    limpiarIdentidadLocalCuenta();
+    limpiarEstadoCampaña(acceso.campaign);campaña=acceso.campaign;
+    localStorage.setItem('pesca_sesion',acceso.sesion);
+    guardarIdentidadCuenta(acceso.cuenta);
+    document.getElementById('pin-acceso').value='';document.getElementById('pin-confirmar').value='';
+    document.getElementById('codigo-recuperacion').value='';accesoSolicitud=null;
+    misPuntosActuales=0;document.getElementById('puntos-esquina-num').textContent='0';
+    mostrarLobby();pintarAsistencia(acceso.cuenta.asistencia);
+    document.getElementById('estado-sesion').hidden=false;
+    cargarMarcadores();
+  }catch(error){showModal('No se pudo entrar',error.message||'Comprueba la conexión y vuelve a probar.','error');}
+  finally{
+    entradaPendiente=false;mostrarEstadoConexion();
+    for(const id of ['acceso-entrar','acceso-crear'])document.getElementById(id).disabled=false;
+  }
+};
+async function guardarNombreCuenta(){
+  const btn=document.getElementById('btn-nombre-cuenta'),estado=document.getElementById('cuenta-nombre-estado');
+  if(btn.disabled)return;
+  btn.disabled=true;estado.textContent='Guardando nombre…';
+  try{
+    const resultado=await pedirOperacion('Cambiar Nombre',0,'',{nuevoNombre:document.getElementById('cuenta-nuevo-nombre').value});
+    localStorage.setItem('jugador_nombre',resultado.nombre);
+    document.getElementById('nombre-usuario').textContent=resultado.nombre;
+    pintarMiEquipo();estado.textContent='Nombre actualizado. Conservas tus puntos y tus votos.';
+    cargarMarcadores();
+  }catch(error){estado.textContent=error.message;}
+  finally{btn.disabled=false;}
+}
+const pintarEquipoCuentaAnterior=pintarMiEquipo;
+pintarMiEquipo=function(){
+  pintarEquipoCuentaAnterior();
+  const input=document.getElementById('cuenta-nuevo-nombre');
+  if(document.activeElement!==input)input.value=localStorage.getItem('jugador_nombre')||'';
+};
+for(const id of ['nombre','pin-acceso','pin-confirmar','codigo-recuperacion'])document.getElementById(id).addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();entrar();}
+});
+window.addEventListener('storage',e=>{if(e.key==='pesca_sesion')location.reload();});
 
 </script>
 

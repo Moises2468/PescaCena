@@ -16,25 +16,19 @@ const float=$("float"), splash=$("splash"), line=$("line");
 const angler=document.querySelector(".angler");
 const rodArt=angler.querySelector(".fishing-rod");
 const menuButtons=["open-weekly","open-feed","open-album","open-shop"];
-const drawer=$("dock-drawer");
-const drawerTabs=[["open-shop","shop-panel"],["open-album","album-panel"],["open-weekly","weekly-panel"]];
-function openDrawerPanel(id){
- for(const [button,panel] of drawerTabs){$(panel).hidden=panel!==id;$(button).setAttribute("aria-pressed",String(panel===id));}
- if(id==="shop-panel")renderShop();
- document.querySelector('.drawer-panels').scrollTop=0;
+const menuViews=[['open-shop','shop-panel'],['open-album','album-panel'],['open-weekly','weekly-panel']];
+for(const [button,panel] of menuViews){
+ const trigger=$(button),view=$(panel);
+ trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-controls',panel);
+ trigger.onclick=()=>{
+  if(phase!=='idle')return;
+  if(panel==='shop-panel')renderShop();
+  if(panel==='album-panel')renderAlbum();
+  view.showModal();view.scrollTop=0;
+ };
+ view.querySelector('header button').onclick=()=>view.close();
+ view.addEventListener('close',()=>trigger.focus({preventScroll:true}));
 }
-for(const [button,panel] of drawerTabs){
- $(button).onclick=()=>openDrawerPanel(panel);
- $(panel).querySelector('header button').onclick=()=>{drawer.open=false;drawer.querySelector('summary').focus();};
-}
-openDrawerPanel("shop-panel");
-drawer.addEventListener("toggle",()=>{
-  if(!drawer.open)return;
-  renderShop();
-  if(innerWidth<=600)drawer.querySelector('summary').scrollIntoView({block:'start',behavior:reducedMotion?'instant':'smooth'});
-});
-drawer.querySelector('summary').addEventListener('click',event=>{if(phase!=="idle")event.preventDefault();});
-drawer.addEventListener('keydown',event=>{if(event.key==="Escape"){drawer.open=false;drawer.querySelector('summary').focus();}});
 $("open-feed").onclick=()=>$("feed-panel").showModal();
 $("feed-panel").addEventListener("close",()=>$("open-feed").focus());
 $("exit").hidden=window===parent;
@@ -57,7 +51,6 @@ for(const button of document.querySelectorAll('[data-album-filter]'))button.oncl
  for(const tab of document.querySelectorAll('[data-album-filter]'))tab.setAttribute('aria-pressed',String(tab===button));
  renderAlbum();
 };
-$('daily-preview').onclick=()=>{if(phase!=='idle')return;drawer.open=true;openDrawerPanel('weekly-panel');drawer.querySelector('summary').scrollIntoView({block:'start',behavior:reducedMotion?'instant':'smooth'});};
 function renderAlbum(){
   $("album-count").textContent=Object.keys(album).length+"/"+Pesca.fish.length;
   const entries=Pesca.fish.filter(f=>albumFilter==='caught'?!!album[f.id]:albumFilter==='missing'?!album[f.id]:albumFilter==='today'?(daily&&(f.day===undefined||f.day===daily.index)&&(f.zone!=='banco'||bankOpen)):true);
@@ -70,7 +63,7 @@ function renderAlbum(){
     if(f.id==="rodolfo"){
       const preview=item("button","Ver a Rodolfo","secondary");
       preview.onclick=()=>{
-        drawer.open=false;
+        $('album-panel').close();
         $("catch-art").replaceChildren(drawFish(f,true));
         $("catch-label").textContent="Ficha de especie";
         $("catch-title").textContent=f.name;
@@ -215,12 +208,8 @@ function renderDaily(data){
   daily=data;
   $('daily-preview').hidden=false;
   $('daily-preview-label').textContent=data.complete?'Completado · '+data.label:data.label+' · '+data.progress+'/'+data.target;
-  $('daily-preview-reward').textContent=data.complete?'25 monedas cobradas · Nuevo encargo mañana':'+25 monedas · Traje Aurora '+Math.min(data.completed,5)+'/5 encargos';
+  $('daily-preview-reward').textContent=data.complete?'25 monedas cobradas · Nuevo encargo mañana':'Recompensa: 25 monedas';
   $('daily-preview-progress').max=data.target;$('daily-preview-progress').value=data.progress;
-  $("daily-task").textContent=data.label+" · "+data.progress+"/"+data.target+(data.complete?" · ¡Completado!":"");
-  $("daily-progress").max=data.target;
-  $("daily-progress").value=data.progress;
-  $("daily-reward").textContent=(data.complete?"+25 monedas cobradas":"Premio: 25 monedas")+" · Traje Aurora "+Math.min(data.completed,5)+"/5 encargos";
   if(changed){
     const fishToday=Pesca.fish.filter(f=>f.day===data.index).map(f=>f.name);
     $("rotation-today").textContent="Hoy, "+data.name+": "+fishToday.join(", ")+".";
@@ -234,7 +223,7 @@ function renderWeekly(data){
   $("weekly-status").textContent=data.open?"Banco especial abierto hasta el lunes.":count+" de 5 especies · se renueva cada lunes";
   $("weekly").replaceChildren(...data.ids.map(id=>{
     const mark=data.marks[id];
-    return item("li",Pesca.find(id).name+(mark?" · "+mark.name:""),mark?"done":"");
+    return item("li",Pesca.find(id).name+(mark?" · Capturada por "+mark.name:" · Por capturar"),mark?"done":"");
   }));
   renderButtons();
 }
@@ -285,11 +274,11 @@ async function refresh(){
   }finally{refreshing=false;}
 }
 function renderButtons(){
-  for(const id of menuButtons)$(id).disabled=["charging","launching","waiting","bite","fight"].includes(phase);
+  for(const id of menuButtons)$(id).disabled=phase!=='idle';
 }
 function setPhase(value,label){
   phase=value;phaseAt=performance.now();
-  $('daily-preview').disabled=value!=='idle';
+
   scene.dataset.phase=value;
   setHint(label);
   rod.setAttribute("aria-disabled",String(!ready||["launching","waiting","saving","retry"].includes(value)));
@@ -358,7 +347,7 @@ function setHeld(value){
 }
 function down(id){
   if(input!==null||!ready)return;
-  if(drawer.open)drawer.open=false;
+
   if(phase==="idle"){
     input=id;setPhase("charging","Suelta para lanzar");
     return;

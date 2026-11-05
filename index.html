@@ -239,6 +239,9 @@ body{background:var(--bg);text-align:center;color:var(--text)}
 #sec-juegos .categorias-juegos button{flex:1;min-height:44px;padding:8px;border:0;border-radius:7px;background:transparent;color:#142941;font:inherit;font-weight:700;cursor:pointer;box-shadow:none}
 #sec-juegos .categorias-juegos button[aria-selected="true"]{background:#142941;color:#fff}
 #sec-juegos .categorias-juegos button:focus-visible,#sec-juegos [role="tabpanel"]:focus-visible{outline:2px solid #245785;outline-offset:2px}
+#torre-fin-resultado{max-width:340px;padding:0 18px;text-align:center;font:16px/1.5 'Segoe UI',sans-serif}
+#torre-guardado{position:absolute;bottom:max(20px,env(safe-area-inset-bottom));left:16px;right:16px;z-index:30;max-width:520px;margin:auto;padding:12px;border:1px solid #d3dfed;border-radius:10px;background:#fff;color:#142941;text-align:center;font:14px/1.4 'Segoe UI',sans-serif}
+#torre-reintentar{display:block;width:auto;margin:8px auto 0;padding:8px 14px;border:0;border-radius:8px;background:#142941;color:white;font:inherit}
 .acceso-tabs{display:flex;gap:4px;background:#e7eef8;padding:4px;border-radius:10px;margin:16px auto;max-width:340px}
 .acceso-tabs button{flex:1;min-height:44px;font:inherit;font-weight:700;border:0;border-radius:7px;padding:8px;color:#142941;background:transparent;box-shadow:none}
 .acceso-tabs button[aria-pressed="true"]{color:#fff;background:#142941}
@@ -246,9 +249,12 @@ body{background:var(--bg);text-align:center;color:var(--text)}
 #pin-acceso,#pin-confirmar{letter-spacing:.3em}
 #estado-conexion{min-height:2.5em}
 #cuenta-nombre-estado{font-size:14px}
-#torre-fin-resultado{max-width:340px;padding:0 18px;text-align:center;font:16px/1.5 'Segoe UI',sans-serif}
-#torre-guardado{position:absolute;bottom:max(20px,env(safe-area-inset-bottom));left:16px;right:16px;z-index:30;max-width:520px;margin:auto;padding:12px;border:1px solid #d3dfed;border-radius:10px;background:#fff;color:#142941;text-align:center;font:14px/1.4 'Segoe UI',sans-serif}
-#torre-reintentar{display:block;width:auto;margin:8px auto 0;padding:8px 14px;border:0;border-radius:8px;background:#142941;color:white;font:inherit}
+#muelle-dialog{max-width:none;max-height:none;width:100%;height:100dvh;border:0;padding:0;margin:0;background:#fff;color:#142941}
+#muelle-dialog::backdrop{background:#fff}#muelle-dialog iframe{width:100%;height:100%;border:0;display:block}
+body:has(#muelle-dialog[open]) .cabecera-lobby{visibility:hidden}
+#boss-vida-fill{transition:width .65s ease-out}
+@media(prefers-reduced-motion:reduce){#boss-vida-fill{transition:none}}
+.ranking-refresco{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:14px 0}.ranking-refresco button{font:700 14px 'Segoe UI',sans-serif;padding:10px 14px;min-height:44px}.ranking-refresco p{font-size:12px;color:#506683;margin:0}
 @media(max-width:375px){.juegos-grid .card-container{padding:8px}.bottom-nav .nav-item{font-size:10px}}
 </style>
 
@@ -369,6 +375,7 @@ Racha: <span id="racha-dias-num">0</span>
 <button class="tab-btn" id="btn-agentes" data-feature="ranking" hidden onclick="cambiarFiltroRanking('agentes')">Individual / por juego</button>
 <button class="tab-btn" id="btn-logros" data-feature="logros" hidden onclick="cambiarFiltroRanking('logros')">Logros</button>
 </div>
+<div class="ranking-refresco"><button type="button" class="accion-dorada" id="ranking-actualizar" onclick="actualizarRankingManual()">Actualizar ranking</button><p id="ranking-actualizado" role="status">Actualiza para consultar los últimos resultados.</p></div>
 <div id="loading-text">Sincronizando información...</div>
 <div id="vista-equipos">
 <div class="equipo-row"><div class="equipo-nombre"> Azul</div><div class="barra-bg"><div id="barra-azul" class="barra-fill bg-azul"></div><span id="pts-azul" class="puntos-text">0 pts</span></div></div>
@@ -422,8 +429,10 @@ Racha: <span id="racha-dias-num">0</span>
 </div>
 <div id="panel-juegos-diarios" role="tabpanel" aria-labelledby="tab-juegos-diarios" tabindex="0"><div class="retos-grid" data-feature="juegos" hidden><button class="reto" data-feature="zip" hidden onclick="abrirZip()"><span aria-hidden="true">▦</span><strong>ZIP</strong><small>Puzle</small></button><button class="reto" data-feature="trivial" hidden onclick="abrirTrivial()"><span aria-hidden="true">?</span><strong>Trivial</strong><small>Preguntas</small></button><button class="reto" data-feature="tower" hidden onclick="abrirTorre()"><span aria-hidden="true">▥</span><strong>Apila cubos</strong><small>Puntería</small></button><button class="reto" data-feature="parejas" hidden onclick="abrirParejas()"><span aria-hidden="true">◇</span><strong>Parejas</strong><small>Memoria</small></button><button class="reto" data-feature="wordle" hidden onclick="abrirWordle()"><span aria-hidden="true">Aa</span><strong>Wordle</strong><small>Palabras</small></button></div>
 <p id="juegos-diarios-vacio" hidden>Todavía no hay retos diarios disponibles.</p></div>
-<div id="panel-juegos-compania" role="tabpanel" aria-labelledby="tab-juegos-compania" tabindex="0" hidden><button id="boss-juegos" class="boss-entry" data-feature="boss" hidden onclick="abrirBoss()"><span class="boss-entry-icon" aria-hidden="true">&gt;_</span><span><strong>Reto de todos</strong><small id="boss-juegos-estado">Cargando combate…</small></span><span class="boss-entry-action" id="boss-juegos-accion">Entrar al combate <span aria-hidden="true">›</span></span></button>
-<p id="juegos-compania-vacio" hidden>El Reto de todos aún no está disponible.</p></div>
+<div id="panel-juegos-compania" role="tabpanel" aria-labelledby="tab-juegos-compania" tabindex="0" hidden>
+<button id="acuario-entry" type="button" class="boss-entry" data-feature="muelle" hidden onclick="abrirMuelle('acuario')"><span class="boss-entry-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h18v14H3ZM3 8q4 3 8 0t10 0"/><path d="m8 13 3-2q4 0 6 3-3 3-6 1l-3 2Z"/></svg></span><span><strong>Acuario</strong><small>Comparte tu pez favorito y descubre los de tus compañeros</small></span><span class="boss-entry-action">Entrar ›</span></button>
+<button id="muelle-entry" type="button" class="boss-entry" data-feature="muelle" hidden onclick="abrirMuelle()"><span class="boss-entry-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12l4-4c5-4 10-3 14 4-4 7-9 8-14 4zm4-4v8m7-6h.01"/></svg></span><span><strong>El Muelle</strong><small>Pesca en compañía y mejora tu equipo</small></span><span class="boss-entry-action">Entrar ›</span></button><button id="boss-juegos" class="boss-entry" data-feature="boss" hidden onclick="abrirBoss()"><span class="boss-entry-icon" aria-hidden="true">&gt;_</span><span><strong>Reto de todos</strong><small id="boss-juegos-estado">Cargando combate…</small></span><span class="boss-entry-action" id="boss-juegos-accion">Entrar al combate <span aria-hidden="true">›</span></span></button>
+<p id="juegos-compania-vacio" hidden>Todavía no hay juegos en compañía disponibles.</p></div>
 </div>
 
 <section id="sec-codigos" data-feature="codigos" hidden class="seccion-lobby"><button type="button" class="volver-mas" onclick="cambiarSeccionLobby('mas',document.getElementById('nav-mas'))">← Más</button>
@@ -1778,7 +1787,7 @@ function aplicarFases() {
   document.body.classList.toggle('votaciones-visibles',!!funciones.votaciones);
   document.querySelectorAll('[data-feature]').forEach(el=>el.hidden=!disponible(el.dataset.feature));
   document.getElementById('juegos-diarios-vacio').hidden=!!funciones.juegos&&!!document.querySelector('#panel-juegos-diarios .reto:not([hidden])');
-  document.getElementById('juegos-compania-vacio').hidden=!document.getElementById('boss-juegos').hidden;
+  document.getElementById('juegos-compania-vacio').hidden=!!(funciones.boss||funciones.muelle);
   const checkbox=document.getElementById('checkbox-mision');
   checkbox.parentElement.hidden=!funciones.misiones;
   if(!funciones.fotos && funciones.misiones)checkbox.checked=true;
@@ -1965,7 +1974,7 @@ cambiarSeccionLobby=function(id,nav){
   const key={ranking:'estadisticas',fotos:'galeria',juegos:'sala',votar:'premios',perfil:'miAsistencia'}[id]||id;
   if(!disponible(key))return;
   seccionAnterior(id,nav||document.querySelector('.nav-item'));
-  if(id==='ranking')refrescarRanking();
+
 };
 [
   ['abrirZip','zip'],['abrirWordle','wordle'],['abrirParejas','parejas'],['abrirTrivial','trivial'],
@@ -2129,14 +2138,14 @@ document.addEventListener("DOMContentLoaded",()=>{
   setInterval(actualizarCuentaAtras,1000);
   setInterval(()=>{
     if(document.visibilityState!=='visible')return;
-    if(document.getElementById('sec-ranking').classList.contains('active-sec')&&document.getElementById('pantalla-lobby').classList.contains('active'))refrescarRanking();
+
     if(document.getElementById('pantalla-boss').classList.contains('active'))refrescarBossLigero();
   },15000);
 });
 document.addEventListener('visibilitychange',()=>{
  if(document.visibilityState!=='visible'||wordleEnviando||quizOcupado)return;
  if(document.getElementById('pantalla-boss').classList.contains('active'))refrescarBossLigero();
- else if(document.getElementById('pantalla-registro').classList.contains('active')||Date.now()-ultimaLecturaGeneral>=60000)cargarMarcadores();
+ else if(document.getElementById('pantalla-registro').classList.contains('active')||(!document.getElementById('sec-ranking').classList.contains('active-sec')&&Date.now()-ultimaLecturaGeneral>=60000))cargarMarcadores();
 });
 let wordleEnviando=false, intentoWordlePendiente=null;
 revisarPalabra=async function(){
@@ -2334,6 +2343,7 @@ Game.prototype.endGame=function(){
   torrePendientes.push({score,id:requestId(),resultado:this.torreResultado});
   if(!torreGuardando)guardarRecordTorre();
 };
+
 
 
 function equipoValido(team){return ['Azul','Rojo','Amarillo'].includes(team);}
@@ -2804,6 +2814,42 @@ window.addEventListener('storage',e=>{if(e.key==='pesca_sesion')location.reload(
 
 </script>
 
+<dialog id="muelle-dialog" aria-label="El Muelle"><iframe title="El Muelle y su pecera" referrerpolicy="same-origin"></iframe></dialog>
+<script>let muelleOrigen=null;
+const pintarAntesDeMuelle=pintarDatos;
+pintarDatos=function(datos){
+  const resultado=pintarAntesDeMuelle(datos);
+  if(datos.cuenta&&datos.muelleAcceso?.exp>Date.now()/1000+30){
+    const key='pescacena:muelle:acceso:'+datos.cuenta.id+':'+datos.campaign;
+    try{sessionStorage.setItem(key,JSON.stringify(datos.muelleAcceso));}catch{}
+  }
+  return resultado;
+};
+function abrirMuelle(vista='muelle'){
+  if(!disponible('muelle')||!sesionLocalCuenta())return;
+  const dialog=document.getElementById('muelle-dialog');
+  if(dialog.open)return;
+  muelleOrigen=document.activeElement;
+  const acuario=vista==='acuario';
+  dialog.setAttribute('aria-label',acuario?'Acuario':'El Muelle');
+  dialog.querySelector('iframe').title=acuario?'Acuario compartido':'El Muelle';
+  dialog.querySelector('iframe').src=acuario?'muelle/acuario.html':'muelle/index.html';
+  dialog.showModal();
+}
+document.getElementById('muelle-dialog').addEventListener('close',()=>{
+  document.querySelector('#muelle-dialog iframe').removeAttribute('src');
+  muelleOrigen?.focus();
+});
+async function actualizarRankingManual(){
+  const btn=document.getElementById('ranking-actualizar');
+  if(btn.disabled)return;
+  btn.disabled=true;btn.textContent='Actualizando…';
+  try{
+    const datos=await cargarMarcadores();
+    document.getElementById('ranking-actualizado').textContent=datos?'Actualizado a las '+new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}):'No se pudo actualizar. Vuelve a intentarlo.';
+  }finally{btn.disabled=false;btn.textContent='Actualizar ranking';}
+}
+</script>
 </body>
 </html>
 

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>El Muelle · PescaCena</title>
+<link rel="stylesheet" href="muelle.css">
+<script defer src="config.js"></script><script defer src="engine.js"></script><script defer src="fish-art.js"></script><script defer src="personaje.js"></script><script defer src="muelle.js"></script>
+</head>
+<body>
+<main class="dock" id="dock" data-phase="idle"><div class="play-scene">
+ <img class="landscape" src="dock.svg" alt="" width="900" height="490">
+ <div id="cast" tabindex="0" role="application" aria-label="Zona de pesca" aria-describedby="hint"></div>
+ <header class="hud">
+  <button id="exit" type="button" aria-label="Volver a PescaCena">← Sala de juegos</button>
+  <div id="player-stats" class="player-stats" aria-live="polite" hidden><span id="fishing-level"></span><span id="coin-balance"></span></div>
+ </header>
+ <div class="location"><h1>El Muelle</h1><div class="subtitle">
+  <span id="presence">Conectando…</span>
+ </div></div>
+ <div id="avatars" class="avatars"></div>
+ <div class="angler" aria-hidden="true"><svg viewBox="0 0 100 120">
+<g stroke="#19283e" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+  <ellipse cx="40" cy="117" rx="26" ry="2" fill="#b2c2ce" stroke="none" opacity=".45"/>
+  <path class="outfit-back" d="" fill="none" hidden/>
+  <path class="body-base" d="M25 88v26q0 5 9 4 6 0 6-5V99h3v14q0 6 9 5 6 0 6-5V88Z" fill="#fff"/>
+  <path class="body-base" d="M25 65q15-8 30 0l6 28q-20 9-41 0Z" fill="#fff"/>
+  <path class="vest" d="M24 64q16-7 32 0l9 33q-22 7-49 0Z" fill="#e6bd51" hidden/>
+  <path class="seams" d="M40 64v33m-16-11h9v7h-11m26-7h10l2 7H48" fill="none" stroke-width="2" hidden/>
+  <path class="body-base" d="M53 69q8 7 17-3l8 2q-8 19-22 13" fill="#fff"/>
+  <path class="sleeve" d="M54 69q9 5 14-2l5 8q-10 13-17 6Z" fill="#fff" hidden/>
+  <path class="boots" d="M25 106h15v8q0 5-8 4h-8Zm18 0h15v7q0 6-8 5h-7Z" fill="#35465f" hidden/>
+  <g class="fishing-rod"></g>
+  <circle class="body-base" cx="76" cy="67" r="7" fill="#fff"/>
+  <ellipse class="body-base" cx="40" cy="38" rx="25" ry="24" fill="#fff"/>
+  <path d="M33 34v8m16-8v8" stroke-width="4.5"/>
+  <path class="scarf" d="" hidden/>
+  <path class="hat" d="" fill="#fff" hidden/>
+<g class="costume-details"></g>
+<path class="hat-detail" d="" fill="none" stroke-width="2" hidden/>
+</g>
+</svg><span>Tú</span></div>
+ <button id="open-feed" type="button" class="board"><span id="news-preview">Noticias del muelle</span></button>
+ <svg id="line" class="line" aria-hidden="true" hidden><path fill="none" stroke="#62768c" stroke-width="1.2" opacity=".8"/></svg>
+ <div id="float" class="float" hidden></div><div id="splash" class="splash" hidden></div>
+ <div id="fight" class="fight" hidden aria-label="Zona de captura">
+    <span class="fight-title">RECOGE EL SEDAL</span>
+    <div class="channels"><div class="track" id="track"><div id="catch-bar"></div><span id="fish-marker" aria-hidden="true"></span></div>
+    <progress id="progress" max="1" value="0" aria-label="Progreso de captura"></progress></div>
+   </div>
+ <div class="prompt">
+  <meter id="power" min="0" max="1" value="0" aria-label="Fuerza del lance" hidden></meter>
+  <p id="hint" role="status">Abriendo el muelle…</p>
+  <p id="network" role="status" hidden></p>
+  <button id="retry" type="button" class="chip" hidden>Reintentar guardado</button>
+ </div>
+
+ <dialog id="catch-panel" class="sheet catch-sheet" aria-labelledby="catch-title"><p id="catch-label"></p><div id="catch-art"></div><h2 id="catch-title"></h2><p id="catch-detail"></p><form method="dialog"><button>Volver al muelle</button></form></dialog>
+
+ <dialog id="feed-panel" class="sheet" aria-labelledby="feed-title"><header><h2 id="feed-title">Noticias del muelle</h2><form method="dialog"><button aria-label="Cerrar noticias">×</button></form></header><ul id="feed"><li>Actualizando el tablón…</li></ul></dialog>
+
+
+</div><details id="dock-drawer" class="dock-drawer"><summary>Equipo y colección</summary><div class="drawer-body"> <nav class="dock-nav" aria-label="Opciones del muelle">
+ <button id="open-album" type="button"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 3v18m4-12h4m-4 4h4"/></svg><span>Álbum <small id="album-count">—</small></span></button>
+ <button id="open-weekly" type="button"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V3m0 1h13l-3 4 3 4H5"/></svg><span>Misiones <small id="weekly-count">0/5</small></span></button>
+ <button id="open-shop" type="button"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h16l-1 12H5Zm4 0V6a4 4 0 0 1 8 0v3"/></svg><span>Tienda</span></button>
+ </nav><div class="drawer-panels"> <section id="shop-panel" class="sheet drawer-panel" hidden aria-labelledby="shop-title"><header><h2 id="shop-title">Tienda del puerto</h2><button aria-label="Cerrar tienda">×</button></header><p id="shop-summary"></p><p class="shop-help">Captura peces para ganar experiencia. Al subir de nivel, la barra de pesca se ensancha y se desbloquean artículos.</p><p id="shop-note" role="status"></p><div class="shop-categories" role="group" aria-label="Secciones de la tienda"><button type="button" data-shop-category="rod" aria-pressed="true">Cañas</button><button type="button" data-shop-category="bait" aria-pressed="false">Cebos</button><button type="button" data-shop-category="clothes" aria-pressed="false">Ropa</button></div><div id="shop-items"></div></section> <section id="album-panel" class="sheet drawer-panel" hidden aria-labelledby="album-title"><header><h2 id="album-title">Álbum de especies</h2><button aria-label="Cerrar álbum">×</button></header><p id="rotation-today" class="album-rotation"></p><div id="album"></div></section> <section id="weekly-panel" class="sheet drawer-panel" hidden aria-labelledby="weekly-title"><header><h2 id="weekly-title">Misiones del puerto</h2><button aria-label="Cerrar misiones">×</button></header><section class="daily-task"><h3>Encargo personal</h3><p id="daily-task">Consultando el encargo…</p><progress id="daily-progress" value="0" max="1" aria-label="Progreso del encargo personal"></progress><p id="daily-reward"></p></section><h3>Encargo semanal</h3><p id="weekly-status">Cargando…</p><ul id="weekly"></ul></section></div></div></details>
+</main>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Acuario · PescaCena</title>
+<link rel="stylesheet" href="acuario.css">
+<script defer src="config.js"></script><script defer src="engine.js"></script><script defer src="fish-art.js"></script><script defer src="acuario.js"></script>
+</head>
+<body>
+<main>
+<header><a id="volver-compania" href="../index.html">← En compañía</a><span>PESCACENA</span></header>
+<section class="intro"><p class="eyebrow">PECERA COMPARTIDA</p><h1>La Pecera</h1><p id="explore-hint">Toca un pez para conocerlo.</p></section>
+<div class="toolbar"><p id="status" role="status">Cargando el acuario…</p><button id="open-settings" disabled>Mi pez</button></div>
+<div class="glass">
+<svg class="habitat" viewBox="0 0 640 340" preserveAspectRatio="none" aria-hidden="true">
+  <path d="M0 30Q45 43 94 31T194 31T294 31T394 31T494 31T594 31T694 31M0 310Q65 300 130 310T260 310T390 310T520 310T650 310" fill="none" stroke="#9fbfc9" stroke-width="2"/>
+  <path d="M38 309q0-34-18-51m18 51q8-24 20-34m542 33q-5-22 16-44m-16 44q-10-33-23-45" fill="none" stroke="#85b7b7" stroke-width="2" stroke-linecap="round"/>
+  <g fill="none" stroke="#f7feff" stroke-width="2"><circle cx="82" cy="157" r="4"/><circle cx="91" cy="136" r="3"/><circle cx="552" cy="196" r="5"/><circle cx="559" cy="169" r="3"/></g>
+</svg>
+<section id="tank" aria-label="Peces de la pecera"></section>
+<button id="toggle-motion" type="button" aria-pressed="false" aria-label="Pausar el movimiento de los peces" title="Pausar movimiento" hidden><span aria-hidden="true">Ⅱ</span></button>
+</div>
+<nav class="pages" aria-label="Páginas del acuario" hidden><button id="prev">← Anterior</button><span id="page" aria-live="polite"></span><button id="next">Siguiente →</button></nav>
+<dialog id="info" aria-labelledby="fish-title">
+<form method="dialog"><button class="close" aria-label="Cerrar ficha">×</button></form>
+<div id="portrait"></div><h2 id="fish-title"></h2><p id="owner"></p><dl id="details"></dl>
+<button id="feed">Dar de comer</button><p id="feed-status" role="status"></p>
+</dialog>
+<dialog id="settings" aria-labelledby="settings-title">
+<form method="dialog"><button class="close" aria-label="Cerrar ajustes">×</button></form>
+<h2 id="settings-title">Mi pez favorito</h2>
+<p id="favorite-label"></p><p id="no-favorite" hidden>Marca un pez como favorito en el Álbum del Muelle para traerlo aquí.</p>
+<form id="aquarium-settings">
+<div id="outfit-preview"></div>
+<label for="hat">Gorro del pez</label><select id="hat"></select>
+<label class="sharing"><input type="checkbox" id="visible"> Compartir en el acuario</label>
+<p class="note">Al compartir se muestran tu apodo, nivel, número de especies y récord de tamaño de este pez.</p>
+<button id="save" type="submit">Guardar</button><p id="settings-status" role="status"></p>
+</form>
+</dialog>
+</main>
+<script>document.getElementById('volver-compania').addEventListener('click',event=>{if(window!==parent){event.preventDefault();window.frameElement?.closest('dialog')?.close();}});</script></body>
+</html>
+

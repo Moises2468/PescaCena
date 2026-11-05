@@ -1,0 +1,140 @@
+:root{color-scheme:dark;--paper:#fff0d4;--muted:#c1d3d5;--panel:#142736;--line:#466475;--mint:#a3e1c9;--sun:#ffcf89}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#18394c;color:var(--paper);font:15px/1.35 system-ui,sans-serif}button,select{font:inherit;color:inherit;cursor:pointer}button:focus-visible,select:focus-visible,#cast:focus-visible{outline:2px solid var(--sun);outline-offset:-3px}[hidden]{display:none!important}.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.dock{position:relative;width:100%;height:100%;isolation:isolate;overflow:hidden}.landscape,.line,#cast{position:absolute;inset:0;width:100%;height:100%}.landscape{image-rendering:pixelated;pointer-events:none}.line{z-index:2;pointer-events:none}#cast{z-index:4;touch-action:none;user-select:none;-webkit-tap-highlight-color:transparent;cursor:crosshair}
+.hud,.tools,.prompt,.album-link,.board{position:absolute;z-index:5}.hud{top:max(9px,env(safe-area-inset-top));left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));display:flex;gap:9px;align-items:center;pointer-events:none}.hud button{pointer-events:auto}.location{flex:1;text-shadow:0 2px 4px #111b2a}.location h1{font:700 clamp(20px,4vw,30px)/1 Georgia,serif;margin:0}.location span{font-size:11px;color:#fae5c6}.chip,.tools select{min-height:44px;border-radius:9px;background:#142738f5;border:1px solid #7c8790;padding:7px 10px;font-weight:700;font-size:13px;box-shadow:0 2px 5px #11203272}.chip span{color:var(--sun);margin-inline-start:3px}.hud .chip{min-width:44px;font-size:24px;padding:0}.hud .chip span{margin:0}.hud .chip[aria-pressed=true]{color:var(--sun);border-color:var(--sun)}.tools{top:calc(max(9px,env(safe-area-inset-top)) + 53px);left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));display:flex;justify-content:space-between;gap:5px;pointer-events:none}.tools>*{pointer-events:auto}.tools select:disabled{opacity:.65}
+.angler,.peer{position:absolute;top:55%;transform:translateX(-50%);text-align:center;display:grid;justify-items:center;line-height:1;pointer-events:none}.angler{left:44%;top:67%;transform:translate(-50%,-83%);z-index:1}.angler svg,.peer svg{width:clamp(30px,6vw,59px);height:auto;transform-origin:50% 82%}.angler span,.peer span{font-size:10px;background:#14283c;color:#fff3da;padding:3px;border-radius:3px;max-width:62px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.peer{left:var(--x);top:var(--y);transform:translate(-50%,-83%)}.dock[data-phase=charging] .angler svg{transform:rotate(-17deg)}.dock[data-phase=launching] .angler svg{animation:throw .48s ease-out both}@keyframes throw{0%{transform:rotate(-17deg)}35%{transform:rotate(26deg)}100%{transform:rotate(0)}}.board{left:4%;top:calc(67% - 64px);min-height:44px;min-width:66px;color:#38262a;background:#e5ad71;border:2px solid #573d3d;border-radius:5px;font:800 12px system-ui;box-shadow:0 4px #573d3d;padding:4px 7px}.board::after{content:"";position:absolute;top:100%;left:22%;width:56%;height:19px;border-inline:4px solid #573d3d;pointer-events:none}.board span{display:block;color:#785244;font-size:10px}.album-link{right:max(10px,env(safe-area-inset-right));bottom:max(10px,env(safe-area-inset-bottom))}
+.float,.splash{position:absolute;pointer-events:none;z-index:3;transform:translate(-50%,-50%)}.float{width:9px;height:11px;border-top:5px solid #fff0cc;background:#ed796e;border-radius:45%;box-shadow:0 0 0 2px #18263788}.float.bite{box-shadow:0 0 0 10px #ffda8188;animation:nibble .15s infinite alternate}@keyframes nibble{to{margin-top:6px}}.splash{width:13px;height:8px;border:2px solid #c7f9ef;border-radius:50%;animation:ripple .65s ease-out both}@keyframes ripple{from{transform:translate(-50%,-50%) scale(.8);opacity:1}to{transform:translate(-50%,-50%) scale(4.5);opacity:0}}
+.fight{pointer-events:none;position:absolute;z-index:3;right:7%;top:25%;bottom:24%;width:clamp(72px,21%,125px);padding:8px;background:#132537f0;border:2px solid #e7bf81;border-radius:10px;display:flex;flex-direction:column;gap:6px}.fight-title{font:700 10px/1.15 monospace;text-align:center;color:var(--sun)}.channels{display:flex;gap:6px;flex:1;min-height:0}.track{flex:1;position:relative;background:repeating-linear-gradient(#244454 0 11%,#315565 11% 12%);border:1px solid #6f8d91;border-radius:5px;overflow:hidden}.channels progress{writing-mode:vertical-lr;direction:rtl;width:11px;height:100%;accent-color:var(--sun)}#catch-bar{position:absolute;left:0;right:0;background:#8fe3b99c;border:2px solid #c0f1bd;border-radius:5px}#fish-marker{position:absolute;left:19%;width:62%;height:13px;transform:translateY(-50%);background:#ffe29d;clip-path:polygon(0 50%,22% 5%,65% 5%,80% 35%,100% 5%,100% 95%,80% 65%,65% 95%,22% 95%)}
+.prompt{pointer-events:none;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 58px);left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100% - 24px);text-align:center;display:grid;justify-items:center;gap:5px}.prompt p{margin:0;background:#12283aeb;border:1px solid #64808d;border-radius:7px;padding:6px 9px;font-size:13px;font-weight:650}.prompt #network{font-size:12px;color:var(--sun)}.prompt button{pointer-events:auto}.prompt meter{width:min(180px,56vw);height:18px}.dock[data-phase=bite] #hint{background:var(--sun);color:#302021;border-color:#fff0b2;font-size:16px}
+.sheet{color:var(--paper);background:var(--panel);border:1px solid var(--line);border-radius:14px;width:min(calc(100% - 20px),590px);max-height:77%;padding:13px;overscroll-behavior:contain}.sheet::backdrop{background:#08131db3}.sheet header{display:flex;align-items:center;justify-content:space-between;gap:8px}.sheet h2{font:700 24px Georgia,serif;margin:0}.sheet header button{font-size:23px;width:44px;height:44px;background:#294052;border:1px solid var(--line);border-radius:8px}.sheet ul{list-style:none;padding:0;margin:5px 0}.sheet li{padding:7px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}.done{color:var(--mint)}#album{display:grid;grid-template-columns:repeat(auto-fit,minmax(133px,1fr));gap:7px;margin-top:10px}.entry{padding:8px;background:#102130;border:1px solid #354f5b;border-radius:7px;display:grid;gap:3px}.entry svg{width:60px;height:35px}.entry small{color:var(--muted);font-size:12px}.entry .rarity{color:var(--sun);font-size:11px;text-transform:uppercase}.entry button{min-height:44px;background:#294052;border:1px solid var(--line);border-radius:6px}.entry button[aria-pressed=true]{color:var(--sun)}
+@media(max-width:550px) and (orientation:portrait){.landscape{width:150%;left:-14%}}
+@media(prefers-reduced-motion:reduce){.angler svg,.float,.splash{animation:none!important}.splash{opacity:0}}
+/* PescaCena's white panels, navy type and gold accents. */
+:root{--paper:#19283e;--panel:#fff;--line:#d6dfec;--sun:#f0d68b}
+.chip,.tools select{background:#edf2f9;color:#19283e;border-color:#d6dfec}
+.chip span{color:#5b4514}.location{color:#fff5db}.hud .chip[aria-pressed=true],.album-link,.shop-link{background:#f0d68b;color:#19283e}
+.shop-link{position:absolute;z-index:5;left:max(10px,env(safe-area-inset-left));bottom:max(10px,env(safe-area-inset-bottom))}
+.sheet{color-scheme:light}.sheet h2{font:800 22px system-ui,sans-serif}.sheet header button,.entry button{background:#e8eef7;color:#19283e}.sheet .done{color:#356044}.entry{background:#f1f5fa;border-color:#d6dfec}.entry small{color:#435572}.entry .rarity,.entry button[aria-pressed=true]{color:#694d12}
+.angler,.peer{transform:translate(-50%,-86%)}.angler{top:71%}.angler svg,.peer svg{display:block}.angler span,.peer span{position:absolute;top:100%;left:50%;transform:translateX(-50%)}
+#shop-items{display:grid;gap:8px;margin-top:10px}.gear-item{display:grid;gap:4px;padding:9px;background:#eef3fa;border:1px solid #d6dfec;border-radius:8px}.gear-item small{color:#435572}.gear-buttons{display:flex;gap:6px;flex-wrap:wrap}.gear-buttons button,.sheet select{min-height:44px;border:1px solid #d6dfec;background:#f0d68b;border-radius:7px;padding:6px 10px;color:#19283e;font-weight:700}.gear-buttons button:disabled{opacity:.48}.sheet select{background:#fff}.sheet label{display:block;margin-top:8px}#shop-note:empty{display:none}
+.prompt p{color:#fff0d4}.prompt #network{color:#f0d68b}
+/* The scene uses the same neutral palette and typography as the games lobby. */
+html,body{background:#e3e9ef;color:#182842;color-scheme:light}
+body{padding:clamp(5px,1.25vw,14px)}
+.dock{max-width:920px;margin:auto;background:#f9f7f0;border:1px solid #c9d5e2;border-radius:clamp(20px,4vw,43px)}
+.landscape{left:0;width:100%;top:18%;height:75%;image-rendering:auto}
+.hud{top:3%;left:5.2%;right:5.2%;justify-content:space-between;color:#182842;gap:0;font-size:clamp(13px,2.5vw,25px)}
+.hud button,.dock-nav button,.board{min-height:44px;padding:0;border:0;background:none;color:inherit;box-shadow:none;border-radius:6px;text-align:left}
+.hud button{font-weight:750}.hud strong{letter-spacing:.08em}
+.location{position:absolute;z-index:5;top:13.5%;left:5.2%;right:5.2%;color:#182842;text-shadow:none;pointer-events:none}
+.location h1{font:850 clamp(40px,9.7vw,91px)/1 system-ui,sans-serif;letter-spacing:-.065em}
+.subtitle{margin-top:.36em;display:flex;align-items:center;gap:.32em;font-size:clamp(13px,2.8vw,26px);color:#506683}
+.location .subtitle span{font-size:inherit;color:inherit}.subtitle select{pointer-events:auto;min-height:44px;max-width:46%;appearance:none;background:transparent;border:0;color:inherit;padding:0;cursor:pointer}.subtitle select:disabled{opacity:1}
+.angler,.peer{top:63%;left:65%;transform:translate(-50%,-100%)}
+.peer{left:var(--x);top:63%}.angler svg,.peer svg{width:clamp(38px,9vw,79px)}
+.angler span,.peer span{top:auto;bottom:100%;background:none;color:#4b6381;max-width:90px;padding:0;font-size:clamp(9px,2.45vw,22px)}
+.angler span{color:#19283e;font-weight:800}
+.board{top:auto;bottom:8%;left:5.2%;right:5.2%;min-width:0;color:#506683;font:500 clamp(12px,2.8vw,25px) system-ui,sans-serif;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.board span{display:inline;color:inherit;font:inherit}.board::after{content:none}
+.dock-nav{position:absolute;z-index:5;bottom:0;left:0;right:0;height:7%;min-height:46px;border-top:1px solid #ced9e5;background:#f9f7f0;display:flex;align-items:center;justify-content:space-between;gap:4px;padding:0 5.2%}
+.dock-nav button{font-size:clamp(11px,2.6vw,24px);color:#506683;white-space:nowrap}.dock-nav button:last-child{font-weight:750}.dock-nav button:disabled,.board:disabled{opacity:.58}
+.prompt{top:78%;bottom:auto;max-width:91%;color:#182842}.prompt p{padding:0;background:none;border:0;color:#182842;font-size:clamp(13px,3.2vw,29px);font-weight:800}.prompt #network{color:#694d12}.dock[data-phase=bite] .prompt{top:68%}.dock[data-phase=bite] #hint{padding:5px 9px}.dock[data-phase=fight] .prompt{top:73%}
+.fight{top:32%;bottom:30%;right:6%;background:#f9f7f0;border-color:#bdcbd9}.fight-title{color:#182842}.track{background:#e5edf3}.channels progress{accent-color:#aa8638}#catch-bar{background:#aed4b9;border-color:#568765}#fish-marker{background:#9b752c}
+.catch-sheet{text-align:center;padding:22px;width:min(88%,420px)}.catch-sheet::backdrop{background:#1b31486b}.catch-sheet p{color:#506683}.catch-sheet h2{font-size:clamp(24px,6vw,38px)}#catch-label{font-weight:750;letter-spacing:.07em;text-transform:uppercase}#catch-art svg{width:min(80%,200px);height:auto;margin:5px auto}.catch-sheet button,#sound{min-height:44px;padding:8px 14px;background:#f0d68b;border:1px solid #dbc583;border-radius:8px;color:#182842;font-weight:750}#sound{margin-top:12px}#sound[aria-pressed=true]{outline:2px solid #637c9b}.swatch{width:24px;height:12px;border-radius:3px;border:1px solid #718096}
+@media(max-height:490px){.location{top:10%}.location h1{font-size:34px}.hud button,.subtitle select{min-height:32px}.prompt{top:73%}.board{bottom:46px}.dock-nav{min-height:42px}.dock-nav button{min-height:40px}}
+.dock::after{content:"";position:absolute;left:82%;top:36%;width:12%;aspect-ratio:1;border:clamp(1px,.28vw,3px) solid #b49a56;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:1}
+.hud strong{margin-inline-start:auto}.subtitle select{field-sizing:content;width:var(--zone-width,6ch)}
+.shop-categories{display:flex;gap:5px;margin:12px 0}.shop-categories button{flex:1;min-height:44px;padding:4px 6px;border:1px solid #d6dfec;border-radius:7px;background:#edf2f9;color:#19283e;font-weight:750}.shop-categories button[aria-pressed=true]{background:#19283e;color:#fff}
+.find-icon{display:block;color:#55748e;font:700 64px/1.2 system-ui,sans-serif}
+
+.player-stats{margin-inline-start:auto;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px 6px;font-size:clamp(11px,2.5vw,16px);font-weight:750}
+.player-stats span{padding:4px 7px;border:1px solid #d5dfe9;border-radius:7px;background:#f1f5f9;white-space:nowrap}
+.player-stats #coin-balance{background:#fbf1d4;border-color:#e7d4a2}
+.dock-nav{gap:6px;padding-inline:clamp(6px,3%,24px)}
+.dock-nav button,.dock-nav button:last-child{flex:1;min-width:0;text-align:center;font-size:clamp(11px,2.6vw,19px);font-weight:700;color:#182842;min-height:44px;border:1px solid #d5dfe9;background:#edf2f7;border-radius:7px}
+.dock-nav button:hover:not(:disabled){background:#e0e9f3}
+.shop-help{color:#506683;font-size:.88rem}
+@media(max-width:350px){.player-stats{gap:3px}.player-stats span{padding-inline:4px}.hud button{font-size:12px}}
+
+.angler .fishing-rod{transform-box:view-box;transform-origin:55px 45px}
+.dock[data-phase=waiting] .angler .fishing-rod{animation:rod-sway 1.8s ease-in-out infinite}
+.dock[data-phase=bite] .angler .fishing-rod{animation:rod-tug .32s ease-in-out infinite}
+.dock[data-phase=fight] .angler .fishing-rod{transform:rotate(8deg)}
+.float.bite{animation:none}
+.float.bite::after{content:"";position:absolute;inset:-4px;border:2px solid #a57d27;border-radius:50%;animation:bite-ripple .5s ease-out infinite}
+@keyframes rod-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(4deg)}}
+@keyframes rod-tug{0%,100%{transform:rotate(-3deg)}38%{transform:rotate(20deg)}}
+@keyframes bite-ripple{from{transform:scale(.8);opacity:.85}to{transform:scale(2);opacity:0}}
+@media(prefers-reduced-motion:reduce){.dock .angler .fishing-rod,.float.bite::after{animation:none!important}}
+.entry img{width:60px;height:42px;object-fit:contain}#catch-art img{width:min(78%,220px);height:auto;margin:5px auto}
+.daily-task,.album-rotation{padding:10px 12px;border-radius:9px;background:#edf3f8;color:#334f69}.daily-task h3{margin:0}.daily-task p{margin:6px 0}.daily-task progress{width:100%;accent-color:#287776}.entry .today-fish{color:#226664;font-weight:750}.album-rotation{font-size:.9rem}
+.dock-nav a{display:grid;place-items:center;flex:1;min-width:0;min-height:44px;font-size:clamp(11px,2.6vw,19px);font-weight:700;color:#182842;text-decoration:none;border:1px solid #d5dfe9;background:#edf2f7;border-radius:7px}.dock-nav a:hover{background:#e0e9f3}.dock-nav a[aria-disabled=true]{opacity:.58}.dock-nav button,.dock-nav button:last-child{font-size:clamp(10px,2.5vw,18px)}
+
+.angler svg,.peer svg{width:clamp(60px,18vw,114px);height:auto}
+.angler .fishing-rod{transform-origin:78px 67px}
+.clothes-preview{width:66px;height:80px;display:block;margin:auto;overflow:visible}
+.angler svg [hidden],.peer svg [hidden],.clothes-preview [hidden]{display:none}
+
+.outfit-card{grid-template-columns:100px minmax(0,1fr);align-items:start;column-gap:12px;padding:14px 10px}.outfit-card .clothes-preview{grid-column:1;grid-row:1 / span 5;width:100px;height:120px;align-self:center}.outfit-card>strong,.outfit-card>small,.outfit-card>.gear-buttons{grid-column:2}.outfit-card .gear-buttons{margin-top:4px}
+
+/* Navigation follows PescaCena's white bar and pale-blue selected item. */
+.dock-nav{height:74px;min-height:64px;padding:5px max(6px,env(safe-area-inset-right)) max(5px,env(safe-area-inset-bottom));gap:4px;background:#fff;border-top:1px solid #d6dfec}
+.dock-nav button,.dock-nav button:last-child,.dock-nav a{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;height:100%;min-height:52px;border:0;border-radius:7px;background:transparent;color:#506683;font-size:12px;font-weight:500;line-height:1.1}
+.dock-nav svg{width:21px;height:21px;flex:none}.dock-nav small{font:inherit;color:#73839a;font-size:10px;margin-left:2px}
+.dock-nav button:hover:not(:disabled),.dock-nav a:hover{background:#eaf0f9}
+.dock:has(#album-panel[open]) #open-album,.dock:has(#weekly-panel[open]) #open-weekly,.dock:has(#shop-panel[open]) #open-shop{background:#eaf0f9;color:#19283e}
+.board{bottom:92px}.sheet{background:#fff;border:1px solid #d6dfec;border-radius:12px;padding:18px;max-height:85dvh;width:min(calc(100% - 24px),590px)}
+.sheet::backdrop{background:#18283e66}.sheet header{position:sticky;top:-18px;margin:-18px -18px 16px;padding:16px 18px 12px;background:#fff;z-index:3;border-bottom:1px solid #e1e7f0}
+.sheet h2{font-size:23px;letter-spacing:-.04em}.sheet header button{background:#f0f4fa;border:1px solid #e1e7f0;border-radius:7px;color:#19283e}
+.shop-categories{background:#eaf0f9;padding:5px;gap:5px;border-radius:8px}.shop-categories button{border:0;background:transparent;border-radius:6px}.shop-categories button[aria-pressed=true]{background:#19283e;color:#fff}
+.gear-item{border:0;border-bottom:1px solid #d6dfec;border-radius:0;background:#fff;padding:16px 0;gap:7px}.gear-item strong{font-size:17px}.gear-item small{font-size:13px;color:#5d708b}
+.gear-buttons button{border:0;background:#edda94;border-radius:7px;min-height:44px;padding:8px 16px}.outfit-card{background:#f0f4fa;border:0;border-radius:8px;padding:15px 10px}.shop-help{font-size:13px;color:#5d708b;line-height:1.5}
+#shop-summary{font-size:14px;color:#506683}.entry{border:0;background:#eaf0f9;border-radius:8px;padding:12px}.entry button{border:0;background:#fff}.sheet button:focus-visible,.dock-nav a:focus-visible{outline:2px solid #3869a3;outline-offset:2px}
+@media(max-width:360px){.dock-nav button,.dock-nav button:last-child,.dock-nav a{font-size:11px}.dock-nav small{display:block;margin:3px 0 0}.outfit-card{grid-template-columns:80px minmax(0,1fr)}.outfit-card .clothes-preview{width:80px;height:96px}}
+@media(max-height:490px){.dock-nav{height:58px;min-height:58px}.dock-nav button,.dock-nav a{min-height:44px;gap:2px}.dock-nav svg{width:17px;height:17px}.board{bottom:65px}}
+
+.product-card{grid-template-columns:100px minmax(0,1fr);column-gap:12px;align-items:start;background:#f0f4fa;border:0;border-radius:8px;padding:15px 10px;gap:7px 12px}.product-card>.item-preview{width:100px;height:120px;grid-column:1;grid-row:1 / span 6;align-self:center}.product-card>strong,.product-card>small,.product-card>.gear-buttons,.product-card>.item-benefits{grid-column:2}.item-benefits{display:flex;gap:5px;flex-wrap:wrap;margin:3px 0}.item-benefits span{background:#fff;color:#365b7d;border-radius:5px;padding:4px 6px;font-size:11px;font-weight:650}.product-card .compatibility-note{color:#865d27;font-size:12px;line-height:1.4}.product-card .gear-buttons button{font-size:12px;padding:8px 10px}.product-card strong{font-size:17px;line-height:1.2}.product-card small{font-size:12px;line-height:1.4}
+@media(max-width:360px){.product-card{grid-template-columns:75px minmax(0,1fr);column-gap:8px}.product-card>.item-preview{width:75px;height:100px}}
+
+/* One expandable section, matching the other PescaCena games. */
+.dock-drawer{position:absolute;z-index:6;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #d6dfec;height:54px;color:#19283e}
+.dock-drawer>summary{height:53px;display:list-item;list-style-position:inside;padding:16px 18px;font-weight:750;cursor:pointer;font-size:14px;user-select:none}.dock-drawer>summary:focus-visible{outline:2px solid #3869a3;outline-offset:-3px}
+.dock-drawer[open]{height:min(67%,650px)}.drawer-body{height:calc(100% - 53px);display:flex;flex-direction:column;min-height:0}.dock-drawer:not([open])>.drawer-body{display:none}
+.dock-drawer .dock-nav{position:static;flex:none;height:62px;min-height:62px;margin:0 12px 8px;border:0;background:#edf2fa;border-radius:8px;padding:5px;gap:3px}.dock-drawer .dock-nav button,.dock-drawer .dock-nav button:last-child,.dock-drawer .dock-nav a{min-height:48px;font-size:11px;gap:3px}.dock-drawer .dock-nav svg{width:18px;height:18px}
+.dock-drawer .dock-nav button[aria-pressed=true]{background:#19283e;color:#fff}.dock-drawer .dock-nav button[aria-pressed=true] small{color:#d5dfef}
+.drawer-panels{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 16px 18px}.drawer-panel.sheet{position:static;margin:0;width:100%;max-height:none;padding:0;border:0;border-radius:0;overflow:visible}.drawer-panel.sheet header{position:static;margin:0 0 14px;padding:10px 0;border:0;background:#fff}.drawer-panel.sheet h2{font-size:20px}.drawer-panel.sheet header button{width:36px;height:36px;font-size:20px}
+.drawer-panel #shop-summary{margin-top:0}.drawer-panel .shop-help{margin:8px 0}.drawer-panel .shop-categories{margin:10px 0}.board{bottom:71px}
+.dock:has(.dock-drawer[open]) #cast{pointer-events:none}.angler .fishing-rod{transform-origin:76px 67px}
+@media(max-height:490px){.dock-drawer[open]{height:80%}.dock-drawer .dock-nav{height:52px;min-height:52px}.dock-drawer .dock-nav svg{display:none}.dock-drawer .dock-nav button,.dock-drawer .dock-nav a{min-height:40px}}
+
+/* Expand below the scene, in the page flow like El H4CK3R. */
+html{height:100%;overflow-y:auto}body{height:auto;min-height:100%;overflow:visible}.dock{height:auto;min-height:calc(100dvh - 2 * clamp(5px,1.25vw,14px));overflow:hidden}.play-scene{position:relative;height:calc(100dvh - 56px - 2 * clamp(5px,1.25vw,14px));min-height:320px;overflow:hidden}
+.dock-drawer,.dock-drawer[open]{position:relative;inset:auto;height:auto;min-height:54px}.drawer-body{height:auto;display:block}.drawer-panels{overflow:visible;padding-bottom:24px}.board{bottom:20px}.dock:has(.dock-drawer[open]) #cast{pointer-events:auto}
+
+:root{--paper:#142941;--panel:#fff;--line:#d6dfec;--sun:#f4d88b;--muted:#506683}
+html,body{background:#fff;color:#142941;font-family:'Segoe UI',system-ui,sans-serif}
+body{padding:env(safe-area-inset-top) max(20px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(20px,env(safe-area-inset-left))}
+.dock{max-width:800px;min-height:0;margin:auto;border:0;border-radius:0;background:#fff;overflow:visible}
+.play-scene{height:clamp(390px,72dvh,620px);min-height:0;overflow:hidden;background:#fff}
+.hud{top:12px;left:0;right:0;gap:8px;min-height:44px}
+.hud #exit{min-height:44px;padding:10px 13px;border:1px solid #d6dfec;border-radius:8px;background:#edf2f9;font:700 14px 'Segoe UI',system-ui,sans-serif}
+.player-stats{gap:4px;font-size:12px}.player-stats span{padding:5px 7px;border-radius:8px;background:#edf2f9}
+.player-stats #coin-balance{background:#f4d88b;border-color:#f4d88b}
+.location{left:0;right:0;top:max(16%,90px)}.location h1{font-size:clamp(32px,8vw,48px);letter-spacing:-.04em}
+.subtitle{font-size:14px}.location .subtitle span{font-size:14px}
+.prompt p{font-size:clamp(14px,3.5vw,18px)}
+.fight{background:#fff;border-color:#d6dfec}
+.board{left:0;right:0;bottom:14px;font-size:13px;color:#506683}
+.dock-drawer,.dock-drawer[open]{border-top:0;border-bottom:1px solid #d6dfec;min-height:49px;background:#fff}
+.dock-drawer>summary{height:auto;min-height:48px;padding:12px 0;font-size:16px;font-weight:750;list-style-position:inside}
+.dock-drawer .dock-nav{margin:0 0 12px;background:#edf2f9}
+.dock-drawer .dock-nav button[aria-pressed=true]{background:#f4d88b;color:#142941}
+.dock-drawer .dock-nav button[aria-pressed=true] small{color:#405874}
+.drawer-panels{padding:0 0 24px}.drawer-panel.sheet h2{font-size:21px}
+.product-card,.outfit-card{background:transparent;border:0;border-bottom:1px solid #d6dfec;border-radius:0;padding:16px 0}
+.gear-buttons button{background:#f4d88b;border:0;border-radius:8px;min-height:44px}
+.gear-buttons button:disabled{opacity:1;background:#edf2f9;color:#607088}
+.drawer-panel.sheet header button{width:44px;height:44px}
+.shop-categories button[aria-pressed=true]{background:#142941;color:#fff}
+.sheet{border-color:#d6dfec;color:#142941}.sheet button:focus-visible{outline-color:#245785}
+@media(max-width:380px){body{padding:0 14px}.hud #exit{font-size:12px;padding:8px}.player-stats{font-size:11px}.product-card>.item-preview{width:80px;height:105px}.product-card{grid-template-columns:80px minmax(0,1fr)}}
+@media(max-height:500px) and (orientation:landscape){.play-scene{height:390px}.location{top:21%}.dock-drawer[open]{height:auto}}

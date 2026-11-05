@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" preserveAspectRatio="none">
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+ <g stroke="#788597" stroke-width="3" fill="#f9f7f0">
+  <path d="M58 303h264l-46 38H101z"/><path d="M184 303v-85l50 29h-50"/>
+  <path d="M24 349q18 12 38 0m251 0q20 12 40 0" fill="none"/>
+ </g>
+ <text x="186" y="329" fill="#576a83" font-family="system-ui,sans-serif" font-size="16" text-anchor="middle">PESCANOVA</text>
+ <path d="M0 420h673q39-12 68 0t76 0t83 0V700H0Z" fill="#ecf2f5"/>
+ <path d="M0 420h673q39-12 68 0t76 0t83 0M0 445h659l14-25M145 420v25m148-25v25m148-25v25m148-25v25" stroke="#182842" stroke-width="3" vector-effect="non-scaling-stroke"/>
+ <path d="M62 502h87m136 55h87m147-53h81m126 67h66" stroke="#a9bac5" stroke-width="3" vector-effect="non-scaling-stroke"/>
+</g>
+</svg>
+

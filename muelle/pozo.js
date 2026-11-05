@@ -11,7 +11,7 @@
   if(!snapshot)return;
   const view=projected(),blocks=view.blocks,depth=Math.floor(blocks/5),col=depth%2?5-blocks%5:1+blocks%5,top=Math.max(0,depth-2),row=depth-top,terrain=Pozo.terrain(blocks);
   $('depth').textContent=n(depth)+(depth===1?' fila':' filas');$('total').textContent=n(blocks)+(blocks===1?' bloque entre todos':' bloques entre todos');
-  const personalExtra=running&&!document.hidden?Pozo.advance({blocks:snapshot.world.blocks,part:0},Math.min(75000,t-received)*Pozo.picks[snapshot.player.level][1]).broken:0;
+  const personalExtra=running&&!document.hidden?Pozo.advance(snapshot.world,Math.min(75000,t-received)*Pozo.picks[snapshot.player.level][1]).broken:0;
   $('mine').textContent=n(snapshot.player.blocks+personalExtra);$('unconfirmed').textContent=personalExtra?'+'+n(personalExtra)+' por confirmar':'Todo guardado';$('layer').textContent='Capa '+(terrain.index+1)+' · '+terrain.name;
   const hardness=Pozo.hardness(blocks);$('strength').textContent='Resistencia '+(hardness/2000).toFixed(1)+'×';$('block-progress').max=hardness;$('block-progress').value=view.part;
   if(blocks!==lastBlocks){lastBlocks=blocks;const tiles=[];for(let r=0;r<7;r++)for(let c=0;c<7;c++){

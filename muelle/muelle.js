@@ -5,7 +5,7 @@ const name=(localStorage.getItem("jugador_nombre")||(api.local?"Pescador de prue
 const pendingKey="pescacena:muelle:pending:"+api.identity()+":"+localStorage.getItem("cena_campaign");
 const ns="http://www.w3.org/2000/svg";
 const rod=$("cast");
-let daily=null, album={}, favorite=null, gear=null, shopping=false, ready=false, phase="idle";
+let daily=null, album={}, favorite=null, aquariumVisible=false, gear=null, shopping=false, ready=false, phase="idle";
 let ticket, sim, held=false, changes=[], pending=null, input=null;
 let phaseAt=0, time=performance.now(), remainder=0;
 let lastCast=0, refreshing=false;
@@ -71,13 +71,13 @@ function renderAlbum(){
       card.append(preview);
     }
     if(data){
-      const b=item("button",favorite===f.id?"Favorito":"Marcar favorito","secondary");
-      b.setAttribute("aria-pressed",favorite===f.id);
+      const b=item("button",favorite===f.id&&aquariumVisible?"En el Acuario":"Mostrar en el Acuario","secondary");
+      b.setAttribute("aria-pressed",favorite===f.id&&aquariumVisible);
       b.onclick=async()=>{
         b.disabled=true;
         try{
           const res=await api.request("favorite",{fish:f.id});
-          favorite=res.favorite;
+          favorite=res.favorite;aquariumVisible=res.aquariumVisible;
           localStorage.setItem("pescacena:muelle:favorite:"+api.identity(),Pesca.find(favorite).name);
           renderAlbum();
           $("album").querySelectorAll("button[aria-pressed=true]")[0]?.focus();
@@ -466,7 +466,7 @@ async function join(){
   if(!name){setHint("Abre el muelle desde la Sala de juegos de PescaCena.");return;}
   try{
     const data=await api.request("join",{name});
-    ready=true;album=data.album;favorite=data.favorite;updateGear(data.gear);
+    ready=true;album=data.album;favorite=data.favorite;aquariumVisible=data.aquariumVisible;updateGear(data.gear);
     if(favorite)localStorage.setItem("pescacena:muelle:favorite:"+api.identity(),Pesca.find(favorite).name);
     applyOutfit();renderDaily(data.daily);renderAlbum();renderWeekly(data.weekly);idle();refresh();
     try{pending=JSON.parse(localStorage.getItem(pendingKey)||"null");}catch{}

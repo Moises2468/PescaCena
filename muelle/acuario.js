@@ -50,7 +50,7 @@ function renderTank(){
     lastScene=sceneKey;
     tank.replaceChildren();
     if(!residents.length){
-      const empty=textNode("p","Todavía no hay peces compartidos. Abre «Mi pez» para traer el tuyo.");
+      const empty=textNode("p","Todavía no hay peces compartidos. Elige «Mostrar en el Acuario» en el álbum de El Muelle.");
       empty.className="empty";$("tank").append(empty);
     }
     for(const [i,entry] of current.entries()){
@@ -84,7 +84,7 @@ function renderInfo(){
   const fish=Pesca.find(entry.fish), fed=view.fed.includes(entry.id);
   $("portrait").replaceChildren(portrait(fish,entry.hat));
   $("fish-title").textContent=fish.name;
-  $("owner").textContent="Pez favorito de "+entry.name;
+  $("owner").textContent="Pez de "+entry.name;
   $("details").replaceChildren();
   for(const [label,value] of [
     ["Nivel de pesca",entry.level],["Especies en el álbum",entry.species],
@@ -99,7 +99,7 @@ function renderOutfit(){
 }
 function openSettings(){
   const fish=Pesca.find(view.favorite);
-  $("favorite-label").textContent=fish?.name||"Aún no tienes un favorito";
+  $("favorite-label").textContent=fish?.name||"Aún no has elegido un pez para el Acuario";
   $("no-favorite").hidden=!!fish;
   $("aquarium-settings").hidden=!fish;
   $("settings-status").textContent="";

@@ -6,11 +6,13 @@ const Pozo=(()=>{
  const hardness=blocks=>Math.round(2000*(1+layer(blocks)*.6+Math.pow(layer(blocks),1.2)*.06));
  function advance(world,work){
   let blocks=world.blocks,part=world.part||0,broken=0,minerals=0;
-  work=Math.max(0,Math.min(4000000,Math.floor(work)));
+  work=Math.max(0,Math.min(1000000000,Math.floor(work)));
   while(work>0){const need=hardness(blocks)-part;if(work<need){part+=work;break;}work-=need;blocks++;part=0;broken++;minerals+=blocks%11===0?4:1;}
   return {blocks,part,broken,minerals};
  }
  const terrain=blocks=>{const i=layer(blocks),a=layers[i%layers.length];return {index:i,name:a[0]+(i>=layers.length?' '+(Math.floor(i/layers.length)+1):''),color:a[1],edge:a[2]};};
- return {layers,picks,layer,hardness,advance,terrain};
+ const speed=level=>1+Math.max(0,Math.min(8,level||0))*.15;
+ const speedCost=level=>[12,30,75,160,330,650,1200,2000][level];
+ return {layers,picks,layer,hardness,advance,terrain,speed,speedCost};
 })();
 if(typeof module!=='undefined')module.exports=Pozo;

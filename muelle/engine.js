@@ -196,3 +196,51 @@ if(typeof module!=="undefined")module.exports=Pesca;
 
 
 
+
+'use strict';
+const Aventuras=(()=>{
+ const clothes=[
+  ['minero','Turno de mañana','#dbb448','casco','Casco con frontal y mono de trabajo.',30],
+  ['rescate','Brigada de rescate','#e58349','rescate','Bandas reflectantes para encontrar la salida.',65],
+  ['mecanico','Mecánico de mareas','#527fa1','mecanico','Gorra, peto y una llave siempre a mano.',55],
+  ['rana','Rana de charco','#8fbb75','rana','Ojos saltones y botas listas para los charcos.',80],
+  ['cangrejo','Cangrejo de guardia','#d88767','cangrejo','Pinzas de pega. Hoy no se ficha con el dedo.',95],
+  ['pinguino','Pingüino de cubierta','#52677c','pinguino','Frac impermeable y un pico muy formal.',100],
+  ['topo','Topo de bolsillo','#bd9478','topo','Capucha de topo: inspirado en Diglett.',0,'mine',25],
+  ['roca','Colega de roca','#a8aaa6','roca','Hombros de piedra: inspirado en Geodude.',0,'mine',100],
+  ['carbon','Turno de carbón','#4f5965','casco','Carbón, frontal rojo y muchas horas de pozo.',0,'mine',250],
+  ['gemas','Geólogo de cristal','#8b9ac7','gemas','Cristales en el casco y un peto de expedición.',0,'mine',600],
+  ['dragonmina','Dragón de las profundidades','#91ac83','dragon','Cuernos, placas y una cola: inspirado en Tyranitar.',0,'mine',1500],
+  ['abisal','Guardián del pozo','#646a9c','abisal','Una armadura que solo se encuentra muy abajo.',0,'mine',3000],
+  ['marinrayas','Marinero de primera','#729fb8','marinero','Gorro de cubierta y camiseta de rayas.',0,'fish',10],
+  ['pezrojo','Pez de secano','#d98c66','pez','Bigotes y aletas: inspirado en Magikarp.',0,'fish',30],
+  ['tortuga','Tortuga de cubierta','#82b8c7','tortuga','Caparazón y gafas de agua: inspirado en Squirtle.',0,'fish',75],
+  ['sirena','Sirena del pantalán','#8eb6a0','sirena','Escamas, conchas y botas: aquí se camina.',0,'fish',150],
+  ['serpmar','Serpiente de marea','#5b9fbd','serpmar','Cresta y bigotes: inspirado en Gyarados.',0,'fish',300],
+  ['almirante','Almirante del caladero','#415b82','almirante','Charreteras doradas para una vida en el muelle.',0,'fish',600],
+  ['brigada-oro','Brigada del oro','#d5b34f','brigada','Prenda conmemorativa del encargo colectivo.',0,'week',0],
+  ['brigada-cobre','Brigada del cobre','#b98266','brigada','Prenda conmemorativa del encargo colectivo.',0,'week',0],
+  ['brigada-cristal','Brigada del cristal','#80b6b8','gemas','Prenda conmemorativa del encargo colectivo.',0,'week',0],
+  ['brigada-noche','Brigada de noche','#7773a6','abisal','Prenda conmemorativa del encargo colectivo.',0,'week',0],
+  ['tripulacion-oro','Tripulación de oro','#bfa161','almirante','Recuerdo de abrir el banco especial entre todos.',0,'weekFish',0],
+  ['tripulacion-marea','Tripulación de la marea','#658fa4','brigada','Recuerdo de abrir el banco especial entre todos.',0,'weekFish',0]
+ ].map(([id,name,color,hat,description,cost,source,target])=>({id,name,type:'clothes',color,hat,description,cost,level:0,source,target,rewardOnly:!!source,rarity:source?'legendario':'raro'}));
+ for(const item of clothes)if(!Pesca.gearItem(item.id))Pesca.catalog.push(item);
+ const fossils=[{id:'ammonite',name:'Ammonite',every:17,value:8},{id:'trilobite',name:'Trilobite',every:53,value:24},{id:'helecho',name:'Helecho fósil',every:149,value:60}];
+ function week(now){
+  const date=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(now));
+  const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-(d.getUTCDay()+6)%7);
+  const id=d.toISOString().slice(0,10),index=Math.floor(d.getTime()/604800000),item=clothes.filter(c=>c.source==='week')[((index%4)+4)%4];
+  return {id,target:1500,outfit:item.id,name:item.name};
+ }
+ function unlock(p){
+  const g=p.gear??={coins:35,xp:0,owned:['bambu'],rod:'bambu',stock:{},bait:null,target:null};
+  const unlocked=[];
+  for(const c of clothes)if((c.source==='mine'&&(p.pozo?.blocks||0)>=c.target||c.source==='fish'&&(p.total||0)>=c.target)&&!g.owned.includes(c.id)){g.owned.push(c.id);unlocked.push(c.id);}
+  return unlocked;
+ }
+ const eligibleChests=blocks=>Math.min(100,(blocks>=50?1:0)+Math.floor(blocks/250));
+ const fishingPrize=id=>clothes.filter(c=>c.source==='weekFish')[[...id].reduce((n,c)=>n+c.charCodeAt(0),0)%2];
+ return {clothes,fossils,week,unlock,eligibleChests,fishingPrize};
+})();
+if(typeof module!=='undefined')module.exports=Aventuras;

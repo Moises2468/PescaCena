@@ -17,18 +17,8 @@ const angler=document.querySelector(".angler");
 const rodArt=angler.querySelector(".fishing-rod");
 const menuButtons=["open-weekly","open-feed","open-album","open-shop"];
 const menuViews=[['open-shop','shop-panel'],['open-album','album-panel'],['open-weekly','weekly-panel']];
-for(const [button,panel] of menuViews){
- const trigger=$(button),view=$(panel);
- trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-controls',panel);
- trigger.onclick=()=>{
-  if(phase!=='idle')return;
-  if(panel==='shop-panel')renderShop();
-  if(panel==='album-panel')renderAlbum();
-  view.showModal();view.scrollTop=0;
- };
- view.querySelector('header button').onclick=()=>view.close();
- view.addEventListener('close',()=>trigger.focus({preventScroll:true}));
-}
+GrupoUI.mount(document.querySelector('.dock-actions'),menuViews.map(([button,panel])=>({button:$(button),panel:$(panel)})),index=>{if(index===0)renderShop();if(index===1)renderAlbum();});
+$('fishing-week-claim').onclick=async()=>{const button=$('fishing-week-claim');button.disabled=true;try{const data=await api.request('weekly-prize');updateGear(data.gear);renderWeekly(data.weekly);}catch(e){$('fishing-week-status').textContent=e.message;button.disabled=false;}};
 $("open-feed").onclick=()=>$("feed-panel").showModal();
 $("feed-panel").addEventListener("close",()=>$("open-feed").focus());
 $("exit").hidden=window===parent;
@@ -217,6 +207,8 @@ function renderDaily(data){
   }
 }
 function renderWeekly(data){
+ if(data.prize){const p=data.prize;$('fishing-week-prize').textContent=p.name;$('fishing-week-outfit').replaceChildren(PescaCenaPersonaje.crear({outfit:p.id}));$('fishing-week-status').textContent=p.claimed?'Recuerdo guardado en tu vestuario':p.eligible?'Ya puedes recoger la prenda de esta semana':'Captura una especie del encargo y completadlo entre todos.';$('fishing-week-claim').disabled=p.claimed||!p.eligible;$('fishing-week-claim').textContent=p.claimed?'Prenda conseguida':'Recoger prenda conmemorativa';}
+
   const wasOpen=bankOpen;bankOpen=data.open;if(wasOpen!==bankOpen)renderAlbum();
   const count=data.ids.filter(id=>data.marks[id]).length;
   $('weekly-count').textContent=count+'/'+data.ids.length;
@@ -240,6 +232,7 @@ function updateGear(nextGear){
   $("fishing-level").textContent="Nivel de pesca "+Pesca.level(gear.xp);
   $("coin-balance").textContent=gear.coins+" monedas";
   $("player-stats").hidden=false;
+  renderShop();
 }
 function applyOutfit(){
   dressRod(angler,gear?.rod);
@@ -448,6 +441,7 @@ async function saveResult(){
       showEscape("El pez se soltó. Mantén pulsado para subir la barra y suelta para bajarla: intenta mantener el pez dentro.");
     }
     if(data.dailyReward)$("catch-detail").textContent+=" · Encargo completado: +"+data.dailyReward.coins+" monedas"+(data.dailyReward.outfit?" y Traje Aurora":"");
+    if(data.unlocked?.length)$("catch-detail").textContent+=' · Nueva ropa: '+data.unlocked.map(id=>Pesca.gearItem(id).name).join(', ');
     refresh();
   }catch(error){
     if(["expired","replay","guest"].includes(error.code)){

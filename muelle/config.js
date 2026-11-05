@@ -38,9 +38,11 @@ window.MuelleConnection=(()=>{
   }
   async function request(op,values={}){
     const pendingKey='pescacena:muelle:operacion:'+identity()+':'+campaign();
-    const signature=JSON.stringify({op,...values});
+    const {clicks:transientClicks,active:transientActive,...intent}=values;
+    const signature=JSON.stringify({op,...intent});
     let requestId=hex(16);
-    if(op==='shop'||op==='pozo-upgrade'){
+    const durable=['shop','pozo-upgrade','pozo-speed','pozo-sell','pozo-weekly','pozo-chest','pozo-chest-ack'].includes(op);
+    if(durable){
       try{const pending=JSON.parse(sessionStorage.getItem(pendingKey));if(pending?.signature===signature)requestId=pending.id;}catch{}
       sessionStorage.setItem(pendingKey,JSON.stringify({signature,id:requestId}));
     }
@@ -52,7 +54,7 @@ window.MuelleConnection=(()=>{
       }catch(error){if(attempt===0)continue;throw new Error('No se pudo confirmar la operación. Puedes reintentar.');}
       if((res.status===401||res.status===403)&&attempt===0){credentials=await access(true);continue;}
       const data=await res.json();
-      if((op==='shop'||op==='pozo-upgrade')&&res.status<500)sessionStorage.removeItem(pendingKey);
+      if(durable&&res.status<500)sessionStorage.removeItem(pendingKey);
       if(!data.ok)throw Object.assign(new Error(data.message||'No se pudo completar la operación.'),{code:data.code});
       return data;
     }
@@ -61,5 +63,10 @@ window.MuelleConnection=(()=>{
   function leave(op,values={}){
     try{const d=JSON.parse(sessionStorage.getItem(storageKey()));if(d?.exp>Date.now()/1000)fetch(d.url,{method:'POST',keepalive:true,headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({...values,op,requestId:hex(16),ticket:d.ticket})}).catch(()=>{});}catch{}
   }
-  return {request,leave,hex,local,endpoint:'nube',identity};
+  async function claimReward(proof){
+    const response=await fetch(accountsUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({accion:'Cofre Pozo',sesion:localStorage.getItem('pesca_sesion'),proof}),signal:AbortSignal.timeout(25000)});
+    if(!response.ok)throw new Error('No se pudo confirmar el cofre. Puedes reintentarlo sin perderlo.');
+    const result=await response.json();if(!result.ok)throw new Error(result.mensaje||'No se pudo guardar el premio.');return result;
+  }
+  return {request,leave,claimReward,hex,local,endpoint:'nube',identity};
 })();

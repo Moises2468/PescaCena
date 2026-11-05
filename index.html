@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
+<head><script defer src="muelle/grupo-ui.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Proyecto Enero - Pescanova</title>
@@ -287,7 +287,7 @@ body{background:#fff;font-family:system-ui,sans-serif}.screen{max-width:590px;pa
 #boss-img-container{height:clamp(195px,39dvh,330px)!important;cursor:crosshair;background:white;border:0;border-radius:0}.arena-hint{color:var(--text-muted);margin:7px 0 2px}.combat-summary{padding:9px 0}.boss-panel{width:100%;text-align:left;border-bottom:1px solid var(--line)}.boss-panel summary{cursor:pointer;padding:12px 0;font-weight:750}.boss-panel .tabs{margin-top:0!important}#boss-tienda,#boss-ranking{border:0;padding:10px 0!important;box-shadow:none}.boss-secondary .tienda-fila{background:transparent!important;border-bottom:1px solid var(--line)!important;border-radius:0}
 </style><style>
 .mas-contenido{width:100%;max-width:360px;margin:0 auto;text-align:center;padding:6px 0 18px}.mas-contenido h2{font-size:26px;margin:4px 0 6px}.mas-contenido>label,.perfil-editor label,#editor-asistencia label{display:block;font-size:13px;font-weight:750;margin:12px 0 3px}.mas-contenido input[type=text],.mas-contenido select,.mas-contenido input[type=file]{display:block;width:100%;max-width:none;margin:0 auto 10px;border:1px solid var(--line);border-radius:7px;background:white;color:var(--text);padding:9px;font:inherit;min-height:44px;box-sizing:border-box}#palabra-secreta{text-transform:uppercase;text-align:center;letter-spacing:.08em}.mas-contenido input[type=file]::file-selector-button{border:0;border-radius:5px;background:#e9f0fa;color:#122942;padding:6px 8px;font-weight:750;margin-right:6px}.mas-contenido .accion-dorada,.mas-contenido #btn-equipo,.mas-contenido #btn-asistencia{width:100%;max-width:none;min-height:44px;border-radius:7px;background:#f4d68c!important;color:#122942;text-transform:none;box-shadow:none;font:750 14px system-ui,sans-serif;margin:5px 0 0}.foto-mision{display:flex;align-items:center;justify-content:center;gap:8px;margin:7px 0;font-size:13px}.perfil-fila{padding:11px 0;border-top:1px solid var(--line);text-align:left}.perfil-fila h3{margin:0 0 4px;font-size:15px}.perfil-fila p{margin:0;color:var(--text-muted);font-size:14px}.perfil-fila .asistencia-detalle{border:0;padding:0}.perfil-fila #perfil-equipo{max-width:none}.perfil-fila .perfil-cambiar{min-height:40px;box-shadow:none}
-</style><style>.pendientes{padding:10px 0 4px}.pendientes h3{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin:0}.pendientes .mas-link{font-size:13px;text-align:left;gap:10px}.pendientes .mas-link span:last-child{color:var(--muted,var(--text-muted))}#caja-nominados ul{line-height:1.7}</style><style>#ver-perfil-inicio{display:inline-flex;align-items:center;width:auto;min-height:36px;max-width:none;margin:0;padding:0;border:0;border-radius:0;background:none;color:var(--primary);font:850 11px/1.2 system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;text-decoration:underline;text-underline-offset:3px;box-shadow:none}.nav-item{position:relative}.nav-item.nav-pendiente::after{content:"";position:absolute;top:6px;left:calc(50% + 11px);width:6px;height:6px;background:#d19b2c;border-radius:50%;pointer-events:none}</style><style>#anuncio-nominados{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;max-width:none;margin:10px 0 3px;padding:11px 13px;border:1px solid #e7c86c;border-radius:8px;background:#f4d68c;color:#122942;text-align:left;text-transform:none;box-shadow:none;font:750 13px/1.2 system-ui,sans-serif}#anuncio-nominados small,#anuncio-nominados strong{display:block}#anuncio-nominados small{margin-bottom:3px;font-size:10px;text-transform:uppercase;letter-spacing:.1em}#anuncio-nominados strong{font-size:17px}#anuncio-nominados>span:last-child{white-space:nowrap}.nominados-panel{color:var(--text)}#caja-nominados ul{padding-left:18px!important}</style><style>#tablero-zip .zip-dot{width:clamp(18px,6vw,32px);height:clamp(18px,6vw,32px);font-size:clamp(11px,3vw,16px)}#quiz-tiempo{font-variant-numeric:tabular-nums;color:var(--primary)}</style></head>
+</style><style>.pendientes{padding:10px 0 4px}.pendientes h3{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin:0}.pendientes .mas-link{font-size:13px;text-align:left;gap:10px}.pendientes .mas-link span:last-child{color:var(--muted,var(--text-muted))}#caja-nominados ul{line-height:1.7}</style><style>#ver-perfil-inicio{display:inline-flex;align-items:center;width:auto;min-height:36px;max-width:none;margin:0;padding:0;border:0;border-radius:0;background:none;color:var(--primary);font:850 11px/1.2 system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;text-decoration:underline;text-underline-offset:3px;box-shadow:none}.nav-item{position:relative}.nav-item.nav-pendiente::after{content:"";position:absolute;top:6px;left:calc(50% + 11px);width:6px;height:6px;background:#d19b2c;border-radius:50%;pointer-events:none}</style><style>#anuncio-nominados{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;max-width:none;margin:10px 0 3px;padding:11px 13px;border:1px solid #e7c86c;border-radius:8px;background:#f4d68c;color:#122942;text-align:left;text-transform:none;box-shadow:none;font:750 13px/1.2 system-ui,sans-serif}#anuncio-nominados small,#anuncio-nominados strong{display:block}#anuncio-nominados small{margin-bottom:3px;font-size:10px;text-transform:uppercase;letter-spacing:.1em}#anuncio-nominados strong{font-size:17px}#anuncio-nominados>span:last-child{white-space:nowrap}.nominados-panel{color:var(--text)}#caja-nominados ul{padding-left:18px!important}</style><style>#tablero-zip .zip-dot{width:clamp(18px,6vw,32px);height:clamp(18px,6vw,32px);font-size:clamp(11px,3vw,16px)}#quiz-tiempo{font-variant-numeric:tabular-nums;color:var(--primary)}</style><link rel="stylesheet" href="muelle/grupo-ui.css"></head>
 <body>
 
 <!-- MODAL CUSTOM -->
@@ -545,7 +545,7 @@ Racha: <span id="racha-dias-num">0</span>
 </div>
 
 <div id="pantalla-boss" class="screen">
-<div class="boss-return"><button class="btn-volver" onclick="cerrarBoss()">← Volver</button></div>
+<div class="boss-return grupo-header"><button class="btn-volver" onclick="cerrarBoss()">← Juegos</button><span>PescaCena</span><span class="grupo-spacer" aria-hidden="true"></span></div>
 <section class="arena-cena">
 <p class="arena-label" id="arena-fase">Reto de todos</p>
 <p id="boss-personas" style="font-size:13px;color:var(--text-muted)" aria-live="polite">Conectando con el grupo…</p><h3 id="boss-fase-titulo">Cargando combate…</h3>
@@ -556,9 +556,9 @@ Racha: <span id="racha-dias-num">0</span>
 </section>
 <div class="combat-summary"><div><small>Tu daño</small><strong id="arena-mi-dano">0</strong></div><div><small>Daño entre todos</small><strong id="arena-dano-total">0</strong></div></div>
 
-<details class="boss-panel"><summary>Mejoras y estadísticas</summary>
+<section class="boss-panel">
 <div class="tabs" style="width: 100%; max-width: 320px; margin-top: 20px; margin-bottom: 0;">
-<button class="tab-btn active-tab" id="btn-boss-tienda" onclick="cambiarTabBoss('tienda')" style="width: 48%;">Tienda</button>
+<button class="tab-btn active-tab" id="btn-boss-tienda" onclick="cambiarTabBoss('tienda')" style="width: 48%;">Equipo</button>
 <button class="tab-btn" id="btn-boss-ranking" onclick="cambiarTabBoss('ranking')" style="width: 48%;">Estadísticas</button>
 </div>
 
@@ -596,7 +596,7 @@ Racha: <span id="racha-dias-num">0</span>
 <!-- Se rellena dinámicamente -->
 </table>
 </div>
-</details>
+</section>
 </div>
 
 <script>
@@ -2857,7 +2857,7 @@ async function beat(){if(!active||busy)return;busy=true;try{const d=await Muelle
 function watch(){const next=screen.classList.contains('active')&&!document.hidden;if(next===active)return;active=next;clearTimeout(timer);if(active){label.textContent='1 persona combatiendo';beat();}else MuelleConnection.leave('activity',{game:'boss',active:false});}
 new MutationObserver(watch).observe(screen,{attributes:true,attributeFilter:['class']});document.addEventListener('visibilitychange',watch);window.addEventListener('pagehide',()=>MuelleConnection.leave('activity',{game:'boss',active:false}));watch();
 })();
-</script></body>
+</script><script>addEventListener('DOMContentLoaded',()=>GrupoUI.mount(document.querySelector('#pantalla-boss .tabs'),[['btn-boss-tienda','boss-tienda'],['btn-boss-ranking','boss-ranking']].map(([button,panel])=>({button:document.getElementById(button),panel:document.getElementById(panel)})),index=>cambiarTabBoss(index===0?'tienda':'ranking')));</script></body>
 </html>
 
 

@@ -452,7 +452,7 @@ Racha: <span id="racha-dias-num">0</span>
 <section id="sec-perfil" class="seccion-lobby"><button id="volver-perfil" type="button" class="volver-mas" onclick="volverPerfil()">← Más</button><div class="mas-contenido"><h2>Tu perfil</h2><p class="pagina-intro" id="perfil-nombre"></p>
 <section class="perfil-fila"><h3>Nombre</h3><form id="form-cambiar-nombre" onsubmit="event.preventDefault();guardarNombreCuenta()"><label for="cuenta-nuevo-nombre">Nombre visible</label><input id="cuenta-nuevo-nombre" maxlength="60" autocomplete="nickname" required><button type="submit" id="btn-nombre-cuenta" class="accion-dorada">Guardar nombre</button><p id="cuenta-nombre-estado" role="status"></p></form></section>
 <section class="perfil-fila"><h3>Asistencia</h3><div class="asistencia-detalle"><p id="asistencia-confirmada" aria-live="polite">Pendiente de guardar</p><button id="btn-modificar-asistencia" class="perfil-cambiar" onclick="editarAsistencia(true)">Modificar asistencia</button><div id="editor-asistencia" hidden><label for="cambiar-asistencia">¿Vas a venir a la cena?</label><select id="cambiar-asistencia" aria-label="Cambiar mi asistencia"><option value="Sí">Sí, asistiré</option><option value="Quizá">Aún no lo sé</option><option value="No">No puedo ir</option></select><button id="btn-asistencia" onclick="guardarAsistencia()">Guardar respuesta</button><button id="btn-cancelar-asistencia" class="perfil-cambiar" onclick="editarAsistencia(false)">Cancelar</button></div></div></section>
-<section class="perfil-fila"><h3>Equipo</h3><p id="perfil-equipo-actual"></p><button id="btn-editar-equipo" class="perfil-cambiar" type="button" onclick="editarEquipo(true)">Cambiar equipo</button><div class="perfil-editor" id="perfil-equipo" hidden><label for="nuevo-equipo">Elige tu equipo</label><select id="nuevo-equipo"><option value="Azul"> Equipo Azul</option><option value="Rojo"> Equipo Rojo</option><option value="Amarillo"> Equipo Amarillo</option></select><button id="btn-equipo" onclick="guardarEquipo()">Guardar equipo</button><button type="button" class="perfil-cambiar" onclick="editarEquipo(false)">Cancelar</button></div></section>
+<section class="perfil-fila" data-feature="muelle" hidden><h3>Tu personaje</h3><p>Tu ropa se comparte entre los juegos que usan tu personaje.</p><button type="button" class="accion-dorada" onclick="abrirMuelle('vestuario')">Abrir vestuario</button></section><section class="perfil-fila"><h3>Equipo</h3><p id="perfil-equipo-actual"></p><button id="btn-editar-equipo" class="perfil-cambiar" type="button" onclick="editarEquipo(true)">Cambiar equipo</button><div class="perfil-editor" id="perfil-equipo" hidden><label for="nuevo-equipo">Elige tu equipo</label><select id="nuevo-equipo"><option value="Azul"> Equipo Azul</option><option value="Rojo"> Equipo Rojo</option><option value="Amarillo"> Equipo Amarillo</option></select><button id="btn-equipo" onclick="guardarEquipo()">Guardar equipo</button><button type="button" class="perfil-cambiar" onclick="editarEquipo(false)">Cancelar</button></div></section>
 <section class="perfil-fila"><h3>Acceso</h3><p>Tu sesión queda guardada en este dispositivo. En otro móvil o PC puedes entrar con tu nombre y PIN.</p></section></div></section>
 <section id="sec-votar" data-feature="premios" hidden class="seccion-lobby">
 <p class="seccion-etiqueta">Pesca-Oscars</p><h2 id="premios-titulo">Votaciones</h2><p class="pagina-intro" id="premios-instrucciones">Elige a un compañero por categoría. No puedes votarte a ti mismo.</p>
@@ -2830,10 +2830,10 @@ function abrirMuelle(vista='muelle'){
   const dialog=document.getElementById('muelle-dialog');
   if(dialog.open)return;
   muelleOrigen=document.activeElement;
-  const acuario=vista==='acuario';
-  dialog.setAttribute('aria-label',acuario?'Acuario':'El Muelle');
-  dialog.querySelector('iframe').title=acuario?'Acuario compartido':'El Muelle';
-  dialog.querySelector('iframe').src=acuario?'muelle/acuario.html':'muelle/index.html';
+  const acuario=vista==='acuario',vestuario=vista==='vestuario';
+  dialog.setAttribute('aria-label',acuario?'Acuario':vestuario?'Tu vestuario':'El Muelle');
+  dialog.querySelector('iframe').title=acuario?'Acuario compartido':vestuario?'Tu vestuario':'El Muelle';
+  dialog.querySelector('iframe').src=acuario?'muelle/acuario.html':vestuario?'muelle/vestuario.html':'muelle/index.html';
   dialog.showModal();
 }
 document.getElementById('muelle-dialog').addEventListener('close',()=>{

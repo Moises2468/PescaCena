@@ -51,12 +51,21 @@ const {drawFish}=FishArt;
 function item(tag,text,cls){
   const el=document.createElement(tag);el.textContent=text;if(cls)el.className=cls;return el;
 }
+let albumFilter='all',bankOpen=false;
+for(const button of document.querySelectorAll('[data-album-filter]'))button.onclick=()=>{
+ albumFilter=button.dataset.albumFilter;
+ for(const tab of document.querySelectorAll('[data-album-filter]'))tab.setAttribute('aria-pressed',String(tab===button));
+ renderAlbum();
+};
+$('daily-preview').onclick=()=>{if(phase!=='idle')return;drawer.open=true;openDrawerPanel('weekly-panel');drawer.querySelector('summary').scrollIntoView({block:'start',behavior:reducedMotion?'instant':'smooth'});};
 function renderAlbum(){
   $("album-count").textContent=Object.keys(album).length+"/"+Pesca.fish.length;
-  $("album").replaceChildren(...Pesca.fish.map(f=>{
+  const entries=Pesca.fish.filter(f=>albumFilter==='caught'?!!album[f.id]:albumFilter==='missing'?!album[f.id]:albumFilter==='today'?(daily&&(f.day===undefined||f.day===daily.index)&&(f.zone!=='banco'||bankOpen)):true);
+  $('album-results').textContent=entries.length+' especies'+(albumFilter==='today'?' · Algunas requieren mejorar tu caña.':'');
+  $("album").replaceChildren(...entries.map(f=>{
     const data=album[f.id], card=item("article","","entry");
     card.append(drawFish(f,!!data),item("strong",data?f.name:"Por descubrir"),item("span",f.rarity,"rarity"),
-      item("small",f.hint),item("small","Dificultad "+Pesca.difficulty[f.pattern]+" · "+Pesca.motion[f.pattern]),item("small",data?data.count+" capturas · récord de "+data.best+" cm · "+data.perfect+" perfectas":""));
+      item("small",f.hint),item("small",data?data.count+" capturas · récord de "+data.best+" cm · "+data.perfect+" perfectas":""));
     if(f.day!==undefined)card.append(item("small",Pesca.dayNames[f.day]+(daily?.index===f.day?" · Disponible hoy":""),daily?.index===f.day?"today-fish":"")) ;
     if(f.id==="rodolfo"){
       const preview=item("button","Ver a Rodolfo","secondary");
@@ -204,6 +213,10 @@ function renderDaily(data){
   if(!data)return;
   const changed=daily?.id!==data.id;
   daily=data;
+  $('daily-preview').hidden=false;
+  $('daily-preview-label').textContent=data.complete?'Completado · '+data.label:data.label+' · '+data.progress+'/'+data.target;
+  $('daily-preview-reward').textContent=data.complete?'25 monedas cobradas · Nuevo encargo mañana':'+25 monedas · Traje Aurora '+Math.min(data.completed,5)+'/5 encargos';
+  $('daily-preview-progress').max=data.target;$('daily-preview-progress').value=data.progress;
   $("daily-task").textContent=data.label+" · "+data.progress+"/"+data.target+(data.complete?" · ¡Completado!":"");
   $("daily-progress").max=data.target;
   $("daily-progress").value=data.progress;
@@ -215,6 +228,7 @@ function renderDaily(data){
   }
 }
 function renderWeekly(data){
+  const wasOpen=bankOpen;bankOpen=data.open;if(wasOpen!==bankOpen)renderAlbum();
   const count=data.ids.filter(id=>data.marks[id]).length;
   $("weekly-count").textContent=count+"/5";
   $("weekly-status").textContent=data.open?"Banco especial abierto hasta el lunes.":count+" de 5 especies · se renueva cada lunes";
@@ -275,6 +289,7 @@ function renderButtons(){
 }
 function setPhase(value,label){
   phase=value;phaseAt=performance.now();
+  $('daily-preview').disabled=value!=='idle';
   scene.dataset.phase=value;
   setHint(label);
   rod.setAttribute("aria-disabled",String(!ready||["launching","waiting","saving","retry"].includes(value)));
@@ -409,7 +424,7 @@ function showEscape(detail){
 }
 async function saveResult(){
   if(!pending)return;
-  setPhase("saving","Comprobando la captura…");
+  setPhase("saving",sim?.result==="caught"?"Captura conseguida. Guardando…":"Guardando el resultado…");
   try{
     const data=await api.request("finish",pending);
     pending=null;localStorage.removeItem(pendingKey);
@@ -425,7 +440,7 @@ async function saveResult(){
       $("catch-panel").showModal();
       beep(695);
     }else{
-      showEscape("El pez se soltó del anzuelo.");
+      showEscape("El pez se soltó. Mantén pulsado para subir la barra y suelta para bajarla: intenta mantener el pez dentro.");
     }
     if(data.dailyReward)$("catch-detail").textContent+=" · Encargo completado: +"+data.dailyReward.coins+" monedas"+(data.dailyReward.outfit?" y Traje Aurora":"");
     refresh();

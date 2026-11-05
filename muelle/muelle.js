@@ -61,11 +61,11 @@ $('daily-preview').onclick=()=>{if(phase!=='idle')return;drawer.open=true;openDr
 function renderAlbum(){
   $("album-count").textContent=Object.keys(album).length+"/"+Pesca.fish.length;
   const entries=Pesca.fish.filter(f=>albumFilter==='caught'?!!album[f.id]:albumFilter==='missing'?!album[f.id]:albumFilter==='today'?(daily&&(f.day===undefined||f.day===daily.index)&&(f.zone!=='banco'||bankOpen)):true);
-  $('album-results').textContent=entries.length+' especies'+(albumFilter==='today'?' · Algunas requieren mejorar tu caña.':'');
+  $('album-results').textContent=entries.length+(entries.length===1?' especie':' especies')+(albumFilter==='today'?' · Algunas requieren mejorar tu caña.':'');
   $("album").replaceChildren(...entries.map(f=>{
     const data=album[f.id], card=item("article","","entry");
     card.append(drawFish(f,!!data),item("strong",data?f.name:"Por descubrir"),item("span",f.rarity,"rarity"),
-      item("small",f.hint),item("small",data?data.count+" capturas · récord de "+data.best+" cm · "+data.perfect+" perfectas":""));
+      item("small",f.hint),item("small",data?data.count+(data.count===1?" captura · récord de ":" capturas · récord de ")+data.best+" cm · "+data.perfect+" perfectas":""));
     if(f.day!==undefined)card.append(item("small",Pesca.dayNames[f.day]+(daily?.index===f.day?" · Disponible hoy":""),daily?.index===f.day?"today-fish":"")) ;
     if(f.id==="rodolfo"){
       const preview=item("button","Ver a Rodolfo","secondary");

@@ -1621,7 +1621,7 @@ var Game = /** @class */ (function () {
     for (var i = 0; i < oldBlocks.length; i++) { _loop_1(i); }
     var cameraMoveSpeed = removeSpeed * 2 + oldBlocks.length * delayAmount;
     this.stage.setCamera(2, cameraMoveSpeed);
-    var countdown = { value: this.blocks.length - 1 };
+    var countdown = { value: Math.max(0, this.blocks.length - 2) };
     TweenLite.to(countdown, cameraMoveSpeed, { value: 0, onUpdate: function () { _this.scoreContainer.innerHTML = String(Math.round(countdown.value)); } });
     this.blocks = this.blocks.slice(0, 1);
     setTimeout(function () { _this.startGame(); }, cameraMoveSpeed * 1000);
@@ -2308,6 +2308,9 @@ async function guardarRecordTorre(){
     torrePendientes.unshift(partida);
     torreGuardadoFallido=true;
     estadoGuardadoTorre('Récord pendiente de guardar. '+error.message,true);
+    if(towerGameInstance?.torreResultado===partida.resultado && towerGameInstance.state===towerGameInstance.STATES.ENDED){
+      document.getElementById('torre-fin-resultado').textContent='Has apilado '+partida.score+' bloques. La mejora está pendiente de guardar.';
+    }
   }finally{
     torreGuardando=null;
     if(torrePendientes.length&&!torreGuardadoFallido)guardarRecordTorre();

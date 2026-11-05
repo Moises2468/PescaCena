@@ -246,6 +246,9 @@ body{background:var(--bg);text-align:center;color:var(--text)}
 #pin-acceso,#pin-confirmar{letter-spacing:.3em}
 #estado-conexion{min-height:2.5em}
 #cuenta-nombre-estado{font-size:14px}
+#torre-fin-resultado{max-width:340px;padding:0 18px;text-align:center;font:16px/1.5 'Segoe UI',sans-serif}
+#torre-guardado{position:absolute;bottom:max(20px,env(safe-area-inset-bottom));left:16px;right:16px;z-index:30;max-width:520px;margin:auto;padding:12px;border:1px solid #d3dfed;border-radius:10px;background:#fff;color:#142941;text-align:center;font:14px/1.4 'Segoe UI',sans-serif}
+#torre-reintentar{display:block;width:auto;margin:8px auto 0;padding:8px 14px;border:0;border-radius:8px;background:#142941;color:white;font:inherit}
 @media(max-width:375px){.juegos-grid .card-container{padding:8px}.bottom-nav .nav-item{font-size:10px}}
 </style>
 
@@ -466,9 +469,9 @@ Racha: <span id="racha-dias-num">0</span>
     <div id="tower-container">
         <div id="tower-game"></div>
         <div id="tower-score">0</div>
-        <div id="tower-instructions">Toca la pantalla para soltar el bloque</div>
+        <div id="tower-instructions">Toca la pantalla para soltar el bloque</div><div id="torre-guardado" hidden role="status"><span id="torre-guardado-texto"></span><button type="button" id="torre-reintentar" hidden onclick="guardarRecordTorre()">Reintentar guardado</button></div>
         <div class="game-over">
-            <h2>Fin del Juego</h2>
+            <h2>Fin de la partida</h2><p id="torre-fin-resultado" role="status"></p>
             <p>Toca para volver a jugar</p>
         </div>
         <div class="game-ready">
@@ -2273,11 +2276,60 @@ comprobarVictoriaParejas=function(){
   if(parejasAcertadas!==8)return;
   setTimeout(async()=>{if(await registrarVictoria('Éxito Parejas','Movimientos: '+parejasMovimientos,'parejas_ultimo_dia'))cerrarParejas();},600);
 };
-Game.prototype.endGame=async function(){
+// Las mejoras se guardan en orden y sus respuestas nunca abren un popup.
+let torreGuardando=null, torrePendientes=[], torreGuardadoFallido=false;
+function recordTorreConfirmado(){
+  return Math.max(0,Number(localStorage.getItem('tower_record_personal'))||0);
+}
+function estadoGuardadoTorre(texto,reintentar=false){
+  const estado=document.getElementById('torre-guardado');
+  estado.hidden=!texto;
+  document.getElementById('torre-guardado-texto').textContent=texto;
+  document.getElementById('torre-reintentar').hidden=!reintentar;
+}
+async function guardarRecordTorre(){
+  if(torreGuardando||!torrePendientes.length)return;
+  const partida=torrePendientes.shift();
+  torreGuardando=partida;torreGuardadoFallido=false;
+  estadoGuardadoTorre('Guardando récord de '+partida.score+' bloques… Puedes seguir jugando.');
+  try{
+    const data=await pedirOperacion('Éxito Tower',0,String(partida.score),{requestId:partida.id});
+    localStorage.setItem('tower_record_personal',Math.max(recordTorreConfirmado(),partida.score));
+    const mensaje=data.puntos>0
+      ? 'Récord guardado de '+partida.score+' bloques · +'+data.puntos+' puntos.'
+      : 'Partida guardada. Tu récord ya era igual o mayor, sin puntos nuevos.';
+    estadoGuardadoTorre(mensaje);
+    if(towerGameInstance?.torreResultado===partida.resultado && towerGameInstance.state===towerGameInstance.STATES.ENDED){
+      document.getElementById('torre-fin-resultado').textContent='Has apilado '+partida.score+' bloques. '+(data.puntos>0?'Sumas '+data.puntos+' puntos.':'Tu récord ya era igual o mayor.');
+    }
+    // El resultado confirmado se muestra sin esperar otra lectura completa.
+    if(!torrePendientes.length)cargarMarcadores();
+  }catch(error){
+    torrePendientes.unshift(partida);
+    torreGuardadoFallido=true;
+    estadoGuardadoTorre('Récord pendiente de guardar. '+error.message,true);
+  }finally{
+    torreGuardando=null;
+    if(torrePendientes.length&&!torreGuardadoFallido)guardarRecordTorre();
+  }
+}
+Game.prototype.endGame=function(){
+  if(this.state===this.STATES.ENDED)return;
   this.updateState(this.STATES.ENDED);
-  const score=this.blocks.length-1;
-  if(score<=0)return;
-  await registrarVictoria('Éxito Tower',String(score),'');
+  // La lista contiene la base y el bloque que acaba de fallar.
+  const score=Math.max(0,this.blocks.length-2);
+  this.torreResultado={score};
+  this.scoreContainer.textContent=String(score);
+  const record=Math.max(recordTorreConfirmado(),torreGuardando?.score||0,torrePendientes.at(-1)?.score||0);
+  const resultado=document.getElementById('torre-fin-resultado');
+  resultado.textContent='Has apilado '+score+(score===1?' bloque.':' bloques.');
+  if(score<=record){
+    resultado.textContent+=' Tu récord es '+record+'. Sumas puntos cuando lo superas.';
+    return;
+  }
+  resultado.textContent+=' Nuevo récord. Guardando tu mejora…';
+  torrePendientes.push({score,id:requestId(),resultado:this.torreResultado});
+  if(!torreGuardando)guardarRecordTorre();
 };
 
 

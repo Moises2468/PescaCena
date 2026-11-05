@@ -299,13 +299,20 @@ function setPhase(value,label){
   renderButtons();
 }
 function drawCast(t){
-  const rect=scene.getBoundingClientRect(), matrix=rodArt.getScreenCTM();
+  const playScene=document.querySelector(".play-scene");
+  const rect=playScene.getBoundingClientRect(), matrix=rodArt.getScreenCTM();
   if(!matrix||!rect.width||!rect.height)return;
   const tip=new DOMPoint(98,12).matrixTransform(matrix);
-  const x0=tip.x-rect.left-scene.clientLeft, y0=tip.y-rect.top-scene.clientTop;
+  const x0=tip.x-rect.left-playScene.clientLeft, y0=tip.y-rect.top-playScene.clientTop;
   const elapsed=Math.max(0,t-phaseAt);
   const tug=reducedMotion?0:phase==="bite"?3+3*Math.sin(elapsed/44):phase==="waiting"?1.35*Math.sin(elapsed/450):0;
-  const x1=rect.width*(.77+castPower*.17), y1=rect.height*(.65+castPower*.10)+tug;
+  // The background SVG starts its water at 420/700 of its own height.
+  // Measure that image, not the dock container (which includes the menus).
+  const map=document.querySelector('.landscape').getBoundingClientRect();
+  const bound=(value,min,max)=>Math.max(min,Math.min(max,value));
+  const left=map.left-rect.left,top=map.top-rect.top;
+  const x1=bound(left+map.width*(.77+castPower*.17),Math.max(12,left+12),Math.min(rect.width-12,left+map.width-12));
+  const y1=bound(top+map.height*(.72+castPower*.16)+tug,Math.max(12,top+map.height*.6+12),Math.min(rect.height-18,top+map.height-18));
   const flight=phase==="launching"?Math.min(1,Math.max(0,(t-phaseAt)/480)):1;
   const q=reducedMotion?1:flight;
   const x=x0+(x1-x0)*q;
@@ -318,6 +325,7 @@ function drawCast(t){
     splash.hidden=false;beep(305);
   }
 }
+window.addEventListener('resize',()=>{if(!line.hidden)drawCast(performance.now());});
 function idle(){
   held=false;input=null;
   $("power").value=0;

@@ -1,0 +1,4 @@
+# Hosting is now on Cloudflare Pages.
+# Preserve the last Netlify deployment as a fallback; skip automatic Git builds.
+[build]
+  ignore = "exit 0"

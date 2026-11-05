@@ -8,7 +8,7 @@ const rod=$("cast");
 let daily=null, album={}, favorite=null, aquariumVisible=false, gear=null, shopping=false, ready=false, phase="idle";
 let ticket, sim, held=false, changes=[], pending=null, input=null;
 let phaseAt=0, time=performance.now(), remainder=0;
-let lastCast=0, refreshing=false;
+let lastCast=0, refreshing=false,lastPresenceAt=0;
 let castPower=0, landed=false, lastCastFrame=0;
 const reducedMotion=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const scene=$("dock");
@@ -268,10 +268,11 @@ function renderPresence(data){
   renderDaily(data.daily);renderWeekly(data.weekly);
 }
 async function refresh(){
-  if(!ready||document.hidden||refreshing)return;
+  if(!ready||document.hidden||refreshing||Date.now()-lastPresenceAt<90000)return;
+  lastPresenceAt=Date.now();
   refreshing=true;
   try{
-    const data=await api.request("presence",{active:Date.now()-lastCast<90000});
+    const data=await api.request("presence",{active:true});
     renderPresence(data);
     if(!pending)network("");
   }catch{
@@ -484,8 +485,8 @@ function loop(t){
 async function join(){
   if(!name){setHint("Abre el muelle desde la Sala de juegos de PescaCena.");return;}
   try{
-    const data=await api.request("join",{name});
-    ready=true;album=data.album;favorite=data.favorite;aquariumVisible=data.aquariumVisible;updateGear(data.gear);
+    const data=await api.request("join",{name,activity:"muelle"});
+    ready=true;$('presence').textContent=data.count+(data.count===1?' persona pescando':' personas pescando');album=data.album;favorite=data.favorite;aquariumVisible=data.aquariumVisible;updateGear(data.gear);
     if(favorite)localStorage.setItem("pescacena:muelle:favorite:"+api.identity(),Pesca.find(favorite).name);
     applyOutfit();renderDaily(data.daily);renderAlbum();renderWeekly(data.weekly);idle();refresh();
     try{pending=JSON.parse(localStorage.getItem(pendingKey)||"null");}catch{}
@@ -501,9 +502,10 @@ async function join(){
 }
 $("catch-panel").addEventListener("close",()=>rod.focus({preventScroll:true}));
 renderAlbum();join();
-document.addEventListener("visibilitychange",()=>{if(!document.hidden)refresh();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){lastPresenceAt=0;refresh();}else api.leave('activity',{game:'muelle',active:false});});
+window.addEventListener('pagehide',()=>api.leave('activity',{game:'muelle',active:false}));
 window.addEventListener("resize",()=>{if(!line.hidden)drawCast(performance.now());});
-setInterval(refresh,30000);
+function schedulePresence(){setTimeout(async()=>{await refresh();schedulePresence();},90000+Math.random()*30000);}schedulePresence();
 requestAnimationFrame(loop);
 
 

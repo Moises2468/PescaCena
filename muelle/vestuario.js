@@ -2,8 +2,8 @@
 (()=>{
  const $=id=>document.getElementById(id);
  let gear,avatar,filter='owned',busy=false;
- const fromMuelle=new URLSearchParams(location.search).get('from')==='muelle';
- if(fromMuelle){$('volver').href='index.html';$('volver').textContent='← El Muelle';}
+ const from=new URLSearchParams(location.search).get('from');
+ if(from==='muelle'||from==='pozo'){$('volver').href=from==='pozo'?'pozo.html':'index.html';$('volver').textContent=from==='pozo'?'← El Pozo':'← El Muelle';}
  else $('volver').onclick=event=>{if(window!==parent){event.preventDefault();window.frameElement?.closest('dialog')?.close();}};
  const el=(tag,text)=>{const n=document.createElement(tag);n.textContent=text;return n;};
  function status(text,error=false){$('estado').textContent=text;$('estado').dataset.error=error;}

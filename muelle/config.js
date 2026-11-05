@@ -40,7 +40,7 @@ window.MuelleConnection=(()=>{
     const pendingKey='pescacena:muelle:operacion:'+identity()+':'+campaign();
     const signature=JSON.stringify({op,...values});
     let requestId=hex(16);
-    if(op==='shop'){
+    if(op==='shop'||op==='pozo-upgrade'){
       try{const pending=JSON.parse(sessionStorage.getItem(pendingKey));if(pending?.signature===signature)requestId=pending.id;}catch{}
       sessionStorage.setItem(pendingKey,JSON.stringify({signature,id:requestId}));
     }
@@ -50,13 +50,16 @@ window.MuelleConnection=(()=>{
       try{
         res=await fetch(credentials.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({...values,op,requestId,ticket:credentials.ticket}),signal:AbortSignal.timeout(12000)});
       }catch(error){if(attempt===0)continue;throw new Error('No se pudo confirmar la operación. Puedes reintentar.');}
-      if(res.status===401&&attempt===0){credentials=await access(true);continue;}
+      if((res.status===401||res.status===403)&&attempt===0){credentials=await access(true);continue;}
       const data=await res.json();
-      if(op==='shop'&&res.status<500)sessionStorage.removeItem(pendingKey);
+      if((op==='shop'||op==='pozo-upgrade')&&res.status<500)sessionStorage.removeItem(pendingKey);
       if(!data.ok)throw Object.assign(new Error(data.message||'No se pudo completar la operación.'),{code:data.code});
       return data;
     }
     throw new Error('Vuelve a abrir El Muelle para renovar tu sesión.');
   }
-  return {request,hex,local,endpoint:'nube',identity};
+  function leave(op,values={}){
+    try{const d=JSON.parse(sessionStorage.getItem(storageKey()));if(d?.exp>Date.now()/1000)fetch(d.url,{method:'POST',keepalive:true,headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({...values,op,requestId:hex(16),ticket:d.ticket})}).catch(()=>{});}catch{}
+  }
+  return {request,leave,hex,local,endpoint:'nube',identity};
 })();
